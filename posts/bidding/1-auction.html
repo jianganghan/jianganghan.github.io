@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="单次拍卖的出价 — Jiangang Han" data-en="Bidding in a Single Auction — Jiangang Han">单次拍卖的出价 — Jiangang Han</title>
+<script>
+// Pick the language before the first paint (same rules as lang.js), so a bilingual post never flashes the other language
+(function(){
+  var l = null;
+  try { l = localStorage.getItem('lang'); } catch (e) {}
+  if (!l) l = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+  document.documentElement.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en');
+})();
+</script>
+<link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../index.html" data-en="Posts" data-zh="文章">Posts</a>
+    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+  </nav>
+</header>
+
+<main class="article">
+<div class="lang-zh" lang="zh-CN">
+<h1>单次拍卖的出价</h1>
+<blockquote class="lede"><p>一场拍卖里，你只需要报一个数。对你来说，所有竞争对手加起来只是一个随机的「市场价」：由它推出胜率和花费，就能看清为什么二价下该如实报价、一价下要压价。顺带从平台一侧看一眼——底价其实就是一个定价问题。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-把问题写下来">1. 把问题写下来</a></li><li class="toc__l2"><a href="#2-关键事实-二价下-多赢一次的成本正好是你的出价">2. 关键事实：二价下，多赢一次的成本正好是你的出价</a></li><li class="toc__l2"><a href="#3-这一次该出多少">3. 这一次该出多少</a></li><li class="toc__l2"><a href="#4-从平台看-底价就是一个定价问题">4. 从平台看：底价就是一个定价问题</a></li><li class="toc__l2"><a href="#5-落地时会踩的坑">5. 落地时会踩的坑</a></li></ul></nav>
+<blockquote><p><strong>出价专题 · 第 1 篇 / 共 3 篇</strong> · 阅读约 8 分钟</p>
+<p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-budget.html">预算约束下的出价 →</a></p></blockquote>
+<p>这是「广告出价入门」的第一篇，只看一次拍卖、一个出价，不需要任何前置知识。</p>
+<details>
+<summary>本篇会用到的符号</summary>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">b</span></td><td>你的出价，<strong>决策变量</strong></td></tr><tr><td><span class="math math-inline">z</span></td><td>市场价：其他所有竞争者里的最高出价，对你来说是个随机数</td></tr><tr><td><span class="math math-inline">w(b)</span></td><td>胜率曲线 <span class="math math-inline">P(z \le b)</span>，也就是 <span class="math math-inline">z</span> 的分布函数</td></tr><tr><td><span class="math math-inline">w&#x27;(b)</span></td><td>胜率曲线的斜率，也就是 <span class="math math-inline">z</span> 的概率密度</td></tr><tr><td><span class="math math-inline">c(b)</span></td><td>这次机会的期望花费（输了算 0），<span class="math math-inline">c_1</span> 是一价，<span class="math math-inline">c_2</span> 是二价</td></tr><tr><td><span class="math math-inline">v</span></td><td>这次曝光对你值多少</td></tr><tr><td><span class="math math-inline">r</span></td><td>平台设的底价</td></tr></tbody></table></div>
+<p>完整符号表见<a href="index.html">专题目录</a>。</p>
+</details>
+<hr>
+<h2 id="1-把问题写下来">1. 把问题写下来</h2>
+<p>用户刷一次信息流，就产生一次广告曝光机会，平台为它办一场拍卖。你是某个广告主的出价代理，这一次只做一件事：报一个价 <span class="math math-inline">b</span>。</p>
+<p><strong>对你来说，其他所有竞争者加在一起，只体现为一个数</strong>：他们之中的最高出价 <span class="math math-inline">z</span>，下文叫<strong>市场价</strong>。你事先不知道 <span class="math math-inline">z</span>，但可以从历史日志里估计它的分布。于是赢的概率就是</p>
+<div class="math math-display">w(b) = P(z \le b)</div>
+<p>这条曲线叫<strong>胜率曲线</strong>（业内也叫 bid landscape）。它就是市场价的分布函数：从 0 出发，单调上升，趋向 1。它的斜率 <span class="math math-inline">w&#x27;(b)</span> 就是市场价的概率密度。</p>
+<p>赢了之后付多少，取决于平台的计费规则：</p>
+<ul><li><strong>一价</strong>（first price）：付自己的出价 <span class="math math-inline">b</span>。</li><li><strong>二价</strong>（second price）：付「刚好能赢的价格」，也就是市场价 <span class="math math-inline">z</span>。</li></ul>
+<p>对这一次机会取期望（输了花 0），两种规则下的期望花费分别是</p>
+<div class="math math-display">c_1(b) = b\,w(b), \qquad c_2(b) = \int_0^b z\,w&#x27;(z)\,dz</div>
+<p>二价的式子读作：把所有你能赢下的市场价 <span class="math math-inline">z \le b</span>，按出现的概率加权求和。</p>
+<p><strong>关于单位。</strong> 广告平台一般按 eCPM（每千次曝光的期望收入）排序。你按点击出价 <span class="math math-inline">b_{\text{click}}</span> 元，折算到每次曝光就是 <span class="math math-inline">b = b_{\text{click}} \times \text{pCTR}</span>。本专题的 <span class="math math-inline">b</span>、<span class="math math-inline">z</span>、<span class="math math-inline">v</span> 一律换算到「每次曝光」上。单广告位的 GSP 按点击计费时，赢家每次点击付 <span class="math math-inline">z/\text{pCTR}</span>，折回每次曝光正好是 <span class="math math-inline">z</span>，所以它就是二价。</p>
+<h2 id="2-关键事实-二价下-多赢一次的成本正好是你的出价">2. 关键事实：二价下，多赢一次的成本正好是你的出价</h2>
+<p>「每赢一次花多少」有两种算法：</p>
+<ul><li><strong>平均成本</strong>：<span class="math math-inline">c_2(b)/w(b) = E[z \mid z \le b]</span>，即赢下的那些拍卖的平均成交价。它一定<strong>小于</strong> <span class="math math-inline">b</span>。</li><li><strong>边际成本</strong>：出价从 <span class="math math-inline">b</span> 抬到 <span class="math math-inline">b + db</span>，多花的钱除以多赢的次数。</li></ul>
+<p>边际成本的结果非常简洁。对 <span class="math math-inline">c_2</span> 的积分上限求导，<span class="math math-inline">c_2&#x27;(b) = b\,w&#x27;(b)</span>，于是</p>
+<div class="math math-display">\boxed{\ \frac{dc_2}{dw} = \frac{c_2&#x27;(b)}{w&#x27;(b)} = b\ }</div>
+<p>直觉：出价抬高一点点，多赢下的恰好是市场价落在 <span class="math math-inline">[b,\ b+db]</span> 里的那些拍卖，每一场都付 <span class="math math-inline">b</span> 左右。</p>
+<p>一价就不一样了：</p>
+<div class="math math-display">\frac{dc_1}{dw} = \frac{w(b) + b\,w&#x27;(b)}{w&#x27;(b)} = b + \frac{w(b)}{w&#x27;(b)} \;&gt;\; b</div>
+<p>多出来的 <span class="math math-inline">w/w&#x27;</span>，是因为一价下抬价不只多赢了新的拍卖，还让<strong>本来就能赢的每一场</strong>都多付了钱。二价没有这一项，因为你付的是 <span class="math math-inline">z</span>，不是 <span class="math math-inline">b</span>。</p>
+<p><img src="images/fig1-market.svg" alt="市场价的分布与每赢一次的成本" loading="lazy"></p>
+<p>用均匀分布算一个简单的例子：若 <span class="math math-inline">z</span> 在 <span class="math math-inline">[0, m]</span> 上均匀，则 <span class="math math-inline">w = b/m</span>，<span class="math math-inline">c_2 = b^2/(2m)</span>。二价的<strong>平均成本恰好是出价的一半</strong>，边际成本等于出价；一价的边际成本则是 <span class="math math-inline">2b</span>。</p>
+<h2 id="3-这一次该出多少">3. 这一次该出多少</h2>
+<p>这次曝光对你值 <span class="math math-inline">v</span>（比如 <span class="math math-inline">v = \text{pCTR} \times</span> 一次点击对你值多少钱）。赢了拿到价值、同时付钱，期望收益是</p>
+<div class="math math-display">\max_b\ \ v\,w(b) - c(b)</div>
+<p><strong>二价。</strong> 求导：</p>
+<div class="math math-display">\frac{d}{db}\Bigl[v\,w(b) - c_2(b)\Bigr] = v\,w&#x27;(b) - b\,w&#x27;(b) = (v - b)\,w&#x27;(b)</div>
+<p><span class="math math-inline">w&#x27;(b) \ge 0</span>，所以 <span class="math math-inline">b &lt; v</span> 时导数不为负，<span class="math math-inline">b &gt; v</span> 时导数不为正：</p>
+<div class="math math-display">\boxed{\ b_2^\star = v\ }</div>
+<p>这个结论<strong>不依赖 <span class="math math-inline">w</span> 的任何性质</strong>。竞争强也好弱也好，分布是单峰、双峰还是别的形状，二价下如实报价都是最优的。</p>
+<p><strong>一价。</strong> 令导数为零：</p>
+<div class="math math-display">(v - b)\,w&#x27;(b) - w(b) = 0 \quad\Longrightarrow\quad \boxed{\ b_1^\star = v - \frac{w(b_1^\star)}{w&#x27;(b_1^\star)}\ }</div>
+<p>一价要<strong>压价</strong>（bid shading），压多少取决于 <span class="math math-inline">w</span>，也就是说你必须先估计市场。均匀分布下 <span class="math math-inline">b_1^\star = v/2</span>。</p>
+<p><img src="images/fig2-truthful.svg" alt="二价的最优出价与市场无关，一价则取决于市场" loading="lazy"></p>
+<p>读法：<strong>二价把「估计市场」和「决定出价」彻底拆开了，一价没有。</strong> 这是二价在工程上好用的根本原因。现实里两种都有：LinkedIn 的公开论文提到，它自己的信息流广告位用带底价的 GSP，而站外合作媒体的流量大多是一价。</p>
+<p>如果你读过定价专题：一价的 <span class="math math-inline">b^\star = v - w/w&#x27;</span> 和<a href="../pricing/1-single.html">定价的 <span class="math math-inline">p^\star = c + q/(-q&#x27;)</span></a> 是同一个结构的两面。卖方在成本上<strong>加价</strong>，买方在价值上<strong>压价</strong>，幅度都是「当前的量 ÷ 量对价格的敏感度」。</p>
+<h2 id="4-从平台看-底价就是一个定价问题">4. 从平台看：底价就是一个定价问题</h2>
+<p>平台可以设一个<strong>底价</strong> <span class="math math-inline">r</span>（reserve price）：低于 <span class="math math-inline">r</span> 的出价不算数，赢家至少付 <span class="math math-inline">r</span>。</p>
+<p>最简单的情形：只有一个出价者，二价下他报的就是自己的价值 <span class="math math-inline">X</span>，<span class="math math-inline">X</span> 的分布函数是 <span class="math math-inline">F</span>、密度是 <span class="math math-inline">f</span>。平台的期望收入是</p>
+<div class="math math-display">\text{收入}(r) = r \cdot P(X \ge r) = r\,\bigl(1 - F(r)\bigr)</div>
+<p>这正是定价专题第一篇的原题：价格是 <span class="math math-inline">r</span>，成交概率 <span class="math math-inline">q(r) = 1 - F(r)</span>，成本为 0。套用那里的结论：</p>
+<div class="math math-display">\boxed{\ r^\star = \frac{1 - F(r^\star)}{f(r^\star)}\ }</div>
+<p>价值在 <span class="math math-inline">[0, 1]</span> 上均匀时，<span class="math math-inline">r^\star = 1/2</span>。</p>
+<p>一个经典结论（Myerson，1981）：各出价者的价值独立同分布、且分布满足一个叫「正则」的温和条件时（均匀分布就满足），<strong>最优底价跟有几个出价者无关</strong>，还是上面这个 <span class="math math-inline">r^\star</span>。</p>
+<p>站回出价者这边，底价只是改了一下市场价：把 <span class="math math-inline">z</span> 换成 <span class="math math-inline">\max(z,\ r)</span>，前面所有公式照用。</p>
+<h2 id="5-落地时会踩的坑">5. 落地时会踩的坑</h2>
+<ul><li><strong>胜率曲线要从日志里估，而日志是删失的。</strong> 二价下赢了才看到 <span class="math math-inline">z</span>，输了只知道 <span class="math math-inline">z &gt; b</span>。直接拿成交价画直方图，看到的全是比你出价低的市场价，会系统性低估竞争。这是标准的删失数据问题，可以借用生存分析的工具。一价更麻烦，赢了通常也看不到 <span class="math math-inline">z</span>，只知道 <span class="math math-inline">z \le b</span>。</li><li><strong><span class="math math-inline">v</span> 估不准，出价就跟着偏。</strong> 二价下 <span class="math math-inline">b = v</span>，pCTR 高估多少，出价就高多少；而且你赢下的恰恰是被高估的那一批（赢家诅咒）。所以对出价来说，预估值的<strong>校准</strong>和排序能力（AUC）同样要紧。</li><li><strong>多个广告位的 GSP 里，如实报价不再是最优。</strong> 本篇结论只对单个广告位严格成立，多广告位的情况见 Edelman、Ostrovsky、Schwarz（2007）。</li></ul>
+<hr>
+<p><strong>出价专题 · 第 1 篇 / 共 3 篇</strong></p>
+<p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-budget.html">预算约束下的出价 →</a></p>
+</div>
+<div class="lang-en" lang="en">
+<h1>Bidding in a Single Auction</h1>
+<blockquote class="lede"><p>In an auction, all you do is name one number. To you, all your competitors combined are just one random "market price": from it you can work out your win rate and your spend, and see why you bid your true value under second price but shade your bid under first price. We'll also take the platform's side for a moment — setting a reserve price turns out to be a pricing problem.</p></blockquote>
+<nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-setting-up-the-problem">1. Setting up the problem</a></li><li class="toc__l2"><a href="#2-the-key-fact-under-second-price-one-more-win-costs-exactly-your-bid">2. The key fact: under second price, one more win costs exactly your bid</a></li><li class="toc__l2"><a href="#3-how-much-to-bid-this-time">3. How much to bid this time</a></li><li class="toc__l2"><a href="#4-the-platform's-view-a-reserve-price-is-a-pricing-problem">4. The platform's view: a reserve price is a pricing problem</a></li><li class="toc__l2"><a href="#5-pitfalls-in-practice">5. Pitfalls in practice</a></li></ul></nav>
+<blockquote><p><strong>Ad Bidding · Part 1 of 3</strong> · 8 min read</p>
+<p>← First part　·　<a href="index.html"><strong>Series index</strong></a>　·　<a href="2-budget.html">Bidding Under a Budget →</a></p></blockquote>
+<p>This is the first post in <em>A Primer on Ad Bidding</em>. It looks at a single auction and a single bid, and needs no background.</p>
+<details>
+<summary>Symbols used in this post</summary>
+<div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Meaning</th></tr></thead><tbody><tr><td><span class="math math-inline">b</span></td><td>Your bid, <strong>the decision variable</strong></td></tr><tr><td><span class="math math-inline">z</span></td><td>Market price: the highest bid among all the other bidders, a random number from your point of view</td></tr><tr><td><span class="math math-inline">w(b)</span></td><td>Win-rate curve <span class="math math-inline">P(z \le b)</span>, i.e. the distribution function of <span class="math math-inline">z</span></td></tr><tr><td><span class="math math-inline">w&#x27;(b)</span></td><td>Slope of the win-rate curve, i.e. the probability density of <span class="math math-inline">z</span></td></tr><tr><td><span class="math math-inline">c(b)</span></td><td>Expected spend on this opportunity (zero if you lose); <span class="math math-inline">c_1</span> for first price, <span class="math math-inline">c_2</span> for second price</td></tr><tr><td><span class="math math-inline">v</span></td><td>What this impression is worth to you</td></tr><tr><td><span class="math math-inline">r</span></td><td>The reserve price set by the platform</td></tr></tbody></table></div>
+<p>The full notation table is in the <a href="index.html">series index</a>.</p>
+</details>
+<hr>
+<h2 id="1-setting-up-the-problem">1. Setting up the problem</h2>
+<p>Each time a user scrolls their feed, an ad impression opportunity comes up, and the platform runs an auction for it. You're the bidding agent for an advertiser, and in this auction your only job is to name a price <span class="math math-inline">b</span>.</p>
+<p><strong>To you, all the other bidders combined boil down to a single number</strong>: the highest bid among them, <span class="math math-inline">z</span>, which we'll call the <strong>market price</strong>. You don't know <span class="math math-inline">z</span> in advance, but you can estimate its distribution from historical logs. The probability of winning is then</p>
+<div class="math math-display">w(b) = P(z \le b)</div>
+<p>This is the <strong>win-rate curve</strong> (in the industry, also called the bid landscape). It's simply the distribution function of the market price: it starts at 0, rises monotonically, and approaches 1. Its slope <span class="math math-inline">w&#x27;(b)</span> is the probability density of the market price.</p>
+<p>What you pay when you win depends on the platform's pricing rule:</p>
+<ul><li><strong>First price</strong>: you pay your own bid <span class="math math-inline">b</span>.</li><li><strong>Second price</strong>: you pay "just enough to win", which is the market price <span class="math math-inline">z</span>.</li></ul>
+<p>Taking the expectation over this one opportunity (you spend nothing if you lose), the expected spend under the two rules is</p>
+<div class="math math-display">c_1(b) = b\,w(b), \qquad c_2(b) = \int_0^b z\,w&#x27;(z)\,dz</div>
+<p>Read the second-price formula as: take every market price you'd beat, <span class="math math-inline">z \le b</span>, and add them up, each weighted by how likely it is.</p>
+<p><strong>A note on units.</strong> Ad platforms usually rank ads by eCPM (expected revenue per thousand impressions). If you bid <span class="math math-inline">b_{\text{click}}</span> per click, that works out to <span class="math math-inline">b = b_{\text{click}} \times \text{pCTR}</span> per impression. Throughout this series, <span class="math math-inline">b</span>, <span class="math math-inline">z</span> and <span class="math math-inline">v</span> are all converted to per-impression amounts. In a single-slot GSP auction charged per click, the winner pays <span class="math math-inline">z/\text{pCTR}</span> per click, which is exactly <span class="math math-inline">z</span> per impression — so it's a second-price auction.</p>
+<h2 id="2-the-key-fact-under-second-price-one-more-win-costs-exactly-your-bid">2. The key fact: under second price, one more win costs exactly your bid</h2>
+<p>There are two ways to measure "cost per win":</p>
+<ul><li><strong>Average cost</strong>: <span class="math math-inline">c_2(b)/w(b) = E[z \mid z \le b]</span>, the average price of the auctions you win. It's always <strong>less than</strong> <span class="math math-inline">b</span>.</li><li><strong>Marginal cost</strong>: raise your bid from <span class="math math-inline">b</span> to <span class="math math-inline">b + db</span>, then divide the extra spend by the extra wins.</li></ul>
+<p>The marginal cost comes out remarkably simple. Differentiating <span class="math math-inline">c_2</span> with respect to its upper limit gives <span class="math math-inline">c_2&#x27;(b) = b\,w&#x27;(b)</span>, so</p>
+<div class="math math-display">\boxed{\ \frac{dc_2}{dw} = \frac{c_2&#x27;(b)}{w&#x27;(b)} = b\ }</div>
+<p>The intuition: nudge your bid up a little, and the extra auctions you win are exactly the ones whose market price falls in <span class="math math-inline">[b,\ b+db]</span> — each of which costs you about <span class="math math-inline">b</span>.</p>
+<p>First price is a different story:</p>
+<div class="math math-display">\frac{dc_1}{dw} = \frac{w(b) + b\,w&#x27;(b)}{w&#x27;(b)} = b + \frac{w(b)}{w&#x27;(b)} \;&gt;\; b</div>
+<p>The extra <span class="math math-inline">w/w&#x27;</span> is there because under first price, raising your bid doesn't just win new auctions — you also pay more <strong>in every auction you would have won anyway</strong>. Second price has no such term, because you pay <span class="math math-inline">z</span>, not <span class="math math-inline">b</span>.</p>
+<p><img src="images/fig1-market.en.svg" alt="The market-price distribution and the cost of each win" loading="lazy"></p>
+<p>A quick example with a uniform distribution: if <span class="math math-inline">z</span> is uniform on <span class="math math-inline">[0, m]</span>, then <span class="math math-inline">w = b/m</span> and <span class="math math-inline">c_2 = b^2/(2m)</span>. Under second price, the <strong>average cost is exactly half your bid</strong> and the marginal cost equals your bid; under first price, the marginal cost is <span class="math math-inline">2b</span>.</p>
+<h2 id="3-how-much-to-bid-this-time">3. How much to bid this time</h2>
+<p>This impression is worth <span class="math math-inline">v</span> to you (for example, <span class="math math-inline">v = \text{pCTR} \times</span> what a click is worth to you). When you win, you get the value and pay the price, so your expected gain is</p>
+<div class="math math-display">\max_b\ \ v\,w(b) - c(b)</div>
+<p><strong>Second price.</strong> Differentiate:</p>
+<div class="math math-display">\frac{d}{db}\Bigl[v\,w(b) - c_2(b)\Bigr] = v\,w&#x27;(b) - b\,w&#x27;(b) = (v - b)\,w&#x27;(b)</div>
+<p>Since <span class="math math-inline">w&#x27;(b) \ge 0</span>, the derivative is non-negative for <span class="math math-inline">b &lt; v</span> and non-positive for <span class="math math-inline">b &gt; v</span>:</p>
+<div class="math math-display">\boxed{\ b_2^\star = v\ }</div>
+<p>This result <strong>doesn't depend on any property of <span class="math math-inline">w</span></strong>. Strong competition or weak, a distribution with one peak, two peaks or any other shape — under second price, bidding your true value is always optimal.</p>
+<p><strong>First price.</strong> Set the derivative to zero:</p>
+<div class="math math-display">(v - b)\,w&#x27;(b) - w(b) = 0 \quad\Longrightarrow\quad \boxed{\ b_1^\star = v - \frac{w(b_1^\star)}{w&#x27;(b_1^\star)}\ }</div>
+<p>Under first price you <strong>shade</strong> your bid, and how much depends on <span class="math math-inline">w</span> — you have to estimate the market first. With a uniform distribution, <span class="math math-inline">b_1^\star = v/2</span>.</p>
+<p><img src="images/fig2-truthful.en.svg" alt="The optimal second-price bid ignores the market; the first-price bid depends on it" loading="lazy"></p>
+<p>The takeaway: <strong>second price completely separates "estimating the market" from "deciding the bid"; first price doesn't.</strong> That's the fundamental reason second price is so convenient in engineering practice. Both formats are widely used: LinkedIn's published paper mentions that its own feed ads run GSP with a reserve price, while most of its off-site publisher inventory is sold through first-price auctions.</p>
+<p>If you've read the pricing series: the first-price <span class="math math-inline">b^\star = v - w/w&#x27;</span> and <a href="../pricing/1-single.html">the pricing formula <span class="math math-inline">p^\star = c + q/(-q&#x27;)</span></a> are two sides of the same structure. The seller <strong>marks up</strong> from cost, the buyer <strong>shades down</strong> from value, and in both cases the size of the adjustment is "current volume ÷ how sensitive volume is to price".</p>
+<h2 id="4-the-platform's-view-a-reserve-price-is-a-pricing-problem">4. The platform's view: a reserve price is a pricing problem</h2>
+<p>The platform can set a <strong>reserve price</strong> <span class="math math-inline">r</span>: bids below <span class="math math-inline">r</span> don't count, and the winner pays at least <span class="math math-inline">r</span>.</p>
+<p>Take the simplest case: there's only one bidder, who under second price simply bids their value <span class="math math-inline">X</span>, where <span class="math math-inline">X</span> has distribution function <span class="math math-inline">F</span> and density <span class="math math-inline">f</span>. The platform's expected revenue is</p>
+<div class="math math-display">\text{revenue}(r) = r \cdot P(X \ge r) = r\,\bigl(1 - F(r)\bigr)</div>
+<p>This is exactly the problem from Part 1 of the pricing series: the price is <span class="math math-inline">r</span>, the purchase probability is <span class="math math-inline">q(r) = 1 - F(r)</span>, and the cost is 0. Applying the result from there:</p>
+<div class="math math-display">\boxed{\ r^\star = \frac{1 - F(r^\star)}{f(r^\star)}\ }</div>
+<p>If values are uniform on <span class="math math-inline">[0, 1]</span>, then <span class="math math-inline">r^\star = 1/2</span>.</p>
+<p>A classic result (Myerson, 1981): when bidders' values are independent and identically distributed, and the distribution satisfies a mild condition called "regularity" (the uniform distribution does), <strong>the optimal reserve price doesn't depend on how many bidders there are</strong> — it's still the <span class="math math-inline">r^\star</span> above.</p>
+<p>Back on the bidder's side, a reserve price just changes the market price: replace <span class="math math-inline">z</span> with <span class="math math-inline">\max(z,\ r)</span> and every formula above still applies.</p>
+<h2 id="5-pitfalls-in-practice">5. Pitfalls in practice</h2>
+<ul><li><strong>You have to estimate the win-rate curve from logs, and the logs are censored.</strong> Under second price you only see <span class="math math-inline">z</span> when you win; when you lose, you only know that <span class="math math-inline">z &gt; b</span>. Plot a histogram of clearing prices directly and every price in it is below your own bid, so you'll systematically underestimate the competition. It's a standard censored-data problem, and the tools of survival analysis apply. First price is even harder: you usually don't see <span class="math math-inline">z</span> even when you win — only that <span class="math math-inline">z \le b</span>.</li><li><strong>If <span class="math math-inline">v</span> is off, your bid is off.</strong> Under second price <span class="math math-inline">b = v</span>, so overpredicting pCTR by some percentage means overbidding by the same percentage; worse, the auctions you win are precisely the ones where you overpredicted (the winner's curse). For bidding, <strong>calibration</strong> of your predictions matters just as much as ranking quality (AUC).</li><li><strong>With multiple ad slots, bidding your true value in GSP is no longer optimal.</strong> The results in this post hold strictly for a single slot; for the multi-slot case, see Edelman, Ostrovsky and Schwarz (2007).</li></ul>
+<hr>
+<p><strong>Ad Bidding · Part 1 of 3</strong></p>
+<p>← First part　·　<a href="index.html"><strong>Series index</strong></a>　·　<a href="2-budget.html">Bidding Under a Budget →</a></p>
+</div>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span></footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../assets/js/lang.js"></script>
+<script src="../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>

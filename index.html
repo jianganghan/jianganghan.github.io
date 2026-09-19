@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jiangang Han</title>
+<meta name="description" content="Notes on what I've learned and built, and what I'm learning and building now.">
+<meta name="author" content="Jiangang Han">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jiangang Han">
+<meta property="og:description" content="Notes on what I've learned and built, and what I'm learning and building now.">
+<meta property="og:url" content="https://jianganghan.github.io/">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="/">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="/" data-en="Posts" data-zh="文章">Posts</a>
+    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+  </nav>
+</header>
+
+<main>
+  <div class="intro">
+    <p class="tagline">What I’ve Learned and Built, and What I’m Learning and Building</p>
+
+    <div class="social">
+      <a href="https://x.com/han_jiangang" target="_blank" rel="noopener me" aria-label="X" title="X">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+      <a href="https://www.linkedin.com/in/jiangang-han-52498b89/" target="_blank" rel="noopener me" aria-label="LinkedIn" title="LinkedIn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg>
+      </a>
+      <a href="https://github.com/jianganghan" target="_blank" rel="noopener me" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      </a>
+      <a href="mailto:jiangangh@gmail.com" rel="me" aria-label="Email" title="jiangangh@gmail.com">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- One entry = one <li class="post">. For a new one, copy a whole block to the top.
+       Write both languages: the visible text is the English version, data-zh is the Chinese one. -->
+  <ul class="posts">
+
+    <li class="post">
+      <h2 class="post__title"><a href="posts/reliability/index.html"
+        data-en="Reliable Systems from Unreliable Models"
+        data-zh="用不可靠的模型，搭可靠的系统">Reliable Systems from Unreliable Models</a></h2>
+
+      <p class="post__meta"><span class="post__badge" data-en="2-part series" data-zh="专题 · 两篇">2-part series</span></p>
+
+      <p class="post__summary"
+        data-en="Short essays on the reliability of AI systems. The series starts with von Neumann's 1952 lectures, which showed that redundancy can make a machine as reliable as you like, provided its parts fail independently, and then asks what changes when errors are correlated, as they are with language models."
+        data-zh="关于 AI 系统可靠性的短文。从冯·诺依曼 1952 年的讲座讲起：只要元件各自独立地出错，冗余就能换来任意高的可靠性。再看大模型这种错误彼此相关的情形，结论会怎样改变。">Short essays on the reliability of AI systems. The series starts with von Neumann's 1952 lectures, which showed that redundancy can make a machine as reliable as you like, provided its parts fail independently, and then asks what changes when errors are correlated, as they are with language models.</p>
+
+      <ol class="parts">
+        <li><a href="posts/reliability/1-von-neumann.html"><span data-en="Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing" data-zh="冯·诺依曼 1952：多数表决、阈值与多路复用">Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing</span><em>18 min</em></a></li>
+        <li><a href="posts/reliability/2-verifier-cascades.html"><span data-en="Why More Checks Stop Helping" data-zh="多加几道检查，为什么不够">Why More Checks Stop Helping</span><em>20 min</em></a></li>
+      </ol>
+    </li>
+
+    <li class="post">
+      <h2 class="post__title"><a href="posts/pricing/index.html"
+        data-en="A Primer on Price Optimization"
+        data-zh="定价优化入门">A Primer on Price Optimization</a></h2>
+
+      <p class="post__meta"><span class="post__badge" data-en="4-part series" data-zh="专题 · 四篇">4-part series</span></p>
+
+      <p class="post__summary"
+        data-en="Four posts that build up the math of price optimization one layer at a time: a single item, many items at once, the business constraints that couple them, and finally items that compete for the same demand. Full derivations, figures computed from the models themselves, and notes on what breaks in production."
+        data-zh="四篇短文，一层一层把定价优化的数学骨架搭起来：从单个定价对象，到同时定很多个，到把它们绑在一起的业务约束，最后到互相抢需求的对象。完整推导、由模型直接算出的配图，以及每一步真上线会踩的坑。">Four posts that build up the math of price optimization one layer at a time: a single item, many items at once, the business constraints that couple them, and finally items that compete for the same demand. Full derivations, figures computed from the models themselves, and notes on what breaks in production.</p>
+
+      <ol class="parts">
+        <li><a href="posts/pricing/1-single.html"><span data-en="Pricing a Single Product" data-zh="单对象定价优化">Pricing a Single Product</span><em>12 min</em></a></li>
+        <li><a href="posts/pricing/2-constraints.html"><span data-en="Pricing Many Items Under Constraints" data-zh="多对象定价与业务约束">Pricing Many Items Under Constraints</span><em>15 min</em></a></li>
+        <li><a href="posts/pricing/3-substitution.html"><span data-en="Pricing Substitutable Products" data-zh="替代品的定价优化">Pricing Substitutable Products</span><em>13 min</em></a></li>
+        <li><a href="posts/pricing/4-scale.html"><span data-en="Pricing at Scale" data-zh="大规模定价优化">Pricing at Scale</span><em>10 min</em></a></li>
+      </ol>
+    </li>
+
+    <li class="post">
+      <h2 class="post__title"><a href="posts/bidding/index.html"
+        data-en="A Primer on Ad Bidding"
+        data-zh="广告出价入门">A Primer on Ad Bidding</a></h2>
+
+      <p class="post__meta"><span class="post__badge" data-en="3-part series" data-zh="专题 · 三篇">3-part series</span></p>
+
+      <p class="post__summary"
+        data-en="Three short posts that build up the math of bidding in ad auctions from the advertiser's side: a single auction, a day of auctions sharing one budget, and pacing that budget in real time. Derivations under the simplest assumptions, figures computed from the models themselves, and what each result means in practice."
+        data-zh="三篇短文，站在广告主一侧把广告拍卖里出价的数学骨架搭起来：从一次拍卖，到一整天共用一份预算，再到边投边调的预算平滑。最简单假设下的推导、由模型直接算出的配图，以及每个结论在业务里怎么读。">Three short posts that build up the math of bidding in ad auctions from the advertiser's side: a single auction, a day of auctions sharing one budget, and pacing that budget in real time. Derivations under the simplest assumptions, figures computed from the models themselves, and what each result means in practice.</p>
+
+      <ol class="parts">
+        <li><a href="posts/bidding/1-auction.html"><span data-en="Bidding in a Single Auction" data-zh="单次拍卖的出价">Bidding in a Single Auction</span><em>8 min</em></a></li>
+        <li><a href="posts/bidding/2-budget.html"><span data-en="Bidding Under a Budget" data-zh="预算约束下的出价">Bidding Under a Budget</span><em>10 min</em></a></li>
+        <li><a href="posts/bidding/3-pacing.html"><span data-en="Budget Pacing" data-zh="预算平滑（Pacing）">Budget Pacing</span><em>10 min</em></a></li>
+      </ol>
+    </li>
+
+  </ul>
+</main>
+
+<footer class="foot">
+  &copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span>
+</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="assets/js/lang.js"></script>
+</body>
+</html>

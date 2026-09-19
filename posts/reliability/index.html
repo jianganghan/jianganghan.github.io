@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="用不可靠的模型，搭可靠的系统 — Jiangang Han" data-en="Reliable Systems from Unreliable Models — Jiangang Han">用不可靠的模型，搭可靠的系统 — Jiangang Han</title>
+<script>
+// Pick the language before the first paint (same rules as lang.js), so a bilingual post never flashes the other language
+(function(){
+  var l = null;
+  try { l = localStorage.getItem('lang'); } catch (e) {}
+  if (!l) l = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+  document.documentElement.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en');
+})();
+</script>
+<link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../index.html" data-en="Posts" data-zh="文章">Posts</a>
+    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+  </nav>
+</header>
+
+<main class="article">
+<div class="lang-zh" lang="zh-CN">
+<h1>用不可靠的模型，搭可靠的系统</h1>
+<blockquote class="lede"><p>关于 AI 系统可靠性的一组短文。每次调用模型都可能出错，我们想要的却是几乎不出错的系统。这个问题，冯·诺依曼七十多年前就认真研究过。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#一句话主线">一句话主线</a></li><li class="toc__l2"><a href="#1952-年的问题-和今天的问题">1952 年的问题，和今天的问题</a></li><li class="toc__l2"><a href="#哪里不一样">哪里不一样</a></li><li class="toc__l2"><a href="#两篇讲什么">两篇讲什么</a></li><li class="toc__l3"><a href="#一-·-冯·诺依曼-1952-多数表决-阈值与多路复用1-von-neumann-md-18-分钟"><a href="1-von-neumann.html">一 · 冯·诺依曼 1952：多数表决、阈值与多路复用</a>　<code>18 分钟</code></a></li><li class="toc__l3"><a href="#二-·-多加几道检查-为什么不够-相关错误与验证天花板2-verifier-cascades-md-20-分钟"><a href="2-verifier-cascades.html">二 · 多加几道检查，为什么不够：相关错误与验证天花板</a>　<code>20 分钟</code></a></li><li class="toc__l2"><a href="#公式速查">公式速查</a></li><li class="toc__l2"><a href="#参考文献">参考文献</a></li></ul></nav>
+<p>专题从冯·诺依曼 1952 年的讲座讲起：他在元件各自独立出错的前提下，证明了冗余可以换来任意高的可靠性。第 2 篇讨论大模型的错误并不独立时，这个结论会变成什么样。两篇都能单独读。</p>
+<hr>
+<h2 id="一句话主线">一句话主线</h2>
+<p>冯·诺依曼证明了：只要各处的错误互相独立，冗余就能换来任意高的可靠性。他也明确写下，这个假设并不现实，然后把它搁在了一边。大模型的错误却常常不独立：同一道题，每次都容易错在同一个地方。这时再多的冗余，收益也会越来越小，甚至封顶；<strong>更有效的办法，是让错误彼此去相关。</strong></p>
+<hr>
+<h2 id="1952-年的问题-和今天的问题">1952 年的问题，和今天的问题</h2>
+<p>冯·诺依曼构造里的部件，几乎都能在今天的 AI 系统里找到对应：</p>
+<div class="table-wrap"><table><thead><tr><th>冯·诺依曼（1952）</th><th>今天的大模型系统</th></tr></thead><tbody><tr><td>元件，每次操作以概率 ε 出错</td><td>一次模型调用，有一定概率答错</td></tr><tr><td>很长的操作链，他称之为「推理链」</td><td>多步推理，agent 一步接一步地执行任务</td></tr><tr><td>多数表决器</td><td>多次采样后投票（self-consistency，Wang 等，2023）</td></tr><tr><td>执行器官：完成运算本身</td><td>干活的那次调用：生成、改写、调用工具</td></tr><tr><td>恢复器官：把退化的信号拉回来</td><td>验证器、LLM 评审、结果聚合</td></tr><tr><td>一束 N 根线，加上判定阈值 Δ</td><td>多份候选答案，加上「采纳哪一个」的规则</td></tr><tr><td>随机置换：让错误互相独立</td><td>换提示词、换模型、调高温度、换证据来源</td></tr><tr><td>「机器会记住自己的错误，并一直延续下去」</td><td>错误写进上下文，之后被反复引用</td></tr><tr><td>门槛 ε &lt; 1/6：元件太差，表决无效</td><td>二选一的问题，单次答对率要过半，投票才有用</td></tr></tbody></table></div>
+<h2 id="哪里不一样">哪里不一样</h2>
+<p>对照表容易让人以为这就是同一个问题。其实有四处关键的不同：</p>
+<ul><li><strong>错误相关。</strong> 冯·诺依曼的元件各自独立地出错。同一个模型面对同一道题，却常常错在同一个地方：题目难在哪里，每次调用就在哪里栽跟头。</li><li><strong>输出不是 0 和 1。</strong> 线束里每根线只有两种状态，谁是多数一目了然。开放式的回答没有天然的「多数」，得先判断两个答案说的是不是一回事。</li><li><strong>出错率不是常数。</strong> 他假设每个元件都有同一个 ε，并在讲稿最后承认这不现实。模型的出错率取决于题目：简单题几乎不错，难题可能多数时候都错。</li><li><strong>检查者和被检查者是同一种东西。</strong> 冯·诺依曼的恢复器官也会出错，这一点和今天一样；但它的错误和执行器官相互独立，这一点不一样。用模型检查模型，检查者往往和生成者有同样的盲区。</li></ul>
+<p>第 1 篇讲他在独立假设下得到了什么，第 2 篇讲这个假设不成立时会发生什么。</p>
+<hr>
+<h2 id="两篇讲什么">两篇讲什么</h2>
+<h3 id="一-·-冯·诺依曼-1952-多数表决-阈值与多路复用1-von-neumann-md-18-分钟"><a href="1-von-neumann.html">一 · 冯·诺依曼 1952：多数表决、阈值与多路复用</a>　<code>18 分钟</code></h3>
+<p><strong>回答的问题</strong>：用每次都可能出错的元件，能不能搭出一台几乎不出错的机器？</p>
+<p>从 1948 年他第一次提出这个问题讲起。先推出多数表决器的误差映射，得到 1/6 这道门槛；再看为什么逐层三重化的成本是 <span class="math math-inline">3^\mu</span>，根本造不出来，而把一根线换成一束线就行得通。最后回到他在讲稿里明确搁置的那个假设：错误互相独立。</p>
+<p><strong>读完能带走</strong>：多数表决能纠错的两个条件，1/6 这道门槛从哪来，以及冯·诺依曼的整个构造为什么都建立在独立性上。</p>
+<h3 id="二-·-多加几道检查-为什么不够-相关错误与验证天花板2-verifier-cascades-md-20-分钟"><a href="2-verifier-cascades.html">二 · 多加几道检查，为什么不够：相关错误与验证天花板</a>　<code>20 分钟</code></h3>
+<p><strong>回答的问题</strong>：验证器和生成器有共同的盲区时，一道接一道地加检查，可靠性还能涨多少？</p>
+<p>如果各道检查独立，每多一道，答对与答错的几率就乘上一个固定的倍数，出错率按指数下降。错误一旦相关，能连过好几道检查的错答，恰恰是检查者看不出的那些，后面的检查就越来越不管用：出错率只按多项式下降，可靠性可能停在一道天花板之下；检查者还会冤枉正确答案时，检查加多了甚至会不升反降。这一篇是我的论文 <a href="https://arxiv.org/abs/2607.13918">arXiv:2607.13918</a> 的通俗版。</p>
+<p><strong>读完能带走</strong>：幸存者偏差这个核心图像，独立假设会把出错率低估多少，为什么让检查者和生成者去相关（换模型、换模态、换证据来源）比一味加检查更有效，以及怎样用「同一个答案判两次」估计这种相关性。</p>
+<hr>
+<h2 id="公式速查">公式速查</h2>
+<p><strong>第 1 篇</strong></p>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>结论</th></tr></thead><tbody><tr><td>记忆单元，每步以概率 ε 翻转</td><td><span class="math math-inline">p_s - \tfrac12 = (1-2\varepsilon)^s\,(p_0 - \tfrac12)</span></td></tr><tr><td>信号走单根线时的精度下限</td><td><span class="math math-inline">\delta \ge \varepsilon</span></td></tr><tr><td>多数表决，一般情形</td><td>输出出错概率 <span class="math math-inline">\le \varepsilon + \eta_1 + \eta_2 + \eta_3</span></td></tr><tr><td>多数表决，输入独立出错且本该一致</td><td><span class="math math-inline">f_\varepsilon(\eta) = \varepsilon + (1-2\varepsilon)(3\eta^2 - 2\eta^3)</span></td></tr><tr><td>反复表决后的稳定误差</td><td><span class="math math-inline">\eta_0 = \tfrac12\bigl(1 - \sqrt{(1-6\varepsilon)/(1-2\varepsilon)}\bigr) = \varepsilon + 3\varepsilon^2 + \cdots</span></td></tr><tr><td>表决有效的门槛</td><td><span class="math math-inline">\varepsilon &lt; 1/6</span>，即 <span class="math math-inline">f_\varepsilon&#x27;(\tfrac12) = \tfrac32(1-2\varepsilon) &gt; 1</span></td></tr><tr><td>单线方案的严格证明</td><td>需要 <span class="math math-inline">\varepsilon &lt; 0.0073</span>，误差上界 <span class="math math-inline">\approx 4\varepsilon + 152\varepsilon^2</span>，元件数乘以 <span class="math math-inline">3^\mu</span></td></tr><tr><td>恢复器官</td><td><span class="math math-inline">\alpha^* = 3\alpha^2 - 2\alpha^3</span></td></tr><tr><td>多路复用（Sheffer 元件，Δ = 0.07）</td><td>需要 <span class="math math-inline">\varepsilon &lt; 0.0107</span>；<span class="math math-inline">\varepsilon = 0.005</span> 时失效概率 <span class="math math-inline">\approx Q(0.062\sqrt N)</span>，元件数乘以约 <span class="math math-inline">3N</span></td></tr></tbody></table></div>
+<p><span class="math math-inline">Q(\kappa)</span> 是标准正态变量大于 κ 的概率。</p>
+<p><strong>第 2 篇</strong></p>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>结论</th></tr></thead><tbody><tr><td>错误独立，每道检查以概率 α 放行错答</td><td><span class="math math-inline">o_k = o_0 / \alpha^k</span>，出错率按指数下降</td></tr><tr><td>错答的 α 因题而异，α ~ G</td><td><span class="math math-inline">o_k = o_0 / m_k</span>，<span class="math math-inline">r_k = p_0 / \bigl(p_0 + (1-p_0)\,m_k\bigr)</span>，<span class="math math-inline">m_k = \mathbb E[\alpha^k]</span></td></tr><tr><td>相关系数</td><td><span class="math math-inline">\rho_v = \operatorname{Var}(\alpha) / \bigl(\bar\alpha(1-\bar\alpha)\bigr)</span>；Beta(a, b) 时为 <span class="math math-inline">1/(a+b+1)</span></td></tr><tr><td>第 <span class="math math-inline">j+1</span> 道检查带来的证据</td><td><span class="math math-inline">\ln(m_j/m_{j+1})</span>，随 <span class="math math-inline">j</span> 递减，<span class="math math-inline">\ln o_k</span> 是凹函数</td></tr><tr><td>α 在 1 附近的密度像 <span class="math math-inline">(1-\alpha)^{b-1}</span></td><td><span class="math math-inline">1 - r_k \sim C\,k^{-b}</span>，多项式下降</td></tr><tr><td>盲区：比例 <span class="math math-inline">1-\pi</span> 的错答 α = 1</td><td><span class="math math-inline">r_\infty = p_0 / \bigl(p_0 + (1-p_0)(1-\pi)\bigr) &lt; 1</span></td></tr><tr><td>检查者也冤枉正确答案，β ~ H</td><td><span class="math math-inline">\ln o_k = \ln o_0 + \ln \mathbb E[\beta^k] - \ln \mathbb E[\alpha^k] \approx \text{常数} + (b_\alpha - b_\beta)\ln k</span></td></tr><tr><td>两侧都是 Beta 时的拐点</td><td><span class="math math-inline">k^\dagger = (a_\alpha b_\beta - a_\beta b_\alpha)/(b_\alpha - b_\beta)</span></td></tr><tr><td>每个错答判两次</td><td><span class="math math-inline">\hat m_1 = q_2 + q_1/2</span>，<span class="math math-inline">\hat m_2 = q_2</span>，<span class="math math-inline">\hat\rho_v = (\hat m_2 - \hat m_1^2)/\bigl(\hat m_1(1-\hat m_1)\bigr)</span></td></tr></tbody></table></div>
+<hr>
+<h2 id="参考文献">参考文献</h2>
+<ol><li>John von Neumann. <a href="https://static.ias.edu/pitp/archive/2012files/Probabilistic_Logics.pdf">Probabilistic Logics and the Synthesis of Reliable Organisms from Unreliable Components</a>. In C. E. Shannon, J. McCarthy (eds.), <em>Automata Studies</em>, Annals of Mathematics Studies 34, pp. 43–98. Princeton University Press, 1956.</li><li>John von Neumann. The General and Logical Theory of Automata. In L. A. Jeffress (ed.), <em>Cerebral Mechanisms in Behavior: The Hixon Symposium</em>, pp. 1–41. Wiley, 1951.</li><li>Jiangang Han. <a href="https://arxiv.org/abs/2607.13918">Partially Correlated Verifier Cascades in LLM Harnesses: Concave Log-Odds, Polynomial Reliability, and Blind-Spot Ceilings</a>. arXiv:2607.13918, 2026.</li><li>Hidayet Aksu. <a href="https://arxiv.org/abs/2606.15712">Odds Law: The Decomposition Algebra on How Intelligence Organizes Itself to Solve Difficult Problems Reliably</a>. arXiv:2606.15712, 2026.</li><li>Ken Tsui. <a href="https://arxiv.org/abs/2507.02778">Self-Correction Bench: Uncovering and Addressing the Self-Correction Blind Spot in Large Language Models</a>. arXiv:2507.02778, 2025.</li><li>Jie Huang, Xinyun Chen, Swaroop Mishra, Huaixiu Steven Zheng, Adams Wei Yu, Xinying Song, Denny Zhou. <a href="https://arxiv.org/abs/2310.01798">Large Language Models Cannot Self-Correct Reasoning Yet</a>. ICLR 2024.</li><li>Krishna K. Ladha. Condorcet's Jury Theorem in Light of de Finetti's Theorem: Majority-Rule Voting with Correlated Votes. <em>Social Choice and Welfare</em>, 10(1):69–85, 1993.</li><li>Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc Le, Ed Chi, Sharan Narang, Aakanksha Chowdhery, Denny Zhou. <a href="https://arxiv.org/abs/2203.11171">Self-Consistency Improves Chain of Thought Reasoning in Language Models</a>. ICLR 2023.</li></ol>
+<hr>
+<p><em>专题里所有图均由代码根据文中模型直接计算生成，非示意图。第 1 篇引用的数字都对照原文重新算过：不动点、0.73% 的临界值、多路复用的失效概率；恢复器官的模拟也按原文的构造实现。第 2 篇的表格和例子都由文中的闭式公式重新算过，与论文一致。如果你发现哪一步有问题，欢迎指出。</em></p>
+</div>
+<div class="lang-en" lang="en">
+<h1>Reliable Systems from Unreliable Models</h1>
+<blockquote class="lede"><p>Short essays on the reliability of AI systems. Any call to a model can be wrong, yet what we want are systems that almost never are. Von Neumann took this problem seriously more than seventy years ago.</p></blockquote>
+<nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#the-argument-in-brief">The argument in brief</a></li><li class="toc__l2"><a href="#the-1952-problem-and-today's">The 1952 problem and today's</a></li><li class="toc__l2"><a href="#where-the-analogy-breaks">Where the analogy breaks</a></li><li class="toc__l2"><a href="#what-the-two-posts-cover">What the two posts cover</a></li><li class="toc__l3"><a href="#1-·-von-neumann-1952-majority-voting-thresholds-and-multiplexing1-von-neumann-en-md-18-min"><a href="1-von-neumann.html">1 · Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing</a>　<code>18 min</code></a></li><li class="toc__l3"><a href="#2-·-why-more-checks-stop-helping-correlated-verifiers-and-the-reliability-ceiling2-verifier-cascades-en-md-20-min"><a href="2-verifier-cascades.html">2 · Why More Checks Stop Helping: Correlated Verifiers and the Reliability Ceiling</a>　<code>20 min</code></a></li><li class="toc__l2"><a href="#formula-cheat-sheet">Formula cheat sheet</a></li><li class="toc__l2"><a href="#references">References</a></li></ul></nav>
+<p>The series starts with von Neumann's 1952 lectures, where he showed that if components fail independently, redundancy can make a machine as reliable as you like. Part 2 asks what becomes of that result when, as with language models, the errors aren't independent. Each part stands on its own.</p>
+<hr>
+<h2 id="the-argument-in-brief">The argument in brief</h2>
+<p>Von Neumann proved that as long as failures in different places are independent, redundancy buys arbitrarily high reliability. He also wrote down plainly that this assumption isn't realistic, and set it aside. Language models are a case where it often fails: a model tends to trip over the same part of a question every time it tries. Then each extra layer of redundancy helps less than the last, and the gains can stop altogether. <strong>What works better is making the errors less correlated.</strong></p>
+<hr>
+<h2 id="the-1952-problem-and-today's">The 1952 problem and today's</h2>
+<p>Nearly every part of von Neumann's construction has a counterpart in today's AI systems:</p>
+<div class="table-wrap"><table><thead><tr><th>Von Neumann (1952)</th><th>LLM systems today</th></tr></thead><tbody><tr><td>A component that fails with probability ε per operation</td><td>A model call that is wrong some of the time</td></tr><tr><td>A long chain of operations, his "chains of reasoning"</td><td>Multi-step reasoning; an agent working through a task</td></tr><tr><td>Majority organ</td><td>Sampling several answers and voting (self-consistency; Wang et al., 2023)</td></tr><tr><td>Executive organ: does the actual computation</td><td>The call that does the work: generating, rewriting, using a tool</td></tr><tr><td>Restoring organ: pulls a degraded signal back</td><td>A verifier, an LLM judge, an aggregator</td></tr><tr><td>A bundle of N lines read against a threshold Δ</td><td>A set of candidate answers and a rule for which to accept</td></tr><tr><td>Random permutation: keeps errors independent</td><td>Varying the prompt, the model, the temperature, the evidence</td></tr><tr><td>"The machine remembers its mistakes … and thereafter perpetuates them"</td><td>A mistake enters the context and keeps getting cited</td></tr><tr><td>Threshold ε &lt; 1/6: below it, voting helps</td><td>For a yes/no question, voting helps only if one call is right more than half the time</td></tr></tbody></table></div>
+<h2 id="where-the-analogy-breaks">Where the analogy breaks</h2>
+<p>The table makes it look like one and the same problem. There are four important differences:</p>
+<ul><li><strong>Errors are correlated.</strong> Von Neumann's components fail independently. A model facing the same question tends to fail in the same place each time, wherever the question is actually hard.</li><li><strong>Outputs aren't 0 or 1.</strong> Every line in a bundle has two states, so the majority is obvious. Open-ended answers have no built-in majority; first you have to decide whether two answers mean the same thing.</li><li><strong>The error rate isn't a constant.</strong> He gave every component the same ε, and admitted near the end of the paper that this is unrealistic. A model's error rate depends on the question: easy ones it almost never misses, hard ones it may get wrong most of the time.</li><li><strong>The checker is made of the same stuff as the thing it checks.</strong> Von Neumann's restoring organs fail too, just like today's checkers. But their failures are independent of the executive organs', and that part no longer holds. When a model checks a model, the checker often shares the generator's blind spots.</li></ul>
+<p>Part 1 covers what he got out of the independence assumption. Part 2 covers what happens when it breaks.</p>
+<hr>
+<h2 id="what-the-two-posts-cover">What the two posts cover</h2>
+<h3 id="1-·-von-neumann-1952-majority-voting-thresholds-and-multiplexing1-von-neumann-en-md-18-min"><a href="1-von-neumann.html">1 · Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing</a>　<code>18 min</code></h3>
+<p><strong>The question</strong>: can you build a machine that almost never fails out of components that can fail on every operation?</p>
+<p>It starts with the question as he first posed it in 1948. From the majority organ's error map comes the 1/6 threshold. Then it shows why stacking triplication layer by layer costs a factor of <span class="math math-inline">3^\mu</span> and could never be built, while replacing each line with a bundle of lines works. It ends with the assumption he explicitly set aside: that errors are independent.</p>
+<p><strong>Takeaways</strong>: the two conditions under which majority voting corrects errors, where the 1/6 threshold comes from, and why von Neumann's entire construction rests on independence.</p>
+<h3 id="2-·-why-more-checks-stop-helping-correlated-verifiers-and-the-reliability-ceiling2-verifier-cascades-en-md-20-min"><a href="2-verifier-cascades.html">2 · Why More Checks Stop Helping: Correlated Verifiers and the Reliability Ceiling</a>　<code>20 min</code></h3>
+<p><strong>The question</strong>: when a verifier shares blind spots with the generator it checks, how much does each additional check actually buy?</p>
+<p>If checks are independent, each one multiplies the odds of a correct answer by the same factor, and the error rate falls exponentially. Once errors are correlated, the wrong answers that survive several checks are exactly the ones the checker can't see, so each further check does less. The error rate then falls only polynomially and reliability can stall below a ceiling; if the checker also rejects correct answers, past a certain point more checks make things worse. This post is a plain-language version of my paper <a href="https://arxiv.org/abs/2607.13918">arXiv:2607.13918</a>.</p>
+<p><strong>Takeaways</strong>: the survivorship picture at the heart of it, how far the independence assumption understates the failure rate, why decorrelating the checker from the generator (a different model, a different modality, a different source of evidence) beats piling on checks, and how to estimate that correlation by having the same answer judged twice.</p>
+<hr>
+<h2 id="formula-cheat-sheet">Formula cheat sheet</h2>
+<p><strong>Part 1</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Setting</th><th>Result</th></tr></thead><tbody><tr><td>Memory unit that flips with probability ε per step</td><td><span class="math math-inline">p_s - \tfrac12 = (1-2\varepsilon)^s\,(p_0 - \tfrac12)</span></td></tr><tr><td>Accuracy limit when signals travel on single lines</td><td><span class="math math-inline">\delta \ge \varepsilon</span></td></tr><tr><td>Majority organ, general case</td><td>Output wrong with probability <span class="math math-inline">\le \varepsilon + \eta_1 + \eta_2 + \eta_3</span></td></tr><tr><td>Majority organ, inputs fail independently and should agree</td><td><span class="math math-inline">f_\varepsilon(\eta) = \varepsilon + (1-2\varepsilon)(3\eta^2 - 2\eta^3)</span></td></tr><tr><td>Stable error under repeated voting</td><td><span class="math math-inline">\eta_0 = \tfrac12\bigl(1 - \sqrt{(1-6\varepsilon)/(1-2\varepsilon)}\bigr) = \varepsilon + 3\varepsilon^2 + \cdots</span></td></tr><tr><td>Threshold for voting to help</td><td><span class="math math-inline">\varepsilon &lt; 1/6</span>, equivalently <span class="math math-inline">f_\varepsilon&#x27;(\tfrac12) = \tfrac32(1-2\varepsilon) &gt; 1</span></td></tr><tr><td>Rigorous single-line construction</td><td>Needs <span class="math math-inline">\varepsilon &lt; 0.0073</span>; error bound <span class="math math-inline">\approx 4\varepsilon + 152\varepsilon^2</span>; <span class="math math-inline">3^\mu</span> times the components</td></tr><tr><td>Restoring organ</td><td><span class="math math-inline">\alpha^* = 3\alpha^2 - 2\alpha^3</span></td></tr><tr><td>Multiplexing (Sheffer strokes, Δ = 0.07)</td><td>Needs <span class="math math-inline">\varepsilon &lt; 0.0107</span>; at <span class="math math-inline">\varepsilon = 0.005</span>, malfunction probability <span class="math math-inline">\approx Q(0.062\sqrt N)</span>; about <span class="math math-inline">3N</span> times the components</td></tr></tbody></table></div>
+<p><span class="math math-inline">Q(\kappa)</span> is the probability that a standard normal variable exceeds κ.</p>
+<p><strong>Part 2</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Setting</th><th>Result</th></tr></thead><tbody><tr><td>Independent errors, each check accepts a wrong answer with probability α</td><td><span class="math math-inline">o_k = o_0 / \alpha^k</span>; failure falls exponentially</td></tr><tr><td>α varies across wrong answers, α ~ G</td><td><span class="math math-inline">o_k = o_0 / m_k</span>, <span class="math math-inline">r_k = p_0 / \bigl(p_0 + (1-p_0)\,m_k\bigr)</span>, <span class="math math-inline">m_k = \mathbb E[\alpha^k]</span></td></tr><tr><td>Correlation</td><td><span class="math math-inline">\rho_v = \operatorname{Var}(\alpha) / \bigl(\bar\alpha(1-\bar\alpha)\bigr)</span>; <span class="math math-inline">1/(a+b+1)</span> for Beta(a, b)</td></tr><tr><td>Evidence from check <span class="math math-inline">j+1</span></td><td><span class="math math-inline">\ln(m_j/m_{j+1})</span>, decreasing in <span class="math math-inline">j</span>, so <span class="math math-inline">\ln o_k</span> is concave</td></tr><tr><td>Density of α near 1 behaves like <span class="math math-inline">(1-\alpha)^{b-1}</span></td><td><span class="math math-inline">1 - r_k \sim C\,k^{-b}</span>: polynomial decline</td></tr><tr><td>Blind spot: a share <span class="math math-inline">1-\pi</span> of wrong answers has α = 1</td><td><span class="math math-inline">r_\infty = p_0 / \bigl(p_0 + (1-p_0)(1-\pi)\bigr) &lt; 1</span></td></tr><tr><td>Checker also rejects correct answers, β ~ H</td><td><span class="math math-inline">\ln o_k = \ln o_0 + \ln \mathbb E[\beta^k] - \ln \mathbb E[\alpha^k] \approx \text{const} + (b_\alpha - b_\beta)\ln k</span></td></tr><tr><td>Turning point when both sides are Beta</td><td><span class="math math-inline">k^\dagger = (a_\alpha b_\beta - a_\beta b_\alpha)/(b_\alpha - b_\beta)</span></td></tr><tr><td>Two verdicts per wrong answer</td><td><span class="math math-inline">\hat m_1 = q_2 + q_1/2</span>, <span class="math math-inline">\hat m_2 = q_2</span>, <span class="math math-inline">\hat\rho_v = (\hat m_2 - \hat m_1^2)/\bigl(\hat m_1(1-\hat m_1)\bigr)</span></td></tr></tbody></table></div>
+<hr>
+<h2 id="references">References</h2>
+<ol><li>John von Neumann. <a href="https://static.ias.edu/pitp/archive/2012files/Probabilistic_Logics.pdf">Probabilistic Logics and the Synthesis of Reliable Organisms from Unreliable Components</a>. In C. E. Shannon, J. McCarthy (eds.), <em>Automata Studies</em>, Annals of Mathematics Studies 34, pp. 43–98. Princeton University Press, 1956.</li><li>John von Neumann. The General and Logical Theory of Automata. In L. A. Jeffress (ed.), <em>Cerebral Mechanisms in Behavior: The Hixon Symposium</em>, pp. 1–41. Wiley, 1951.</li><li>Jiangang Han. <a href="https://arxiv.org/abs/2607.13918">Partially Correlated Verifier Cascades in LLM Harnesses: Concave Log-Odds, Polynomial Reliability, and Blind-Spot Ceilings</a>. arXiv:2607.13918, 2026.</li><li>Hidayet Aksu. <a href="https://arxiv.org/abs/2606.15712">Odds Law: The Decomposition Algebra on How Intelligence Organizes Itself to Solve Difficult Problems Reliably</a>. arXiv:2606.15712, 2026.</li><li>Ken Tsui. <a href="https://arxiv.org/abs/2507.02778">Self-Correction Bench: Uncovering and Addressing the Self-Correction Blind Spot in Large Language Models</a>. arXiv:2507.02778, 2025.</li><li>Jie Huang, Xinyun Chen, Swaroop Mishra, Huaixiu Steven Zheng, Adams Wei Yu, Xinying Song, Denny Zhou. <a href="https://arxiv.org/abs/2310.01798">Large Language Models Cannot Self-Correct Reasoning Yet</a>. ICLR 2024.</li><li>Krishna K. Ladha. Condorcet's Jury Theorem in Light of de Finetti's Theorem: Majority-Rule Voting with Correlated Votes. <em>Social Choice and Welfare</em>, 10(1):69–85, 1993.</li><li>Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc Le, Ed Chi, Sharan Narang, Aakanksha Chowdhery, Denny Zhou. <a href="https://arxiv.org/abs/2203.11171">Self-Consistency Improves Chain of Thought Reasoning in Language Models</a>. ICLR 2023.</li></ol>
+<hr>
+<p><em>Every figure in this series is computed directly from the models in the text; none of them are sketches. Every number quoted in Part 1 was recomputed against the original paper, including the fixed points, the 0.73% cutoff and the multiplexing malfunction probabilities, and the restoring-organ simulation follows his construction. The tables and examples in Part 2 were recomputed from the closed-form formulas and match the paper. If you spot a mistake, please let me know.</em></p>
+</div>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span></footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../assets/js/lang.js"></script>
+<script src="../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>

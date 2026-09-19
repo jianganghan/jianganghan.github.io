@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="370" viewBox="0 0 880 370" role="img">
+<defs><clipPath id="clip1"><rect x="65" y="55" width="342" height="218"/></clipPath><clipPath id="clip2"><rect x="505" y="55" width="342" height="218"/></clipPath></defs>
+<rect width="880" height="370" fill="#ffffff"/>
+<line x1="66" y1="236.0" x2="406" y2="236.0" stroke="#eaedf1" stroke-width="1"/>
+<line x1="66" y1="200.0" x2="406" y2="200.0" stroke="#eaedf1" stroke-width="1"/>
+<line x1="66" y1="164.0" x2="406" y2="164.0" stroke="#eaedf1" stroke-width="1"/>
+<line x1="66" y1="128.0" x2="406" y2="128.0" stroke="#eaedf1" stroke-width="1"/>
+<line x1="66" y1="92.0" x2="406" y2="92.0" stroke="#eaedf1" stroke-width="1"/>
+<line x1="66" y1="56.0" x2="406" y2="56.0" stroke="#eaedf1" stroke-width="1"/>
+<line x1="66" y1="272" x2="406" y2="272" stroke="#1f2328" stroke-width="1.2"/>
+<line x1="66" y1="56" x2="66" y2="272" stroke="#1f2328" stroke-width="1.2"/>
+<line x1="66.0" y1="272" x2="66.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="66.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">0</text>
+<line x1="151.0" y1="272" x2="151.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="151.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">5</text>
+<line x1="236.0" y1="272" x2="236.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="236.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">10</text>
+<line x1="321.0" y1="272" x2="321.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="321.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">15</text>
+<line x1="406.0" y1="272" x2="406.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="406.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">20</text>
+<line x1="62" y1="272.0" x2="66" y2="272.0" stroke="#6b7280" stroke-width="1"/>
+<text x="58.0" y="275.6" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">0.4</text>
+<line x1="62" y1="236.0" x2="66" y2="236.0" stroke="#6b7280" stroke-width="1"/>
+<text x="58.0" y="239.6" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">0.6</text>
+<line x1="62" y1="200.0" x2="66" y2="200.0" stroke="#6b7280" stroke-width="1"/>
+<text x="58.0" y="203.6" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">0.8</text>
+<line x1="62" y1="164.0" x2="66" y2="164.0" stroke="#6b7280" stroke-width="1"/>
+<text x="58.0" y="167.6" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">1.0</text>
+<line x1="62" y1="128.0" x2="66" y2="128.0" stroke="#6b7280" stroke-width="1"/>
+<text x="58.0" y="131.6" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">1.2</text>
+<line x1="62" y1="92.0" x2="66" y2="92.0" stroke="#6b7280" stroke-width="1"/>
+<text x="58.0" y="95.6" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">1.4</text>
+<line x1="62" y1="56.0" x2="66" y2="56.0" stroke="#6b7280" stroke-width="1"/>
+<text x="58.0" y="59.6" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">1.6</text>
+<text x="66.0" y="42.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="600">(a) Stationary market, starting at half the bid</text>
+<text x="406.0" y="308.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="12" fill="#6b7280" text-anchor="end" font-weight="400">update number</text>
+<text x="24.0" y="164.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="12" fill="#6b7280" text-anchor="middle" font-weight="400" transform="rotate(-90 24.0 164.0)">bid / optimal bid</text>
+<line x1="66.0" y1="164.0" x2="406.0" y2="164.0" stroke="#e8590c" stroke-width="1.3" stroke-dasharray="4 4"/>
+<path d="M66.0,254.0 L83.0,240.8 L100.0,227.4 L117.0,214.6 L134.0,203.3 L151.0,193.7 L168.0,186.0 L185.0,180.0 L202.0,175.5 L219.0,172.2 L236.0,169.9 L253.0,168.1 L270.0,166.9 L287.0,166.1 L304.0,165.4 L321.0,165.0 L338.0,164.7 L355.0,164.5 L372.0,164.3 L389.0,164.2 L406.0,164.2" fill="none" stroke="#0d9488" stroke-width="2.0" opacity="1" clip-path="url(#clip1)" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="66.00" cy="254.00" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="83.00" cy="240.76" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="100.00" cy="227.38" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="117.00" cy="214.65" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="134.00" cy="203.28" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="151.00" cy="193.68" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="168.00" cy="185.98" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="185.00" cy="180.02" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="202.00" cy="175.54" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="219.00" cy="172.24" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="236.00" cy="169.85" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="253.00" cy="168.14" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="270.00" cy="166.92" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="287.00" cy="166.05" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="304.00" cy="165.44" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="321.00" cy="165.01" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="338.00" cy="164.71" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="355.00" cy="164.50" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="372.00" cy="164.35" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="389.00" cy="164.24" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<circle cx="406.00" cy="164.17" r="2.6" fill="#0d9488" stroke="#fff" stroke-width="1.6"/>
+<text x="397.5" y="102.8" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#0d9488" text-anchor="end" font-weight="600">ηe = 0.3: slow climb</text>
+<path d="M66.0,254.0 L83.0,201.8 L100.0,168.3 L117.0,164.0 L134.0,164.0 L151.0,164.0 L168.0,164.0 L185.0,164.0 L202.0,164.0 L219.0,164.0 L236.0,164.0 L253.0,164.0 L270.0,164.0 L287.0,164.0 L304.0,164.0 L321.0,164.0 L338.0,164.0 L355.0,164.0 L372.0,164.0 L389.0,164.0 L406.0,164.0" fill="none" stroke="#4f46e5" stroke-width="2.0" opacity="1" clip-path="url(#clip1)" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="66.00" cy="254.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="83.00" cy="201.79" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="100.00" cy="168.27" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="117.00" cy="164.04" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="134.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="151.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="168.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="185.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="202.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="219.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="236.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="253.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="270.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="287.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="304.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="321.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="338.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="355.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="372.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="389.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<circle cx="406.00" cy="164.00" r="2.6" fill="#4f46e5" stroke="#fff" stroke-width="1.6"/>
+<text x="397.5" y="84.8" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#4f46e5" text-anchor="end" font-weight="600">ηe = 1: there in a few steps</text>
+<path d="M66.0,254.0 L83.0,148.1 L100.0,175.0 L117.0,156.3 L134.0,169.3 L151.0,160.3 L168.0,166.6 L185.0,162.2 L202.0,165.3 L219.0,163.1 L236.0,164.6 L253.0,163.6 L270.0,164.3 L287.0,163.8 L304.0,164.2 L321.0,163.9 L338.0,164.1 L355.0,163.9 L372.0,164.0 L389.0,164.0 L406.0,164.0" fill="none" stroke="#b5179e" stroke-width="2.0" opacity="1" clip-path="url(#clip1)" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="66.00" cy="254.00" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="83.00" cy="148.11" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="100.00" cy="175.02" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="117.00" cy="156.35" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="134.00" cy="169.34" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="151.00" cy="160.27" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="168.00" cy="166.61" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="185.00" cy="162.17" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="202.00" cy="165.28" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="219.00" cy="163.10" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="236.00" cy="164.63" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="253.00" cy="163.56" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="270.00" cy="164.31" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="287.00" cy="163.78" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="304.00" cy="164.15" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="321.00" cy="163.89" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="338.00" cy="164.07" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="355.00" cy="163.95" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="372.00" cy="164.04" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="389.00" cy="163.97" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<circle cx="406.00" cy="164.02" r="2.6" fill="#b5179e" stroke="#fff" stroke-width="1.6"/>
+<text x="397.5" y="66.8" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#b5179e" text-anchor="end" font-weight="600">ηe = 1.7: oscillates</text>
+<line x1="506" y1="220.6" x2="846" y2="220.6" stroke="#eaedf1" stroke-width="1"/>
+<line x1="506" y1="169.1" x2="846" y2="169.1" stroke="#eaedf1" stroke-width="1"/>
+<line x1="506" y1="117.7" x2="846" y2="117.7" stroke="#eaedf1" stroke-width="1"/>
+<line x1="506" y1="66.3" x2="846" y2="66.3" stroke="#eaedf1" stroke-width="1"/>
+<line x1="506" y1="272" x2="846" y2="272" stroke="#1f2328" stroke-width="1.2"/>
+<line x1="506" y1="56" x2="506" y2="272" stroke="#1f2328" stroke-width="1.2"/>
+<line x1="506.0" y1="272" x2="506.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="506.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">0:00</text>
+<line x1="591.0" y1="272" x2="591.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="591.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">6</text>
+<line x1="676.0" y1="272" x2="676.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="676.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">12</text>
+<line x1="761.0" y1="272" x2="761.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="761.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">18</text>
+<line x1="846.0" y1="272" x2="846.0" y2="276" stroke="#6b7280" stroke-width="1"/>
+<text x="846.0" y="289.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">24:00</text>
+<line x1="502" y1="272.0" x2="506" y2="272.0" stroke="#6b7280" stroke-width="1"/>
+<text x="498.0" y="275.6" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">0</text>
+<line x1="502" y1="220.6" x2="506" y2="220.6" stroke="#6b7280" stroke-width="1"/>
+<text x="498.0" y="224.2" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">25%</text>
+<line x1="502" y1="169.1" x2="506" y2="169.1" stroke="#6b7280" stroke-width="1"/>
+<text x="498.0" y="172.7" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">50%</text>
+<line x1="502" y1="117.7" x2="506" y2="117.7" stroke="#6b7280" stroke-width="1"/>
+<text x="498.0" y="121.3" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">75%</text>
+<line x1="502" y1="66.3" x2="506" y2="66.3" stroke="#6b7280" stroke-width="1"/>
+<text x="498.0" y="69.9" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="end" font-weight="400">100%</text>
+<text x="506.0" y="42.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="12.5" fill="#1f2328" text-anchor="start" font-weight="600">(b) A realistic day: low start + small step</text>
+<text x="846.0" y="308.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="12" fill="#6b7280" text-anchor="end" font-weight="400">time of day</text>
+<text x="464.0" y="164.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="12" fill="#6b7280" text-anchor="middle" font-weight="400" transform="rotate(-90 464.0 164.0)">cumulative spend / budget</text>
+<path d="M506.0,272.0 L509.5,271.2 L513.1,270.4 L516.6,269.7 L520.2,269.0 L523.7,268.3 L527.2,267.6 L530.8,267.0 L534.3,266.3 L537.9,265.7 L541.4,265.0 L545.0,264.4 L548.5,263.7 L552.0,263.0 L555.6,262.2 L559.1,261.5 L562.7,260.6 L566.2,259.8 L569.8,258.8 L573.3,257.9 L576.8,256.8 L580.4,255.7 L583.9,254.5 L587.5,253.2 L591.0,251.9 L594.5,250.4 L598.1,248.9 L601.6,247.3 L605.2,245.6 L608.7,243.8 L612.2,241.9 L615.8,239.9 L619.3,237.8 L622.9,235.6 L626.4,233.3 L630.0,230.9 L633.5,228.5 L637.0,225.9 L640.6,223.2 L644.1,220.4 L647.7,217.6 L651.2,214.7 L654.8,211.6 L658.3,208.6 L661.8,205.4 L665.4,202.1 L668.9,198.8 L672.5,195.5 L676.0,192.1 L679.5,188.6 L683.1,185.1 L686.6,181.5 L690.2,178.0 L693.7,174.4 L697.2,170.7 L700.8,167.1 L704.3,163.5 L707.9,159.8 L711.4,156.2 L715.0,152.6 L718.5,149.0 L722.0,145.4 L725.6,141.8 L729.1,138.3 L732.7,134.9 L736.2,131.4 L739.8,128.1 L743.3,124.8 L746.8,121.5 L750.4,118.4 L753.9,115.3 L757.5,112.3 L761.0,109.3 L764.5,106.5 L768.1,103.7 L771.6,101.0 L775.2,98.5 L778.7,96.0 L782.2,93.6 L785.8,91.3 L789.3,89.1 L792.9,87.0 L796.4,85.0 L800.0,83.1 L803.5,81.3 L807.0,79.6 L810.6,78.0 L814.1,76.5 L817.7,75.0 L821.2,73.7 L824.8,72.4 L828.3,71.2 L831.8,70.1 L835.4,69.1 L838.9,68.1 L842.5,67.2 L846.0,66.3" fill="none" stroke="#9ca3af" stroke-width="1.4" stroke-dasharray="3 3" opacity="1" clip-path="url(#clip2)" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M506.0,272.0 L509.5,271.0 L513.1,270.0 L516.6,269.0 L520.2,268.1 L523.7,267.3 L527.2,266.4 L530.8,265.6 L534.3,264.8 L537.9,264.0 L541.4,263.1 L545.0,262.3 L548.5,261.4 L552.0,260.5 L555.6,259.6 L559.1,258.6 L562.7,257.6 L566.2,256.5 L569.8,255.3 L573.3,254.1 L576.8,252.8 L580.4,251.4 L583.9,249.9 L587.5,248.3 L591.0,246.5 L594.5,244.7 L598.1,242.8 L601.6,240.7 L605.2,238.5 L608.7,236.2 L612.2,233.8 L615.8,231.3 L619.3,228.6 L622.9,225.9 L626.4,223.0 L630.0,220.0 L633.5,217.0 L637.0,213.8 L640.6,210.6 L644.1,207.3 L647.7,203.9 L651.2,200.5 L654.8,197.1 L658.3,193.7 L661.8,190.2 L665.4,186.7 L668.9,183.3 L672.5,179.9 L676.0,176.5 L679.5,173.1 L683.1,169.8 L686.6,166.6 L690.2,163.4 L693.7,160.2 L697.2,157.1 L700.8,154.1 L704.3,151.1 L707.9,148.2 L711.4,145.4 L715.0,142.6 L718.5,139.8 L722.0,137.1 L725.6,134.5 L729.1,131.9 L732.7,129.3 L736.2,126.8 L739.8,124.3 L743.3,121.8 L746.8,119.4 L750.4,117.0 L753.9,114.6 L757.5,112.2 L761.0,109.9 L764.5,107.6 L768.1,105.3 L771.6,103.0 L775.2,100.7 L778.7,98.5 L782.2,96.3 L785.8,94.2 L789.3,92.0 L792.9,90.0 L796.4,87.9 L800.0,86.0 L803.5,84.0 L807.0,82.2 L810.6,80.4 L814.1,78.6 L817.7,77.0 L821.2,75.4 L824.8,73.9 L828.3,72.4 L831.8,71.1 L835.4,69.8 L838.9,68.5 L842.5,67.4 L846.0,66.3" fill="none" stroke="#e8590c" stroke-width="1.8" stroke-dasharray="5 4" opacity="1" clip-path="url(#clip2)" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M506.0,272.0 L509.5,271.7 L513.1,271.4 L516.6,271.0 L520.2,270.7 L523.7,270.3 L527.2,270.0 L530.8,269.6 L534.3,269.1 L537.9,268.7 L541.4,268.3 L545.0,267.8 L548.5,267.3 L552.0,266.8 L555.6,266.2 L559.1,265.6 L562.7,264.9 L566.2,264.2 L569.8,263.5 L573.3,262.6 L576.8,261.8 L580.4,260.8 L583.9,259.8 L587.5,258.7 L591.0,257.6 L594.5,256.3 L598.1,255.0 L601.6,253.6 L605.2,252.1 L608.7,250.6 L612.2,248.9 L615.8,247.2 L619.3,245.4 L622.9,243.5 L626.4,241.6 L630.0,239.6 L633.5,237.5 L637.0,235.4 L640.6,233.2 L644.1,230.9 L647.7,228.6 L651.2,226.3 L654.8,223.9 L658.3,221.5 L661.8,219.0 L665.4,216.5 L668.9,214.0 L672.5,211.4 L676.0,208.8 L679.5,206.2 L683.1,203.6 L686.6,201.0 L690.2,198.3 L693.7,195.6 L697.2,192.9 L700.8,190.1 L704.3,187.3 L707.9,184.6 L711.4,181.7 L715.0,178.9 L718.5,176.1 L722.0,173.2 L725.6,170.3 L729.1,167.4 L732.7,164.4 L736.2,161.5 L739.8,158.6 L743.3,155.6 L746.8,152.6 L750.4,149.7 L753.9,146.8 L757.5,143.9 L761.0,141.0 L764.5,138.1 L768.1,135.3 L771.6,132.5 L775.2,129.8 L778.7,127.1 L782.2,124.5 L785.8,122.0 L789.3,119.5 L792.9,117.2 L796.4,114.9 L800.0,112.7 L803.5,110.6 L807.0,108.6 L810.6,106.7 L814.1,104.9 L817.7,103.2 L821.2,101.6 L824.8,100.1 L828.3,98.7 L831.8,97.4 L835.4,96.2 L838.9,95.0 L842.5,93.9 L846.0,92.9" fill="none" stroke="#0d9488" stroke-width="2.4" opacity="1" clip-path="url(#clip2)" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M506.0,272.0 L509.5,271.7 L513.1,271.4 L516.6,271.0 L520.2,270.7 L523.7,270.3 L527.2,270.0 L530.8,269.6 L534.3,269.1 L537.9,268.7 L541.4,268.3 L545.0,267.8 L548.5,267.3 L552.0,266.8 L555.6,266.2 L559.1,265.6 L562.7,264.9 L566.2,264.2 L569.8,263.4 L573.3,262.6 L576.8,261.7 L580.4,260.8 L583.9,259.7 L587.5,258.6 L591.0,257.5 L594.5,256.2 L598.1,254.9 L601.6,253.4 L605.2,251.9 L608.7,250.3 L612.2,248.7 L615.8,246.9 L619.3,245.1 L622.9,243.1 L626.4,241.1 L630.0,239.1 L633.5,236.9 L637.0,234.7 L640.6,232.4 L644.1,230.1 L647.7,227.7 L651.2,225.3 L654.8,222.8 L658.3,220.2 L661.8,217.6 L665.4,215.0 L668.9,212.3 L672.5,209.6 L676.0,206.9 L679.5,204.1 L683.1,201.3 L686.6,198.4 L690.2,195.5 L693.7,192.5 L697.2,189.6 L700.8,186.5 L704.3,183.5 L707.9,180.3 L711.4,177.2 L715.0,174.0 L718.5,170.7 L722.0,167.4 L725.6,164.1 L729.1,160.6 L732.7,157.2 L736.2,153.7 L739.8,150.2 L743.3,146.6 L746.8,143.0 L750.4,139.4 L753.9,135.8 L757.5,132.1 L761.0,128.5 L764.5,124.9 L768.1,121.3 L771.6,117.7 L775.2,114.2 L778.7,110.7 L782.2,107.3 L785.8,104.0 L789.3,100.7 L792.9,97.6 L796.4,94.5 L800.0,91.6 L803.5,88.8 L807.0,86.1 L810.6,83.6 L814.1,81.2 L817.7,78.9 L821.2,76.8 L824.8,74.8 L828.3,72.9 L831.8,71.2 L835.4,69.5 L838.9,68.0 L842.5,66.6 L846.0,66.3" fill="none" stroke="#4f46e5" stroke-width="2.4" opacity="1" clip-path="url(#clip2)" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="514.0" y="131.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#9ca3af" text-anchor="start" font-weight="600">spend in step with traffic</text>
+<text x="514.0" y="114.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#e8590c" text-anchor="start" font-weight="600">hindsight optimum (constant bid)</text>
+<text x="514.0" y="97.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#4f46e5" text-anchor="start" font-weight="600">with catch-up: 100% spent, 97% results</text>
+<text x="514.0" y="80.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#0d9488" text-anchor="start" font-weight="600">per-window target: 87% spent, 90% results</text>
+<text x="440.0" y="356.0" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif" font-size="10.5" fill="#6b7280" text-anchor="middle" font-weight="400">(a) Update rule α ← α·exp(−η(R−1)); e is the elasticity of spend to the bid. (b) Traffic and prices vary by hour; results are relative to the hindsight optimum</text>
+</svg>

@@ -1,0 +1,150 @@
+/* Article page styles. All colors come from the :root variables in style.css, so light/dark follows the system. */
+
+.article{ padding-top:2.25rem; }
+
+.article h1{
+  font-size:1.9rem; font-weight:700; line-height:1.3;
+  letter-spacing:-.02em; color:var(--title);
+  margin:0 0 1.4rem;
+}
+.article h2{
+  font-size:1.32rem; font-weight:600; line-height:1.35;
+  color:var(--title); letter-spacing:-.01em;
+  margin:2.9rem 0 .9rem; padding-top:.2rem;
+}
+.article h3{
+  font-size:1.08rem; font-weight:600; color:var(--title);
+  margin:2rem 0 .7rem;
+}
+.article h1:first-child{ margin-top:0; }
+
+.article p{ margin:0 0 1.05rem; }
+/* <main> is a flex item (see body in style.css), so the last block's bottom margin no longer
+   collapses into the footer's top margin; drop it so the gap above the footer stays the same */
+.article > :last-child,
+.article > .lang-zh > :last-child,
+.article > .lang-en > :last-child{ margin-bottom:0; }
+.article ul,.article ol{ margin:0 0 1.05rem; padding-left:1.35rem; }
+.article ul{ list-style:disc; }
+.article ol{ list-style:decimal; }
+.article li{ margin:.34rem 0; }
+.article li::marker{ color:var(--muted); }
+
+.article a{ color:var(--link); }
+.article a:hover{ text-decoration:underline; }
+
+.article hr{
+  border:0; border-top:1px solid var(--line);
+  margin:2.6rem 0;
+}
+
+.article img{
+  display:block; width:100%; height:auto;
+  margin:1.5rem 0; border-radius:6px;
+  background:#fff;                       /* figures have a white background; keeps them from looking out of place in dark mode */
+  border:1px solid var(--line);
+}
+
+.article blockquote{
+  margin:1.3rem 0; padding:.1rem 0 .1rem 1.1rem;
+  border-left:3px solid var(--line);
+  color:var(--muted);
+}
+.article blockquote p:last-child{ margin-bottom:0; }
+.article blockquote strong{ color:var(--text); }
+
+.article pre{
+  background:var(--code-bg); border-radius:6px;
+  padding:.9rem 1.05rem; margin:1.2rem 0;
+  overflow-x:auto; font-size:.86rem; line-height:1.6;
+}
+.article pre code{ background:none; padding:0; font-size:inherit; }
+
+/* Tables scroll sideways on narrow screens instead of breaking the layout */
+.table-wrap{ overflow-x:auto; margin:1.3rem 0; }
+.article table{ border-collapse:collapse; width:100%; font-size:.9rem; }
+.article th,.article td{
+  border:1px solid var(--line);
+  padding:.42rem .7rem; text-align:left; vertical-align:top;
+}
+.article th{ background:var(--code-bg); font-weight:600; color:var(--title); white-space:nowrap; }
+
+.article details{
+  margin:1.3rem 0; padding:.75rem 1.05rem;
+  background:var(--code-bg); border-radius:6px;
+}
+.article details summary{
+  cursor:pointer; font-weight:600; color:var(--title);
+  list-style:none;
+}
+.article details summary::-webkit-details-marker{ display:none; }
+.article details summary::before{ content:"▸ "; color:var(--muted); }
+.article details[open] summary::before{ content:"▾ "; }
+.article details[open] summary{ margin-bottom:.7rem; }
+.article details > *:last-child{ margin-bottom:0; }
+
+/* ── Math ───────────────────────────────────────────────── */
+.math-display{
+  margin:1.3rem 0; text-align:center;
+  overflow-x:auto; overflow-y:hidden; padding:.2rem 0;
+}
+.math-inline{ white-space:nowrap; }
+/* Fallback if KaTeX fails to load: at least make it obvious this is formula source */
+.math--failed,
+.math:not(.katex-rendered){ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+.katex{ font-size:1.02em; }
+.katex-display{ margin:0; }
+
+/* ── Table of contents ──────────────────────────────────── */
+.toc{
+  margin:0 0 2.4rem; padding:.85rem 1.1rem;
+  border:1px solid var(--line); border-radius:6px;
+  font-size:.88rem;
+}
+.toc__t{ color:var(--muted); font-weight:600; margin-bottom:.45rem; }
+.toc ul{ list-style:none; margin:0; padding:0; }
+.toc li{ margin:.22rem 0; }
+.toc a{ color:var(--text); }
+.toc a:hover{ color:var(--link); }
+.toc__l3{ padding-left:1.1rem; font-size:.95em; }
+.toc__l3 a{ color:var(--link); }   /* part titles in a series index: same color as post links on the home page */
+
+@media (max-width:600px){
+  .article h1{ font-size:1.55rem; }
+  .article h2{ font-size:1.18rem; margin-top:2.3rem; }
+  .article table{ font-size:.84rem; }
+}
+
+/* ── Click-to-zoom figures (logic in assets/js/zoom.js) ─── */
+.article img.zoomable{ cursor:zoom-in; }
+.zoom{
+  position:fixed; inset:0; z-index:1000;
+  display:flex; overflow:auto;             /* on phones, an image wider than the screen can be scrolled sideways */
+  padding:2vh 2vw;
+  background:rgba(12,14,18,.82);
+  cursor:zoom-out;
+  opacity:0; transition:opacity .16s ease;
+}
+.zoom--in{ opacity:1; }
+.zoom img{
+  flex:none; margin:auto;                  /* auto margins: centered when it fits, scrolls from the left edge when it does not, never clipped */
+  max-width:none;
+  background:#fff; border-radius:6px;
+  box-shadow:0 12px 48px rgba(0,0,0,.35);
+}
+html.zoom-open{ overflow:hidden; }          /* the page behind stays put while zoomed */
+@media (prefers-reduced-motion:reduce){ .zoom{ transition:none; } }
+
+/* ── Bilingual: both versions live in one page; <html lang> picks which one shows ── */
+html[lang="en"] .lang-zh,
+html:not([lang="en"]) .lang-en{ display:none; }
+
+/* ── Lede: the highlighted opening of a post ───────────── */
+.article blockquote.lede{
+  margin:0 0 2rem; padding:1rem 1.15rem;
+  border-left:3px solid var(--link);
+  background:var(--code-bg);
+  border-radius:0 6px 6px 0;
+  color:var(--text); font-size:1.02rem; line-height:1.72;
+}
+.article blockquote.lede strong{ color:var(--title); }

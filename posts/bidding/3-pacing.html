@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="预算平滑（Pacing） — Jiangang Han" data-en="Budget Pacing — Jiangang Han">预算平滑（Pacing） — Jiangang Han</title>
+<script>
+// Pick the language before the first paint (same rules as lang.js), so a bilingual post never flashes the other language
+(function(){
+  var l = null;
+  try { l = localStorage.getItem('lang'); } catch (e) {}
+  if (!l) l = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+  document.documentElement.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en');
+})();
+</script>
+<link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../index.html" data-en="Posts" data-zh="文章">Posts</a>
+    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+  </nav>
+</header>
+
+<main class="article">
+<div class="lang-zh" lang="zh-CN">
+<h1>预算平滑（Pacing）</h1>
+<blockquote class="lede"><p>最优的 <span class="math math-inline">\lambda</span> 没法事先算出来：早上 9 点，你不知道今晚的市场长什么样，只能边花边调。这一篇讲预算平滑的控制逻辑：为什么降价比限流好，更新规则什么时候收敛、什么时候振荡，起步偏了怎么追回来。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-先排除一个直觉做法-限流">1. 先排除一个直觉做法：限流</a></li><li class="toc__l2"><a href="#2-在线更新-一个恒温器">2. 在线更新：一个恒温器</a></li><li class="toc__l2"><a href="#3-步长-一个乘积决定收敛还是振荡">3. 步长：一个乘积决定收敛还是振荡</a></li><li class="toc__l2"><a href="#4-追赶-别让上午的错误延续到晚上">4. 追赶：别让上午的错误延续到晚上</a></li><li class="toc__l2"><a href="#5-多一个约束-就多一个旋钮">5. 多一个约束，就多一个旋钮</a></li><li class="toc__l2"><a href="#6-退一步看-大家都在调">6. 退一步看：大家都在调</a></li><li class="toc__l2"><a href="#7-这个专题没有覆盖的东西">7. 这个专题没有覆盖的东西</a></li></ul></nav>
+<blockquote><p><strong>出价专题 · 第 3 篇 / 共 3 篇</strong> · 阅读约 10 分钟</p>
+<p><a href="2-budget.html">← 预算约束下的出价</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p></blockquote>
+<p><strong>前情提要</strong>：上一篇的最优解是 <span class="math math-inline">b_t = v_t/\lambda^\star</span>，<span class="math math-inline">\lambda^\star</span> 由「总花费 = 预算」定出来，但算它需要事先知道一整天所有拍卖的 <span class="math math-inline">v_t</span> 和 <span class="math math-inline">w_t</span>。这一篇讲 <span class="math math-inline">\lambda</span> 怎么边投边找，以及随之而来的几个动态现象。</p>
+<details>
+<summary>本篇会用到的符号</summary>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">\alpha = 1/\lambda</span></td><td>出价系数，出价 <span class="math math-inline">b = \alpha\,v</span></td></tr><tr><td><span class="math math-inline">k</span></td><td>第 <span class="math math-inline">k</span> 个时间窗（比如每 15 分钟一个）</td></tr><tr><td><span class="math math-inline">R_k</span></td><td>第 <span class="math math-inline">k</span> 窗的「实际花费 ÷ 计划花费」</td></tr><tr><td><span class="math math-inline">\eta</span></td><td>更新步长</td></tr><tr><td><span class="math math-inline">e</span></td><td>花费对出价的弹性：出价涨 1%，花费涨 <span class="math math-inline">e</span>%</td></tr><tr><td><span class="math math-inline">p</span></td><td>限流时参加拍卖的概率</td></tr><tr><td><span class="math math-inline">C,\ \mu</span></td><td>成本上限（目标 CPA）及其乘子</td></tr></tbody></table></div>
+<p>完整符号表见<a href="index.html">专题目录</a>。</p>
+</details>
+<hr>
+<h2 id="1-先排除一个直觉做法-限流">1. 先排除一个直觉做法：限流</h2>
+<p>防止预算花得太快，最直觉的做法是<strong>限流</strong>（throttling）：出价不变，每次机会以概率 <span class="math math-inline">p</span> 参加。LinkedIn 2014 年发表的预算平滑系统就是这个思路。</p>
+<p>但上一篇证明过的凹性，直接给出一个结论：<strong>花同样多的钱，降价永远不比限流差。</strong></p>
+<details>
+<summary>展开：一行证明</summary>
+<p>记 <span class="math math-inline">N(S)</span> 为「只调出价、花 <span class="math math-inline">S</span> 这么多钱，最多能拿到的量」。上一篇 3.4 说明它是凹函数，且 <span class="math math-inline">N(0) = 0</span>。</p>
+<p>原出价下花 <span class="math math-inline">S_0</span>、拿 <span class="math math-inline">N_0</span>，显然 <span class="math math-inline">N_0 \le N(S_0)</span>。以概率 <span class="math math-inline">p</span> 限流，花 <span class="math math-inline">pS_0</span>、拿 <span class="math math-inline">pN_0</span>，落在原点和 <span class="math math-inline">(S_0, N_0)</span> 的连线上。改成降价、同样只花 <span class="math math-inline">pS_0</span>，能拿 <span class="math math-inline">N(pS_0)</span>。凹函数过原点，所以</p>
+<div class="math math-display">N(pS_0) = N\bigl(p\,S_0 + (1-p)\cdot 0\bigr) \;\ge\; p\,N(S_0) + (1-p)\,N(0) \;\ge\; p\,N_0</div>
+</details>
+<p>直觉：限流随机丢掉机会，贵的便宜的一视同仁；降价丢掉的<strong>全是最贵的那些</strong>。</p>
+<p><img src="images/fig5-throttle.svg" alt="限流与降价" loading="lazy"></p>
+<h2 id="2-在线更新-一个恒温器">2. 在线更新：一个恒温器</h2>
+<p>离线时可以二分 <span class="math math-inline">\lambda</span>。在线时，把一天切成很多小时间窗，每个窗结束后看一眼花快了还是慢了：</p>
+<div class="math math-display">R_k = \frac{\text{第 } k \text{ 窗实际花费}}{\text{第 } k \text{ 窗计划花费}}, \qquad \boxed{\ \alpha \leftarrow \alpha \cdot e^{-\eta\,(R_k - 1)}\ }</div>
+<p>花快了（<span class="math math-inline">R_k &gt; 1</span>），<span class="math math-inline">\alpha</span> 变小，出价降；花慢了，出价升。「计划花费」通常取「预算 × 这个窗的预测流量占比」。</p>
+<pre><code>初始化 α = α₀                        # 冷启动：拿历史拍卖日志回放，二分出一个初值
+每个时间窗结束时：
+    R = 这一窗实际花费 / 这一窗计划花费
+    α ← α · exp(−η · (R − 1))       # 花多了压价，花少了提价
+下一个时间窗里，每次机会出价 b = α · v</code></pre>
+<p>这不是拍脑袋想出来的经验规则。它是对偶问题上的在线梯度下降（Balseiro、Gur，2019）：<span class="math math-inline">R_k - 1</span> 正比于对偶目标在当前 <span class="math math-inline">\lambda</span> 处的梯度；写成乘法形式对应镜像下降（mirror descent），好处是 <span class="math math-inline">\alpha</span> 永远为正，调整幅度按比例计。</p>
+<h2 id="3-步长-一个乘积决定收敛还是振荡">3. 步长：一个乘积决定收敛还是振荡</h2>
+<p>假设市场不变，最优出价系数是 <span class="math math-inline">\alpha^\star</span>。记 <span class="math math-inline">x = \ln(\alpha/\alpha^\star)</span> 为出价的对数偏差。在 <span class="math math-inline">\alpha^\star</span> 附近，花费对出价的弹性是 <span class="math math-inline">e</span>，也就是 <span class="math math-inline">R \approx 1 + e\,x</span>。代入更新规则（两边取对数）：</p>
+<div class="math math-display">x_{k+1} = x_k - \eta\,(R_k - 1) \;\approx\; (1 - \eta e)\,x_k</div>
+<p>偏差每一步乘以 <span class="math math-inline">(1 - \eta e)</span>：</p>
+<ul><li><span class="math math-inline">0 &lt; \eta e &lt; 1</span>：单调收敛，<span class="math math-inline">\eta e</span> 越小越慢。</li><li><span class="math math-inline">\eta e = 1</span>：线性近似下一步到位。</li><li><span class="math math-inline">1 &lt; \eta e &lt; 2</span>：来回振荡，振幅逐步缩小。</li><li><span class="math math-inline">\eta e &gt; 2</span>：振荡发散。</li></ul>
+<p><strong>决定动态的不是 <span class="math math-inline">\eta</span> 本身，而是乘积 <span class="math math-inline">\eta e</span>。</strong> 弹性 <span class="math math-inline">e</span> 是个市场统计量，只有一类拍卖时 <span class="math math-inline">e = b^2 w&#x27;(b)/c(b)</span>，市场价均匀分布时恒等于 2。同一个 <span class="math math-inline">\eta</span>，放到弹性不同的广告主或流量上，行为可能完全不同。LinkedIn 论文里提到，归一化常数取大了会振荡、取小了收敛慢，本质上是同一件事：它改变的是等效的 <span class="math math-inline">\eta e</span>。</p>
+<p><img src="images/fig6-pacing.svg" alt="在线更新的动态" loading="lazy"></p>
+<p>真实环境里还有噪声：转化稀疏，单窗花费抖得厉害。<span class="math math-inline">\eta</span> 大，追得快，但把噪声也放大进了出价；<span class="math math-inline">\eta</span> 小，出价平稳，但追得慢。这是标准的偏差—方差权衡。</p>
+<h2 id="4-追赶-别让上午的错误延续到晚上">4. 追赶：别让上午的错误延续到晚上</h2>
+<p>图 (b) 模拟了一天：流量和市场价都随时段变化，起步出价只有最优值的一半，步长偏小。只盯着「本窗计划花费」的版本，上午少花的钱就永远少花了，一天只花掉 87% 的预算。</p>
+<p>改一处就好：<strong>每次都用「剩余预算 × 本窗占剩余流量的比例」重算计划花费。</strong> 上午少花了，下午的目标自动抬高。LinkedIn 论文把这种做法称为 MPC（模型预测控制）版本。同样的起步和步长，它花完了预算，量是事后最优的 97%。</p>
+<p>两点值得注意：</p>
+<ul><li><strong>事后最优不是「按流量均匀花」。</strong> 全天恒定出价时，花费会自然往便宜的时段倾斜：图 (b) 里，中午 12 点事后最优已经花掉 46%，按流量占比只该花 39%。「平滑花费」只是手段，真正该被拉平的是<strong>边际 ROI</strong>。</li><li><strong>起步值很重要。</strong> LinkedIn 论文拿真实拍卖日志回放过：带追赶的版本最终都能花完预算，但起步出价偏低一半时，单次曝光成本比最优高约 4%；偏高一半时高出 10% 以上（论文图 3）。偏高更伤，因为早早以高价花掉的钱追不回来。</li></ul>
+<h2 id="5-多一个约束-就多一个旋钮">5. 多一个约束，就多一个旋钮</h2>
+<p>这套框架可以组合，这一节的做法和下表的公式出自 LinkedIn 出价论文（Gao 等，2022）的第 4 节。每加一个约束，拉格朗日函数里就多一个乘子，出价公式里就多一个参数。新乘子的更新方式和 <span class="math math-inline">\lambda</span> 一样：约束被违反就加大，有富余就减小。</p>
+<div class="table-wrap"><table><thead><tr><th>约束</th><th>二价下的出价</th><th>新乘子的含义</th></tr></thead><tbody><tr><td>只有预算</td><td><span class="math math-inline">b = \dfrac{v}{\lambda}</span></td><td><span class="math math-inline">\lambda</span>：预算的影子价格</td></tr><tr><td>预算 + 成本上限（总花费 <span class="math math-inline">\le C \times</span> 总转化）</td><td><span class="math math-inline">b = \dfrac{1 + \mu C}{\lambda + \mu}\,v</span></td><td><span class="math math-inline">\mu</span>：成本约束有多紧</td></tr><tr><td>时段 <span class="math math-inline">k</span> 另有预算上限</td><td><span class="math math-inline">b = \dfrac{v}{\lambda + \lambda_k}</span></td><td><span class="math math-inline">\lambda_k</span>：只在时段 <span class="math math-inline">k</span> 里压价</td></tr><tr><td>时段 <span class="math math-inline">k</span> 有保量要求（按转化计）</td><td><span class="math math-inline">b = \dfrac{1 + \mu_k}{\lambda}\,v</span></td><td><span class="math math-inline">\mu_k</span>：只在时段 <span class="math math-inline">k</span> 里加价</td></tr></tbody></table></div>
+<p>成本上限这一行有个值得停下来看的推论。预算很宽松时（<span class="math math-inline">\lambda = 0</span>），出价是</p>
+<div class="math math-display">b = \Bigl(C + \frac{1}{\mu}\Bigr)\,v \;&gt;\; C\,v</div>
+<p><strong>最优出价高于「目标 CPA × pCVR」。</strong> 原因还是第一篇那个事实：约束管的是<strong>平均</strong>成本，出价决定的是<strong>边际</strong>成本，而边际高于平均。市场价均匀分布时，最优出价恰好是 <span class="math math-inline">2C \cdot v</span>。</p>
+<h2 id="6-退一步看-大家都在调">6. 退一步看：大家都在调</h2>
+<p>最后一个动态最容易被忽略。你面对的胜率曲线 <span class="math math-inline">w(b)</span>，就是<strong>其他广告主的出价</strong>，而他们也在用同样的方式调自己的 <span class="math math-inline">\alpha</span>。一个大广告主下午三点预算花完退场，市场价下降，所有人的花费速度随之变化，所有人的 <span class="math math-inline">\alpha</span> 随之调整，这些调整又反过来改变彼此面对的市场价。</p>
+<ul><li><strong>稳态存在。</strong> 每个人都用出价系数、并且各自要么恰好花完预算、要么预算根本不紧，这样的状态叫出价系数均衡（pacing equilibrium）。二价市场里它一定存在（Conitzer 等，2022）。</li><li><strong>做实验要小心。</strong> 线上 A/B 测一个出价算法时，实验组和对照组的广告在同一场拍卖里互相竞价，普通分流会有干扰偏差。LinkedIn 的做法是把用户随机分成两半，同时把每个广告计划的预算也按比例劈开，形成两个互不干扰的小市场（budget-split，Liu 等，2021）。</li></ul>
+<h2 id="7-这个专题没有覆盖的东西">7. 这个专题没有覆盖的东西</h2>
+<ul><li><strong>胜率曲线和价值怎么估。</strong> 删失数据、分时段分人群、预估校准，这是整个出价系统里最「统计」、也最容易翻车的部分。</li><li><strong>多广告位 GSP 的均衡</strong>，以及一价下怎么在线学压价。</li><li><strong>平台一侧的机制设计</strong>：当大部分出价者都是自动出价的价值最大化者时，拍卖规则和底价该怎么定。</li><li><strong>跨天的预算规划</strong>、流量预测的误差、强化学习类的出价方法。</li></ul>
+<p>想往下读，推荐从 Aggarwal 等人的综述（2024）开始，完整文献列表见<a href="index.html#参考文献">专题目录</a>。</p>
+<hr>
+<p><strong>出价专题 · 第 3 篇 / 共 3 篇</strong></p>
+<p><a href="2-budget.html">← 预算约束下的出价</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p>
+</div>
+<div class="lang-en" lang="en">
+<h1>Budget Pacing</h1>
+<blockquote class="lede"><p>The optimal <span class="math math-inline">\lambda</span> can't be computed in advance: at 9 a.m. you have no idea what tonight's market will look like, so you have to adjust as you spend. This post covers the control logic of budget pacing: why lowering bids beats throttling, when the update rule converges and when it oscillates, and how to recover from a bad start.</p></blockquote>
+<nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-ruling-out-the-obvious-approach-throttling">1. Ruling out the obvious approach: throttling</a></li><li class="toc__l2"><a href="#2-online-updates-a-thermostat">2. Online updates: a thermostat</a></li><li class="toc__l2"><a href="#3-step-size-one-product-decides-between-convergence-and-oscillation">3. Step size: one product decides between convergence and oscillation</a></li><li class="toc__l2"><a href="#4-catching-up-don't-let-the-morning's-mistake-carry-into-the-evening">4. Catching up: don't let the morning's mistake carry into the evening</a></li><li class="toc__l2"><a href="#5-every-extra-constraint-adds-another-knob">5. Every extra constraint adds another knob</a></li><li class="toc__l2"><a href="#6-zooming-out-everyone-is-adjusting">6. Zooming out: everyone is adjusting</a></li><li class="toc__l2"><a href="#7-what-this-series-leaves-out">7. What this series leaves out</a></li></ul></nav>
+<blockquote><p><strong>Ad Bidding · Part 3 of 3</strong> · 10 min read</p>
+<p><a href="2-budget.html">← Bidding Under a Budget</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　Last part →</p></blockquote>
+<p><strong>Previously</strong>: in Part 2 the optimal bid is <span class="math math-inline">b_t = v_t/\lambda^\star</span>, with <span class="math math-inline">\lambda^\star</span> set by "total spend = budget" — but computing it means knowing every auction's <span class="math math-inline">v_t</span> and <span class="math math-inline">w_t</span> for the whole day in advance. This post covers how to find <span class="math math-inline">\lambda</span> while the campaign is running, and the dynamics that come with it.</p>
+<details>
+<summary>Symbols used in this post</summary>
+<div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Meaning</th></tr></thead><tbody><tr><td><span class="math math-inline">\alpha = 1/\lambda</span></td><td>Bid multiplier; the bid is <span class="math math-inline">b = \alpha\,v</span></td></tr><tr><td><span class="math math-inline">k</span></td><td>The <span class="math math-inline">k</span>-th time window (e.g. one every 15 minutes)</td></tr><tr><td><span class="math math-inline">R_k</span></td><td>Actual spend ÷ planned spend in window <span class="math math-inline">k</span></td></tr><tr><td><span class="math math-inline">\eta</span></td><td>Update step size</td></tr><tr><td><span class="math math-inline">e</span></td><td>Elasticity of spend with respect to the bid: raise the bid by 1% and spend rises by <span class="math math-inline">e</span>%</td></tr><tr><td><span class="math math-inline">p</span></td><td>Probability of entering each auction under throttling</td></tr><tr><td><span class="math math-inline">C,\ \mu</span></td><td>Cost cap (target CPA) and its multiplier</td></tr></tbody></table></div>
+<p>The full notation table is in the <a href="index.html">series index</a>.</p>
+</details>
+<hr>
+<h2 id="1-ruling-out-the-obvious-approach-throttling">1. Ruling out the obvious approach: throttling</h2>
+<p>The most intuitive way to keep a budget from running out too fast is <strong>throttling</strong>: leave the bid alone, but enter each auction only with probability <span class="math math-inline">p</span>. The budget pacing system LinkedIn published in 2014 took this approach.</p>
+<p>But the concavity proven in Part 2 settles the question directly: <strong>for the same spend, lowering bids is never worse than throttling.</strong></p>
+<details>
+<summary>Show: a one-line proof</summary>
+<p>Let <span class="math math-inline">N(S)</span> be the most results you can get for a spend of <span class="math math-inline">S</span> by adjusting only your bids. Part 2 (Section 3.4) showed that it's concave, with <span class="math math-inline">N(0) = 0</span>.</p>
+<p>At the original bids you spend <span class="math math-inline">S_0</span> and get <span class="math math-inline">N_0</span>, and clearly <span class="math math-inline">N_0 \le N(S_0)</span>. Throttling with probability <span class="math math-inline">p</span> spends <span class="math math-inline">pS_0</span> and gets <span class="math math-inline">pN_0</span> — a point on the line from the origin to <span class="math math-inline">(S_0, N_0)</span>. Lowering bids to spend the same <span class="math math-inline">pS_0</span> gets <span class="math math-inline">N(pS_0)</span>. Because the function is concave and passes through the origin,</p>
+<div class="math math-display">N(pS_0) = N\bigl(p\,S_0 + (1-p)\cdot 0\bigr) \;\ge\; p\,N(S_0) + (1-p)\,N(0) \;\ge\; p\,N_0</div>
+</details>
+<p>The intuition: throttling drops opportunities at random, expensive and cheap alike; lowering bids drops <strong>only the most expensive ones</strong>.</p>
+<p><img src="images/fig5-throttle.en.svg" alt="Throttling vs. lowering bids" loading="lazy"></p>
+<h2 id="2-online-updates-a-thermostat">2. Online updates: a thermostat</h2>
+<p>Offline, you can bisect on <span class="math math-inline">\lambda</span>. Online, you split the day into many short time windows, and at the end of each one check whether you're spending too fast or too slowly:</p>
+<div class="math math-display">R_k = \frac{\text{actual spend in window } k}{\text{planned spend in window } k}, \qquad \boxed{\ \alpha \leftarrow \alpha \cdot e^{-\eta\,(R_k - 1)}\ }</div>
+<p>Spending too fast (<span class="math math-inline">R_k &gt; 1</span>) shrinks <span class="math math-inline">\alpha</span> and lowers bids; spending too slowly raises them. "Planned spend" is usually the budget × this window's forecast share of traffic.</p>
+<pre><code>α = α₀                         # cold start: bisect on past auction logs
+at the end of each time window:
+    R = actual spend / planned spend
+    α ← α · exp(−η · (R − 1))  # too fast → bid lower; too slow → higher
+in the next window, bid b = α · v on every opportunity</code></pre>
+<p>This isn't an ad hoc rule of thumb. It's online gradient descent on the dual problem (Balseiro and Gur, 2019): <span class="math math-inline">R_k - 1</span> is proportional to the gradient of the dual objective at the current <span class="math math-inline">\lambda</span>. The multiplicative form corresponds to mirror descent, which keeps <span class="math math-inline">\alpha</span> positive and makes every adjustment proportional.</p>
+<h2 id="3-step-size-one-product-decides-between-convergence-and-oscillation">3. Step size: one product decides between convergence and oscillation</h2>
+<p>Suppose the market doesn't change, and the optimal multiplier is <span class="math math-inline">\alpha^\star</span>. Let <span class="math math-inline">x = \ln(\alpha/\alpha^\star)</span> be the log error of the bid. Near <span class="math math-inline">\alpha^\star</span>, spend has elasticity <span class="math math-inline">e</span> with respect to the bid, so <span class="math math-inline">R \approx 1 + e\,x</span>. Plugging this into the update rule (after taking logs of both sides):</p>
+<div class="math math-display">x_{k+1} = x_k - \eta\,(R_k - 1) \;\approx\; (1 - \eta e)\,x_k</div>
+<p>Each step multiplies the error by <span class="math math-inline">(1 - \eta e)</span>:</p>
+<ul><li><span class="math math-inline">0 &lt; \eta e &lt; 1</span>: monotone convergence; the smaller <span class="math math-inline">\eta e</span>, the slower.</li><li><span class="math math-inline">\eta e = 1</span>: straight to the target in one step (in the linear approximation).</li><li><span class="math math-inline">1 &lt; \eta e &lt; 2</span>: oscillation that dies down.</li><li><span class="math math-inline">\eta e &gt; 2</span>: oscillation that grows.</li></ul>
+<p><strong>What drives the dynamics isn't <span class="math math-inline">\eta</span> on its own, but the product <span class="math math-inline">\eta e</span>.</strong> The elasticity <span class="math math-inline">e</span> is a market statistic: with a single type of auction, <span class="math math-inline">e = b^2 w&#x27;(b)/c(b)</span>, and with uniformly distributed market prices it's always exactly 2. The same <span class="math math-inline">\eta</span> can behave completely differently for advertisers or traffic with different elasticities. The LinkedIn paper notes that a normalization constant that's too large causes oscillation, while one that's too small slows convergence — it's the same phenomenon, since the constant changes the effective <span class="math math-inline">\eta e</span>.</p>
+<p><img src="images/fig6-pacing.en.svg" alt="The dynamics of online updates" loading="lazy"></p>
+<p>Real systems also have noise: conversions are sparse, and spend jumps around from window to window. A large <span class="math math-inline">\eta</span> tracks quickly but pushes that noise straight into your bids; a small <span class="math math-inline">\eta</span> keeps bids steady but reacts slowly. It's the classic bias–variance trade-off.</p>
+<h2 id="4-catching-up-don't-let-the-morning's-mistake-carry-into-the-evening">4. Catching up: don't let the morning's mistake carry into the evening</h2>
+<p>Panel (b) simulates a day in which both traffic and market prices change by the hour, the starting bid is only half the optimum, and the step size is on the small side. The version that only chases each window's own spending target never makes up for the morning's shortfall, and spends just 87% of the budget by the end of the day.</p>
+<p>A single change fixes it: <strong>recompute the planned spend each time as remaining budget × this window's share of the remaining traffic.</strong> If you underspend in the morning, the afternoon's targets rise automatically. The LinkedIn paper calls this the MPC (model predictive control) variant. With the same start and the same step size, it spends the whole budget and gets 97% of the hindsight-optimal results.</p>
+<p>Two things are worth noting:</p>
+<ul><li><strong>The hindsight optimum doesn't spread spend evenly with traffic.</strong> With a constant bid all day, spend naturally tilts toward the cheaper hours: in panel (b), by noon the hindsight optimum has already spent 46% of the budget, while spending in line with traffic would have used only 39%. Smooth spending is a means, not the goal; what really needs to be leveled is <strong>marginal ROI</strong>.</li><li><strong>The starting value matters.</strong> The LinkedIn paper replayed real auction logs: the catch-up version always spent the full budget, but starting at half the optimal bid raised cost per impression by about 4%, and starting 50% too high raised it by more than 10% (Figure 3 of the paper). Starting high hurts more, because money spent early at high prices can't be won back.</li></ul>
+<h2 id="5-every-extra-constraint-adds-another-knob">5. Every extra constraint adds another knob</h2>
+<p>The framework composes; this section and the formulas in the table follow Section 4 of the LinkedIn bidding paper (Gao et al., 2022). Each constraint you add brings another multiplier into the Lagrangian and another parameter into the bidding formula. The new multipliers are updated the same way as <span class="math math-inline">\lambda</span>: up when their constraint is violated, down when there's slack.</p>
+<div class="table-wrap"><table><thead><tr><th>Constraint</th><th>Second-price bid</th><th>What the new multiplier means</th></tr></thead><tbody><tr><td>Budget only</td><td><span class="math math-inline">b = \dfrac{v}{\lambda}</span></td><td><span class="math math-inline">\lambda</span>: the budget's shadow price</td></tr><tr><td>Budget + cost cap (total spend <span class="math math-inline">\le C \times</span> total conversions)</td><td><span class="math math-inline">b = \dfrac{1 + \mu C}{\lambda + \mu}\,v</span></td><td><span class="math math-inline">\mu</span>: how tight the cost constraint is</td></tr><tr><td>A separate budget cap for time period <span class="math math-inline">k</span></td><td><span class="math math-inline">b = \dfrac{v}{\lambda + \lambda_k}</span></td><td><span class="math math-inline">\lambda_k</span>: lowers bids only during period <span class="math math-inline">k</span></td></tr><tr><td>Minimum conversions in time period <span class="math math-inline">k</span></td><td><span class="math math-inline">b = \dfrac{1 + \mu_k}{\lambda}\,v</span></td><td><span class="math math-inline">\mu_k</span>: raises bids only during period <span class="math math-inline">k</span></td></tr></tbody></table></div>
+<p>The cost-cap row hides a consequence worth pausing on. When the budget is loose (<span class="math math-inline">\lambda = 0</span>), the bid is</p>
+<div class="math math-display">b = \Bigl(C + \frac{1}{\mu}\Bigr)\,v \;&gt;\; C\,v</div>
+<p><strong>The optimal bid is higher than "target CPA × pCVR".</strong> The reason is again Part 1's key fact: the constraint caps your <strong>average</strong> cost, while your bid sets your <strong>marginal</strong> cost, and the marginal cost is higher than the average. With uniformly distributed market prices, the optimal bid is exactly <span class="math math-inline">2C \cdot v</span>.</p>
+<h2 id="6-zooming-out-everyone-is-adjusting">6. Zooming out: everyone is adjusting</h2>
+<p>The last dynamic is the easiest one to overlook. The win-rate curve <span class="math math-inline">w(b)</span> you face is made up of <strong>other advertisers' bids</strong>, and they're adjusting their own <span class="math math-inline">\alpha</span> the same way you are. When a big advertiser runs out of budget at 3 p.m. and drops out, market prices fall, everyone's spending speed changes, everyone's <span class="math math-inline">\alpha</span> adjusts — and those adjustments in turn change the market prices everyone faces.</p>
+<ul><li><strong>A steady state exists.</strong> When every bidder uses a bid multiplier and each one either spends exactly their budget or isn't budget-constrained at all, the market is in what's called a pacing equilibrium. In second-price markets, one always exists (Conitzer et al., 2022).</li><li><strong>Be careful with experiments.</strong> When you A/B test a bidding algorithm online, ads in the treatment and control groups bid against each other in the same auctions, so ordinary randomization is biased by interference. LinkedIn's approach splits users randomly into two halves and splits every campaign's budget in the same proportion, creating two mini-markets that don't interfere with each other (budget-split, Liu et al., 2021).</li></ul>
+<h2 id="7-what-this-series-leaves-out">7. What this series leaves out</h2>
+<ul><li><strong>How to estimate the win-rate curve and values.</strong> Censored data, segmenting by hour and audience, calibrating predictions — this is the most "statistical" part of a bidding system, and the easiest to get wrong.</li><li><strong>Equilibria in multi-slot GSP</strong>, and how to learn bid shading online under first price.</li><li><strong>Mechanism design on the platform side</strong>: when most bidders are automated value maximizers, how should auction rules and reserve prices be set?</li><li><strong>Multi-day budget planning</strong>, errors in traffic forecasts, and reinforcement-learning approaches to bidding.</li></ul>
+<p>To go further, start with the survey by Aggarwal et al. (2024); the full reference list is in the <a href="index.html#references">series index</a>.</p>
+<hr>
+<p><strong>Ad Bidding · Part 3 of 3</strong></p>
+<p><a href="2-budget.html">← Bidding Under a Budget</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　Last part →</p>
+</div>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span></footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../assets/js/lang.js"></script>
+<script src="../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>

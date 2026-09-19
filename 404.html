@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 — Jiangang Han</title>
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="/">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="/" data-en="Posts" data-zh="文章">Posts</a>
+    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+  </nav>
+</header>
+
+<main>
+  <p class="tagline">What I’ve Learned and Built, and What I’m Learning and Building</p>
+
+  <div class="post">
+    <h2 class="post__title">404</h2>
+    <p class="post__summary">
+      <span data-en="This page doesn't exist, or it moved."
+            data-zh="这个页面不存在，或者已经被搬走了。">This page doesn't exist, or it moved.</span>
+      <a href="/" class="inline-link"
+         data-en="Back home &rarr;" data-zh="回首页 &rarr;">Back home &rarr;</a>
+    </p>
+  </div>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span></footer>
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="/assets/js/lang.js"></script>
+</body>
+</html>

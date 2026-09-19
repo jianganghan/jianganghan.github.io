@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="大规模定价优化 — Jiangang Han" data-en="Pricing at Scale — Jiangang Han">大规模定价优化 — Jiangang Han</title>
+<script>
+// Pick the language before the first paint (same rules as lang.js), so a bilingual post never flashes the other language
+(function(){
+  var l = null;
+  try { l = localStorage.getItem('lang'); } catch (e) {}
+  if (!l) l = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+  document.documentElement.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en');
+})();
+</script>
+<link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../index.html" data-en="Posts" data-zh="文章">Posts</a>
+    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+  </nav>
+</header>
+
+<main class="article">
+<div class="lang-zh" lang="zh-CN">
+<h1>大规模定价优化</h1>
+<blockquote class="lede"><p>规模一上来，闭式解就不管用了。这一篇用一点精度换来可解：把需求模型线性化，交给求解器；同时讲清楚，这个近似在什么情况下会悄悄失准。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-泰勒展开做线性化">1. 泰勒展开做线性化</a></li><li class="toc__l2"><a href="#2-线性化能用到什么程度-必须知道它的边界">2. 线性化能用到什么程度：必须知道它的边界</a></li><li class="toc__l2"><a href="#3-落地时会踩的坑">3. 落地时会踩的坑</a></li><li class="toc__l2"><a href="#4-整个专题没有覆盖的东西">4. 整个专题没有覆盖的东西</a></li><li class="toc__l3"><a href="#4-1-怎么得到那条曲线（整个专题都没讲-而它是最难的）">4.1 怎么得到那条曲线（整个专题都没讲，而它是最难的）</a></li><li class="toc__l3"><a href="#4-2-大规模求解的工程实现">4.2 大规模求解的工程实现</a></li><li class="toc__l3"><a href="#4-3-动态与博弈">4.3 动态与博弈</a></li><li class="toc__l3"><a href="#4-4-不确定性">4.4 不确定性</a></li><li class="toc__l3"><a href="#4-5-多目标与合规">4.5 多目标与合规</a></li><li class="toc__l2"><a href="#专题小结">专题小结</a></li></ul></nav>
+<blockquote><p><strong>定价专题 · 第 4 篇 / 共 4 篇</strong> · 阅读约 10 分钟</p>
+<p><a href="3-substitution.html">← 替代品的定价优化</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p></blockquote>
+<p><strong>前情提要</strong>：上一篇给出了替代效应下最优解的显式形式，但它只在「一个用户群 × 一张清单」的规模上成立。这一篇处理真实规模，并老实交代整个专题没讲的东西。</p>
+<details>
+<summary>本篇会用到的符号</summary>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">\boldsymbol\delta</span></td><td>调价量向量，<span class="math math-inline">\delta_j</span> 是候选项 <span class="math math-inline">j</span> 的调价幅度</td></tr><tr><td><span class="math math-inline">Q(\mathbf p)</span></td><td>总转化率（至少买一个），<span class="math math-inline">= 1 - q_0</span></td></tr><tr><td><span class="math math-inline">H</span></td><td>海森矩阵，<span class="math math-inline">H_{ij} = \partial^2 Q/\partial p_i\partial p_j</span></td></tr><tr><td><span class="math math-inline">\delta_{ij}</span></td><td>Kronecker 符号：<span class="math math-inline">i=j</span> 时为 1，否则为 0</td></tr></tbody></table></div>
+<p>完整符号表见<a href="index.html">专题目录</a>。</p>
+</details>
+<hr>
+<h2 id="1-泰勒展开做线性化">1. 泰勒展开做线性化</h2>
+<p>上一篇那个显式解看着很美，但它成立有前提：<strong>一个用户群 × 一张清单</strong>，而且只有量约束这种简单约束。</p>
+<p>真实问题通常是：<span class="math math-inline">M</span> 个用户群 × <span class="math math-inline">N</span> 个候选项，决策变量 <span class="math math-inline">M \times N</span> 个，外加一堆跨行、跨列、跨品类的约束。这时候显式解不再适用，得上运筹求解器。而求解器擅长线性、二次这类问题，不擅长 Logit 这种「指数套分式」的结构。</p>
+<p><strong>标准做法：在当前价格点做泰勒展开，把转化率线性化。</strong></p>
+<p>设当前价格 <span class="math math-inline">\mathbf{p}^{(0)}</span>，调价量为 <span class="math math-inline">\boldsymbol\delta</span>。总转化率（至少买一个）：</p>
+<div class="math math-display">Q(\mathbf{p}) = 1 - q_0(\mathbf{p}) = 1 - \frac{1}{1+\sum_m e^{\,b_m - k_mp_m}}</div>
+<p>展开：</p>
+<div class="math math-display">Q(\mathbf{p}^{(0)} + \boldsymbol\delta) \;=\; \underbrace{Q^{(0)}}_{\text{零阶}} \;+\; \underbrace{\nabla Q^{\top}\boldsymbol\delta}_{\text{一阶}} \;+\; \underbrace{\tfrac12\,\boldsymbol\delta^{\top}H\,\boldsymbol\delta}_{\text{二阶}} \;+\; O(\lVert\boldsymbol\delta\rVert^3)</div>
+<p><strong>零阶项</strong>（当前值）：</p>
+<div class="math math-display">Q^{(0)} = 1 - \frac{1}{1 + \sum_m e^{\,b_m - k_m p_m^{(0)}}}</div>
+<p><strong>一阶项（梯度）</strong>：由上一篇第 3 节，<span class="math math-inline">\frac{\partial Q}{\partial p_j} = -\frac{\partial q_0}{\partial p_j}</span>，而</p>
+<div class="math math-display">\frac{\partial q_0}{\partial p_j} = \frac{\partial}{\partial p_j}\left(\frac{1}{D}\right) = -\frac{1}{D^2}\cdot\frac{\partial D}{\partial p_j} = -\frac{1}{D^2}(-k_je_j) = k_j\,q_j\,q_0</div>
+<p>所以</p>
+<div class="math math-display">\boxed{\ \nabla Q^{\top}\boldsymbol\delta \;=\; -\sum_j k_j\,q_j\,q_0\,\delta_j\ }</div>
+<p><strong>二阶项（海森）</strong>：从 <span class="math math-inline">\frac{\partial Q}{\partial p_i} = -k_i\frac{e_i}{D^2}</span> 出发，对 <span class="math math-inline">p_j</span> 再求一次导：</p>
+<div class="math math-display">H_{ij} = \frac{\partial}{\partial p_j}\left(-k_i\frac{e_i}{D^2}\right) = -k_i\left[\frac{\partial e_i/\partial p_j}{D^2} - \frac{2e_i\,(\partial D/\partial p_j)}{D^3}\right]</div>
+<p>代入 <span class="math math-inline">\frac{\partial e_i}{\partial p_j} = -k_ie_i\delta_{ij}</span>（<span class="math math-inline">\delta_{ij}</span> 是 Kronecker 符号，<span class="math math-inline">i=j</span> 时为 1，否则为 0）和 <span class="math math-inline">\frac{\partial D}{\partial p_j} = -k_je_j</span>：</p>
+<div class="math math-display">= -k_i\left[\frac{-k_ie_i\delta_{ij}}{D^2} + \frac{2k_je_ie_j}{D^3}\right] = \frac{k_i^2e_i\delta_{ij}}{D^2} - \frac{2k_ik_je_ie_j}{D^3}</div>
+<p>再用 <span class="math math-inline">q_i = e_i/D</span>、<span class="math math-inline">q_0 = 1/D</span> 整理：</p>
+<div class="math math-display">\boxed{\ H_{ij} = \bigl(k_i^2\,q_i\,\delta_{ij} \;-\; 2\,k_i k_j\, q_i q_j\bigr)\,q_0\ }</div>
+<p>于是二阶项写成</p>
+<div class="math math-display">\tfrac12\boldsymbol\delta^{\top}H\boldsymbol\delta = \frac{q_0}{2}\sum_{i,j}\bigl(k_i^2q_i\delta_{ij} - 2k_ik_jq_iq_j\bigr)\delta_i\delta_j</div>
+<p><strong>这两个式子的结构值得看一眼</strong>：<span class="math math-inline">\delta_{ij}</span> 那一项是「自己影响自己」，<span class="math math-inline">-2k_ik_jq_iq_j</span> 那一项是「互相影响」。替代效应就藏在后一项里。</p>
+<blockquote><p>我用有限差分对上面的梯度和海森做了数值验证：梯度吻合到 <span class="math math-inline">10^{-11}</span>，海森吻合到 <span class="math math-inline">10^{-5}</span>（后者受限于差分精度本身）。</p></blockquote>
+<p><strong>只保留到一阶</strong>，转化率就成了 <span class="math math-inline">\boldsymbol\delta</span> 的线性函数，和量有关的约束随之都是线性的；目标函数也只保留一阶项的话，整个问题就化成一个线性规划（LP），可以直接交给成熟的求解器，第二篇那一堆跨单元约束也能直接加进去。这是工业界处理大规模定价最常见的做法。</p>
+<h2 id="2-线性化能用到什么程度-必须知道它的边界">2. 线性化能用到什么程度：必须知道它的边界</h2>
+<p>线性近似不是免费的。<strong>调价幅度一大，误差会迅速膨胀。</strong></p>
+<p><img src="images/fig7-taylor.svg" alt="近似误差随调价幅度的增长" loading="lazy"></p>
+<p>上图来自一个三候选项的算例（所有价格同方向调整）。层次很清楚：0 阶（完全不考虑价格变化，直接用当前转化率）误差最大；一阶近似在小幅调价时相当准；二阶的误差再低一个量级。</p>
+<p><strong>请务必用你自己的数据重画这张图</strong>，不要直接信任何人给的经验值 —— 误差大小完全取决于你的 <span class="math math-inline">k</span> 有多大、清单有多长、份额分布多集中。做法很简单：</p>
+<ol><li>取一批真实的调价样本（最好来自随机调价实验，理由见第 4 节）</li><li>对每个样本，分别用 0 / 1 / 2 阶近似算出预测转化率</li><li>和真实转化率对比，按调价幅度分桶，统计 <strong>ME</strong>（平均误差，看有没有系统性偏差）、<strong>MAE</strong>（平均绝对误差，看整体准度）、<strong>RMSE</strong>（看长尾）</li><li>定出一个「可信调价区间」：误差可接受的最大幅度</li></ol>
+<p><strong>然后用信任域迭代</strong>，把线性化用在它该用的地方：</p>
+<pre><code>Δ ← 初始步长
+重复：
+    在当前价格 p 处展开，得到线性模型
+    解 LP，但额外限制 |δ| ≤ Δ           # 只在可信范围内走
+    用【真实模型】评估这一步的实际收益
+    如果实际有改善：  p ← p + δ；适当放大 Δ
+    否则：            缩小 Δ，重来
+直到 Δ 足够小</code></pre>
+<p>这样既享受了 LP 的求解效率，又不会因为一步迈太大而掉进近似失效的坑里。</p>
+<h2 id="3-落地时会踩的坑">3. 落地时会踩的坑</h2>
+<ul><li><strong>IIA 假设。</strong> MNL 有个著名的性质叫「无关选项独立性」：两个候选项的份额之比，与第三个候选项的存在与否无关。现实中这经常不成立（两个几乎一样的选项，本该主要互相抢量，而不是按份额比例从所有对手那里抢）。如果你的清单里有大量高度相似的候选，考虑 Nested Logit 或 Mixed Logit。</li><li><strong>清单是动态的。</strong> 上面假设候选集固定。真实场景里排序、召回、库存都在变，清单本身就是个变量。定价和排序其实是耦合的，整个专题都没有处理这一层。</li><li><strong><span class="math math-inline">q_0</span> 极难估准。</strong> 「什么都没买」这件事通常没有明确的标签 —— 用户只是划走了。而 <span class="math math-inline">q_0</span> 恰恰出现在几乎所有公式里，它估偏了，整套结论都会偏。这是这类模型在实践中最大的不确定性来源，务必单独做敏感性分析。</li><li><strong>别拿一个用户群的最优解直接上线。</strong> 上面推的是一个用户群面对一张清单。真实系统要对海量用户群同时定价，还要考虑一个候选项在不同用户群清单里的价格是否需要一致（往往需要，出于公平性和舆情考虑）。这会引入跨用户群的一致性约束，是个更难的问题。</li></ul>
+<hr>
+<h2 id="4-整个专题没有覆盖的东西">4. 整个专题没有覆盖的东西</h2>
+<p>整个专题反复说「假设你已经有了价格—需求关系」。这里把这些被跳过的部分老实列出来，免得读者以为照着推导就能直接上线。</p>
+<h3 id="4-1-怎么得到那条曲线（整个专题都没讲-而它是最难的）">4.1 怎么得到那条曲线（整个专题都没讲，而它是最难的）</h3>
+<p>这是整个链路里最容易翻车的一环。核心难点叫 <strong>内生性（endogeneity）</strong>：</p>
+<blockquote><p>历史数据里的价格<strong>不是随机的</strong>。它是人（或上一版策略）根据当时的需求情况定出来的。</p></blockquote>
+<p>举个典型的例子：需求旺盛时你涨价，需求疲软时你降价。那么在数据里，你会看到「价格高的时候成交量也高」。直接拿这批数据回归，会得出<strong>「价格越高，买的人越多」</strong>的荒谬结论（估出来的 <span class="math math-inline">k</span> 是负的）——模型会告诉你「涨价能增量」。</p>
+<p>常见的应对手段（每一个都值得单独一篇）：</p>
+<ul><li><strong>随机调价实验</strong>：最干净，但有真金白银的成本，且需要业务方同意</li><li><strong>工具变量（IV）</strong>：找一个只影响价格、不直接影响需求的变量（比如上游成本冲击）</li><li><strong>断点回归（RDD）</strong>：利用规则造成的价格跳变</li><li><strong>双重差分（DID）</strong>：利用分批上线造成的自然对照</li></ul>
+<p>另外还有：曲线用什么形式（Logit / 线性 / 半参数）、在多细的粒度上估（太细样本不够，太粗会抹平差异）、能外推多远（历史上从没定过的价格，模型说了不算）。</p>
+<h3 id="4-2-大规模求解的工程实现">4.2 大规模求解的工程实现</h3>
+<p>这个专题里的算法都只是「原理上可行」。真到百万级决策变量：列生成、拉格朗日分解、ADMM、分布式求解、warm start、数值稳定性 —— 都是硬工程。</p>
+<h3 id="4-3-动态与博弈">4.3 动态与博弈</h3>
+<p>整个专题讨论的都是<strong>静态、单期</strong>的问题：定完价、看结果，就结束了。真实世界里：</p>
+<ul><li>今天降价会改变用户对明天价格的预期（跨期效应）</li><li>竞争对手会跟进（博弈）</li><li>用户会学会等促销（策略性行为）</li></ul>
+<h3 id="4-4-不确定性">4.4 不确定性</h3>
+<p>这个专题把 <span class="math math-inline">q(p)</span> 当作<strong>已知的确定函数</strong>。实际上它是估出来的，带着置信区间。在估计误差比较大的地方，最优解可能非常脆弱。稳健优化、贝叶斯定价，以及探索—利用（bandit）方法，都是为解决这个问题而生的。</p>
+<h3 id="4-5-多目标与合规">4.5 多目标与合规</h3>
+<p>这个专题只优化利润。真实目标往往是「利润 + 份额 + 体验」的加权，而权重本身是个业务决策。差异化定价还有明确的法律和伦理边界，不同地区规则不同，这部分完全在专题范围之外。</p>
+<hr>
+<h2 id="专题小结">专题小结</h2>
+<p>把四篇串起来：</p>
+<ol><li><strong>一个价格</strong>：最优价 = 成本 + 加价项，加价项 = 转化率 ÷ 转化率下降速度。倒 U 曲线的顶点。</li><li><strong>两个价格</strong>：只要不耦合，就是各算各的。对价格越敏感的，定价越低。</li><li><strong>N 个价格</strong>：无耦合时完全分解，<span class="math math-inline">N</span> 再大也不难 —— 但这个解通常不能直接上线。</li><li><strong>加约束</strong>：跨单元约束会把所有价格绑在一起，此时出现一个<strong>标量旋钮</strong> <span class="math math-inline">\lambda</span>（影子价格）。二分它，就能拿到最优解；而且它本身是个可以拿去做业务决策的数。</li><li><strong>有替代效应</strong>：旋钮有了显式形式 —— <strong>所有候选项的 mUE（多卖一单的净收益）<span class="math math-inline">= (p_j - c_j) - 1/k_j</span> 必须被拉平到同一条水位线上</strong>。最优定价 = 统一水位 + 各自的天然加价空间 + 各自的成本。</li></ol>
+<p>如果只带走一句话，我希望是这句：</p>
+<blockquote><p><strong>定价优化的本质，不是给每个对象单独找一个「好价格」，而是找到那条正确的水位线，然后让所有对象一起站上去。</strong></p></blockquote>
+<hr>
+<p><strong>定价专题 · 第 4 篇 / 共 4 篇</strong></p>
+<p><a href="3-substitution.html">← 替代品的定价优化</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p>
+</div>
+<div class="lang-en" lang="en">
+<h1>Pricing at Scale</h1>
+<blockquote class="lede"><p>At scale, closed-form solutions stop working. This post trades a little accuracy for tractability — linearize the demand model and hand it to a solver — and, just as important, shows where that approximation quietly breaks down.</p></blockquote>
+<nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-linearizing-with-a-taylor-expansion">1. Linearizing with a Taylor expansion</a></li><li class="toc__l2"><a href="#2-how-far-linearization-goes-know-its-limits">2. How far linearization goes: know its limits</a></li><li class="toc__l2"><a href="#3-pitfalls-in-practice">3. Pitfalls in practice</a></li><li class="toc__l2"><a href="#4-what-the-series-leaves-out">4. What the series leaves out</a></li><li class="toc__l3"><a href="#4-1-how-to-get-the-curve-not-covered-anywhere-and-the-hardest-part">4.1 How to get the curve (not covered anywhere, and the hardest part)</a></li><li class="toc__l3"><a href="#4-2-engineering-large-scale-solvers">4.2 Engineering large-scale solvers</a></li><li class="toc__l3"><a href="#4-3-dynamics-and-competition">4.3 Dynamics and competition</a></li><li class="toc__l3"><a href="#4-4-uncertainty">4.4 Uncertainty</a></li><li class="toc__l3"><a href="#4-5-multiple-objectives-and-compliance">4.5 Multiple objectives and compliance</a></li><li class="toc__l2"><a href="#wrapping-up">Wrapping up</a></li></ul></nav>
+<blockquote><p><strong>Price Optimization · Part 4 of 4</strong> · 10 min read</p>
+<p><a href="3-substitution.html">← Pricing Substitutable Products</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　Last part →</p></blockquote>
+<p><strong>Previously</strong>: Part 3 gave an explicit form of the optimum under substitution, but it only holds at the scale of "one user segment × one list". This post takes on real-world scale, and is upfront about what the series leaves out.</p>
+<details>
+<summary>Symbols used in this post</summary>
+<div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Meaning</th></tr></thead><tbody><tr><td><span class="math math-inline">\boldsymbol\delta</span></td><td>Vector of price changes; <span class="math math-inline">\delta_j</span> is the change for option <span class="math math-inline">j</span></td></tr><tr><td><span class="math math-inline">Q(\mathbf p)</span></td><td>Total conversion rate (buying at least one option), <span class="math math-inline">= 1 - q_0</span></td></tr><tr><td><span class="math math-inline">H</span></td><td>Hessian matrix, <span class="math math-inline">H_{ij} = \partial^2 Q/\partial p_i\partial p_j</span></td></tr><tr><td><span class="math math-inline">\delta_{ij}</span></td><td>Kronecker delta: 1 if <span class="math math-inline">i=j</span>, 0 otherwise</td></tr></tbody></table></div>
+<p>The full notation table is in the <a href="index.html">series index</a>.</p>
+</details>
+<hr>
+<h2 id="1-linearizing-with-a-taylor-expansion">1. Linearizing with a Taylor expansion</h2>
+<p>Part 3's explicit solution is elegant, but it comes with conditions: <strong>one user segment × one list</strong>, and only simple constraints such as a volume floor.</p>
+<p>Real problems usually look like <span class="math math-inline">M</span> user segments × <span class="math math-inline">N</span> options — <span class="math math-inline">M \times N</span> decision variables — plus a pile of constraints across rows, columns and categories. The explicit solution no longer applies, and you need an optimization solver. Solvers are good at linear and quadratic problems, not at logit's exponentials-inside-a-fraction structure.</p>
+<p><strong>The standard approach: expand around the current prices with a Taylor series, and linearize conversion.</strong></p>
+<p>Let the current prices be <span class="math math-inline">\mathbf{p}^{(0)}</span> and the price change be <span class="math math-inline">\boldsymbol\delta</span>. Total conversion (buying at least one option) is:</p>
+<div class="math math-display">Q(\mathbf{p}) = 1 - q_0(\mathbf{p}) = 1 - \frac{1}{1+\sum_m e^{\,b_m - k_mp_m}}</div>
+<p>Expand it:</p>
+<div class="math math-display">Q(\mathbf{p}^{(0)} + \boldsymbol\delta) \;=\; \underbrace{Q^{(0)}}_{\text{zeroth order}} \;+\; \underbrace{\nabla Q^{\top}\boldsymbol\delta}_{\text{first order}} \;+\; \underbrace{\tfrac12\,\boldsymbol\delta^{\top}H\,\boldsymbol\delta}_{\text{second order}} \;+\; O(\lVert\boldsymbol\delta\rVert^3)</div>
+<p><strong>Zeroth-order term</strong> (the current value):</p>
+<div class="math math-display">Q^{(0)} = 1 - \frac{1}{1 + \sum_m e^{\,b_m - k_m p_m^{(0)}}}</div>
+<p><strong>First-order term (the gradient)</strong>: from Section 3 of Part 3, <span class="math math-inline">\frac{\partial Q}{\partial p_j} = -\frac{\partial q_0}{\partial p_j}</span>, and</p>
+<div class="math math-display">\frac{\partial q_0}{\partial p_j} = \frac{\partial}{\partial p_j}\left(\frac{1}{D}\right) = -\frac{1}{D^2}\cdot\frac{\partial D}{\partial p_j} = -\frac{1}{D^2}(-k_je_j) = k_j\,q_j\,q_0</div>
+<p>so</p>
+<div class="math math-display">\boxed{\ \nabla Q^{\top}\boldsymbol\delta \;=\; -\sum_j k_j\,q_j\,q_0\,\delta_j\ }</div>
+<p><strong>Second-order term (the Hessian)</strong>: start from <span class="math math-inline">\frac{\partial Q}{\partial p_i} = -k_i\frac{e_i}{D^2}</span> and differentiate once more with respect to <span class="math math-inline">p_j</span>:</p>
+<div class="math math-display">H_{ij} = \frac{\partial}{\partial p_j}\left(-k_i\frac{e_i}{D^2}\right) = -k_i\left[\frac{\partial e_i/\partial p_j}{D^2} - \frac{2e_i\,(\partial D/\partial p_j)}{D^3}\right]</div>
+<p>Substitute <span class="math math-inline">\frac{\partial e_i}{\partial p_j} = -k_ie_i\delta_{ij}</span> (where <span class="math math-inline">\delta_{ij}</span> is the Kronecker delta: 1 if <span class="math math-inline">i=j</span>, 0 otherwise) and <span class="math math-inline">\frac{\partial D}{\partial p_j} = -k_je_j</span>:</p>
+<div class="math math-display">= -k_i\left[\frac{-k_ie_i\delta_{ij}}{D^2} + \frac{2k_je_ie_j}{D^3}\right] = \frac{k_i^2e_i\delta_{ij}}{D^2} - \frac{2k_ik_je_ie_j}{D^3}</div>
+<p>Then tidy up using <span class="math math-inline">q_i = e_i/D</span> and <span class="math math-inline">q_0 = 1/D</span>:</p>
+<div class="math math-display">\boxed{\ H_{ij} = \bigl(k_i^2\,q_i\,\delta_{ij} \;-\; 2\,k_i k_j\, q_i q_j\bigr)\,q_0\ }</div>
+<p>So the second-order term is</p>
+<div class="math math-display">\tfrac12\boldsymbol\delta^{\top}H\boldsymbol\delta = \frac{q_0}{2}\sum_{i,j}\bigl(k_i^2q_i\delta_{ij} - 2k_ik_jq_iq_j\bigr)\delta_i\delta_j</div>
+<p><strong>The structure here is worth a look</strong>: the <span class="math math-inline">\delta_{ij}</span> term is each option affecting itself, and the <span class="math math-inline">-2k_ik_jq_iq_j</span> term is options affecting one another. Substitution lives in that second term.</p>
+<blockquote><p>I checked the gradient and the Hessian above against finite differences: the gradient agrees to <span class="math math-inline">10^{-11}</span>, and the Hessian to <span class="math math-inline">10^{-5}</span> (the latter limited by the precision of finite differences themselves).</p></blockquote>
+<p><strong>Keep only the first-order term</strong>, and conversion becomes a linear function of <span class="math math-inline">\boldsymbol\delta</span>, so every volume-related constraint becomes linear too. If the objective is also kept to first order, the whole problem turns into a linear program (LP) that you can hand straight to a mature solver, and all of Part 2's cross-unit constraints slot right in. This is the most common way industry handles pricing at scale.</p>
+<h2 id="2-how-far-linearization-goes-know-its-limits">2. How far linearization goes: know its limits</h2>
+<p>Linear approximation isn't free. <strong>Once price changes get large, the error grows fast.</strong></p>
+<p><img src="images/fig7-taylor.en.svg" alt="Approximation error grows with the size of the price change" loading="lazy"></p>
+<p>The figure above comes from an example with three options (all prices moved in the same direction). The pattern is clear: the zeroth-order approximation (ignoring the price change and simply using the current conversion rate) has the largest error; the first-order approximation is quite accurate for small changes; and the second-order one cuts the error by another order of magnitude.</p>
+<p><strong>Please redraw this chart with your own data</strong>, rather than trusting anyone's rule of thumb — how large the error gets depends entirely on how large your <span class="math math-inline">k</span> is, how long your list is, and how concentrated the shares are. It's straightforward:</p>
+<ol><li>Collect a set of real price-change samples (ideally from randomized price experiments — Section 4 explains why)</li><li>For each sample, predict conversion with the zeroth-, first- and second-order approximations</li><li>Compare with actual conversion, bucket by the size of the price change, and compute <strong>ME</strong> (mean error, for systematic bias), <strong>MAE</strong> (mean absolute error, for overall accuracy) and <strong>RMSE</strong> (for the tail)</li><li>Settle on a "trusted range": the largest price change whose error you can accept</li></ol>
+<p><strong>Then iterate with a trust region</strong>, so linearization is only used where it holds up:</p>
+<pre><code>Δ ← initial step size
+repeat:
+    expand around the current prices p to get a linear model
+    solve the LP, adding |δ| ≤ Δ   # stay within the trusted range
+    evaluate the step&#x27;s actual gain with the TRUE model
+    if it really improves things:  p ← p + δ; enlarge Δ a bit
+    otherwise:                     shrink Δ and try again
+until Δ is small enough</code></pre>
+<p>This way you get the speed of an LP solver without taking steps so large that the approximation stops being valid.</p>
+<h2 id="3-pitfalls-in-practice">3. Pitfalls in practice</h2>
+<ul><li><strong>The IIA assumption.</strong> MNL has a well-known property called "independence of irrelevant alternatives": the ratio of two options' shares doesn't depend on whether a third option exists. In reality this often fails (two nearly identical options should mostly take volume from each other, not from every competitor in proportion to their shares). If your list has many highly similar options, consider nested logit or mixed logit.</li><li><strong>The list is dynamic.</strong> The derivation assumes a fixed set of options. In real systems, ranking, retrieval and inventory keep changing, so the list itself is a variable. Pricing and ranking are coupled, and this series doesn't deal with that layer at all.</li><li><strong><span class="math math-inline">q_0</span> is very hard to estimate.</strong> "Bought nothing" usually has no explicit label — the user just scrolled away. Yet <span class="math math-inline">q_0</span> shows up in almost every formula, so if it's off, every conclusion is off. It's the biggest source of uncertainty for this kind of model in practice, so always run a separate sensitivity analysis on it.</li><li><strong>Don't ship the optimum for one user segment as is.</strong> The derivation above covers one user segment facing one list. Real systems price for a huge number of segments at once, and have to decide whether an option's price must be the same across segments' lists (it often must, for fairness and PR reasons). That adds cross-segment consistency constraints — a harder problem.</li></ul>
+<hr>
+<h2 id="4-what-the-series-leaves-out">4. What the series leaves out</h2>
+<p>The whole series keeps saying "assume you already have the price–demand relationship". Here is an honest list of what got skipped, so nobody walks away thinking the derivations alone are enough to go live.</p>
+<h3 id="4-1-how-to-get-the-curve-not-covered-anywhere-and-the-hardest-part">4.1 How to get the curve (not covered anywhere, and the hardest part)</h3>
+<p>This is the most error-prone link in the whole chain. The core difficulty is <strong>endogeneity</strong>:</p>
+<blockquote><p>Historical prices were <strong>not set at random</strong>. People (or a previous version of the pricing policy) set them in response to demand at the time.</p></blockquote>
+<p>A typical example: you raise prices when demand is strong and cut them when it's weak. The data will then show high prices alongside high volume. Fit a regression directly on this data and you'll get the absurd conclusion that <strong>higher prices bring more buyers</strong> (the estimated <span class="math math-inline">k</span> comes out negative) — the model will tell you that raising prices grows volume.</p>
+<p>Common remedies (each deserves a post of its own):</p>
+<ul><li><strong>Randomized price experiments</strong>: the cleanest option, but they cost real money and need the business to sign off</li><li><strong>Instrumental variables (IV)</strong>: find something that moves prices without directly affecting demand (e.g. an upstream cost shock)</li><li><strong>Regression discontinuity (RDD)</strong>: exploit price jumps created by business rules</li><li><strong>Difference-in-differences (DID)</strong>: exploit the natural control groups created by staggered rollouts</li></ul>
+<p>Then come further questions: which functional form to use (logit / linear / semiparametric), how fine-grained to estimate (too fine and you run out of data, too coarse and you blur real differences), and how far you can extrapolate (for prices you've never charged, the model has no say).</p>
+<h3 id="4-2-engineering-large-scale-solvers">4.2 Engineering large-scale solvers</h3>
+<p>The algorithms in this series only work "in principle". At millions of decision variables, you're into column generation, Lagrangian decomposition, ADMM, distributed solving, warm starts and numerical stability — all serious engineering.</p>
+<h3 id="4-3-dynamics-and-competition">4.3 Dynamics and competition</h3>
+<p>Everything in this series is <strong>static and single-period</strong>: set the prices, look at the results, done. In the real world:</p>
+<ul><li>A price cut today changes what customers expect tomorrow (intertemporal effects)</li><li>Competitors respond (strategic interaction)</li><li>Customers learn to wait for promotions (strategic behavior)</li></ul>
+<h3 id="4-4-uncertainty">4.4 Uncertainty</h3>
+<p>This series treats <span class="math math-inline">q(p)</span> as a <strong>known, deterministic function</strong>. In reality it's an estimate that comes with confidence intervals, and where the estimation error is large, the optimum can be very fragile. Robust optimization, Bayesian pricing and explore–exploit (bandit) methods all exist to deal with exactly this.</p>
+<h3 id="4-5-multiple-objectives-and-compliance">4.5 Multiple objectives and compliance</h3>
+<p>This series optimizes profit only. Real objectives are usually a weighted mix of profit, market share and customer experience, and the weights are themselves a business decision. Differential pricing also has clear legal and ethical limits that vary by region, which is entirely outside the scope of this series.</p>
+<hr>
+<h2 id="wrapping-up">Wrapping up</h2>
+<p>Putting the four posts together:</p>
+<ol><li><strong>One price</strong>: optimal price = cost + markup, where markup = conversion rate ÷ the rate at which conversion falls. It's the peak of the inverted U.</li><li><strong>Two prices</strong>: as long as they aren't coupled, price each one separately. The more price-sensitive a unit, the lower its price.</li><li><strong>N prices</strong>: without coupling the problem decomposes completely, and even a huge <span class="math math-inline">N</span> is easy — but that solution usually can't ship as is.</li><li><strong>Add constraints</strong>: a cross-unit constraint ties all the prices together, and a <strong>scalar knob</strong> <span class="math math-inline">\lambda</span> (the shadow price) appears. Bisect on it to reach the optimum; the number itself is also something you can make business decisions with.</li><li><strong>Add substitution</strong>: the knob gets an explicit form — <strong>every option's mUE <span class="math math-inline">= (p_j - c_j) - 1/k_j</span>, the net gain from one more sale, has to be brought to the same water level</strong>. Optimal price = common water level + each option's natural markup + its own cost.</li></ol>
+<p>If you remember just one thing, I hope it's this:</p>
+<blockquote><p><strong>Price optimization isn't about finding a "good price" for each item on its own. It's about finding the right water level and lining every item up on it.</strong></p></blockquote>
+<hr>
+<p><strong>Price Optimization · Part 4 of 4</strong></p>
+<p><a href="3-substitution.html">← Pricing Substitutable Products</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　Last part →</p>
+</div>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span></footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../assets/js/lang.js"></script>
+<script src="../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>
