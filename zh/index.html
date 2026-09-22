@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Jiangang Han</title>
 <meta name="description" content="Notes on what I&#x27;ve learned and built, and what I&#x27;m learning and building now.">
 <meta name="author" content="Jiangang Han">
-<link rel="canonical" href="https://jianganghan.github.io/">
+<link rel="canonical" href="https://jianganghan.github.io/zh/">
 <link rel="alternate" hreflang="en" href="https://jianganghan.github.io/">
 <link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/">
 <link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/">
@@ -14,20 +14,20 @@
 <meta property="og:site_name" content="Jiangang Han">
 <meta property="og:title" content="Jiangang Han">
 <meta property="og:description" content="Notes on what I&#x27;ve learned and built, and what I&#x27;m learning and building now.">
-<meta property="og:url" content="https://jianganghan.github.io/">
-<meta property="og:locale" content="en_US">
-<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:url" content="https://jianganghan.github.io/zh/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary">
-<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
 
 <header class="head">
-  <a class="head__name" href="index.html">Jiangang Han</a>
+  <a class="head__name" href="../zh/index.html">Jiangang Han</a>
   <nav class="head__nav">
-    <a href="index.html">Posts</a>
-    <a class="head__lang" href="zh/index.html" hreflang="zh-Hans">中文</a>
+    <a href="../zh/index.html">文章</a>
+    <a class="head__lang" href="../index.html" hreflang="en">EN</a>
   </nav>
 </header>
 
@@ -54,51 +54,51 @@
   <ul class="posts">
 
     <li class="post">
-      <h2 class="post__title"><a href="posts/reliability/index.html">Reliable Systems from Unreliable Models</a></h2>
+      <h2 class="post__title"><a href="posts/reliability/index.html">用不可靠的模型，搭可靠的系统</a></h2>
 
-      <p class="post__meta"><span class="post__badge">2-part series</span></p>
+      <p class="post__meta"><span class="post__badge">专题 · 两篇</span></p>
 
-      <p class="post__summary">Short essays on the reliability of AI systems. The series starts with von Neumann's 1952 lectures, which showed that redundancy can make a machine as reliable as you like, provided its parts fail independently, and then asks what changes when errors are correlated, as they are with language models.</p>
+      <p class="post__summary">关于 AI 系统可靠性的短文。从冯·诺依曼 1952 年的讲座讲起：只要元件各自独立地出错，冗余就能换来任意高的可靠性。再看大模型这种错误彼此相关的情形，结论会怎样改变。</p>
 
       <ol class="parts">
-        <li><a href="posts/reliability/1-von-neumann.html"><span>Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing</span><em>18 min</em></a></li>
-        <li><a href="posts/reliability/2-verifier-cascades.html"><span>Why More Checks Stop Helping</span><em>20 min</em></a></li>
+        <li><a href="posts/reliability/1-von-neumann.html"><span>冯·诺依曼 1952：多数表决、阈值与多路复用</span><em>18 min</em></a></li>
+        <li><a href="posts/reliability/2-verifier-cascades.html"><span>多加几道检查，为什么不够</span><em>20 min</em></a></li>
       </ol>
     </li>
 
     <li class="post">
-      <h2 class="post__title"><a href="posts/pricing/index.html">A Primer on Price Optimization</a></h2>
+      <h2 class="post__title"><a href="posts/pricing/index.html">定价优化入门</a></h2>
 
-      <p class="post__meta"><span class="post__badge">4-part series</span></p>
+      <p class="post__meta"><span class="post__badge">专题 · 四篇</span></p>
 
-      <p class="post__summary">Four posts that build up the math of price optimization one layer at a time: a single item, many items at once, the business constraints that couple them, and finally items that compete for the same demand. Full derivations, figures computed from the models themselves, and notes on what breaks in production.</p>
+      <p class="post__summary">四篇短文，一层一层把定价优化的数学骨架搭起来：从单个定价对象，到同时定很多个，到把它们绑在一起的业务约束，最后到互相抢需求的对象。完整推导、由模型直接算出的配图，以及每一步真上线会踩的坑。</p>
 
       <ol class="parts">
-        <li><a href="posts/pricing/1-single.html"><span>Pricing a Single Product</span><em>12 min</em></a></li>
-        <li><a href="posts/pricing/2-constraints.html"><span>Pricing Many Items Under Constraints</span><em>15 min</em></a></li>
-        <li><a href="posts/pricing/3-substitution.html"><span>Pricing Substitutable Products</span><em>13 min</em></a></li>
-        <li><a href="posts/pricing/4-scale.html"><span>Pricing at Scale</span><em>10 min</em></a></li>
+        <li><a href="posts/pricing/1-single.html"><span>单对象定价优化</span><em>12 min</em></a></li>
+        <li><a href="posts/pricing/2-constraints.html"><span>多对象定价与业务约束</span><em>15 min</em></a></li>
+        <li><a href="posts/pricing/3-substitution.html"><span>替代品的定价优化</span><em>13 min</em></a></li>
+        <li><a href="posts/pricing/4-scale.html"><span>大规模定价优化</span><em>10 min</em></a></li>
       </ol>
     </li>
 
     <li class="post">
-      <h2 class="post__title"><a href="posts/bidding/index.html">A Primer on Ad Bidding</a></h2>
+      <h2 class="post__title"><a href="posts/bidding/index.html">广告出价入门</a></h2>
 
-      <p class="post__meta"><span class="post__badge">3-part series</span></p>
+      <p class="post__meta"><span class="post__badge">专题 · 三篇</span></p>
 
-      <p class="post__summary">Three short posts that build up the math of bidding in ad auctions from the advertiser's side: a single auction, a day of auctions sharing one budget, and pacing that budget in real time. Derivations under the simplest assumptions, figures computed from the models themselves, and what each result means in practice.</p>
+      <p class="post__summary">三篇短文，站在广告主一侧把广告拍卖里出价的数学骨架搭起来：从一次拍卖，到一整天共用一份预算，再到边投边调的预算平滑。最简单假设下的推导、由模型直接算出的配图，以及每个结论在业务里怎么读。</p>
 
       <ol class="parts">
-        <li><a href="posts/bidding/1-auction.html"><span>Bidding in a Single Auction</span><em>8 min</em></a></li>
-        <li><a href="posts/bidding/2-budget.html"><span>Bidding Under a Budget</span><em>10 min</em></a></li>
-        <li><a href="posts/bidding/3-pacing.html"><span>Budget Pacing</span><em>10 min</em></a></li>
+        <li><a href="posts/bidding/1-auction.html"><span>单次拍卖的出价</span><em>8 min</em></a></li>
+        <li><a href="posts/bidding/2-budget.html"><span>预算约束下的出价</span><em>10 min</em></a></li>
+        <li><a href="posts/bidding/3-pacing.html"><span>预算平滑（Pacing）</span><em>10 min</em></a></li>
       </ol>
     </li>
 
   </ul>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 </body>

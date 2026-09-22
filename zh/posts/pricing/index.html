@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>定价优化入门 — Jiangang Han</title>
+<meta name="description" content="四篇短文，一层一层把定价优化的数学骨架搭起来：从单个定价对象，到同时定很多个，到把它们绑在一起的业务约束，最后到互相抢需求的对象。">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/zh/posts/pricing/">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/pricing/">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/pricing/">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/pricing/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="定价优化入门 — Jiangang Han">
+<meta property="og:description" content="四篇短文，一层一层把定价优化的数学骨架搭起来：从单个定价对象，到同时定很多个，到把它们绑在一起的业务约束，最后到互相抢需求的对象。">
+<meta property="og:url" content="https://jianganghan.github.io/zh/posts/pricing/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/css/style.css">
+<link rel="stylesheet" href="../../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../../zh/index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../../zh/index.html">文章</a>
+    <a class="head__lang" href="../../../posts/pricing/index.html" hreflang="en">EN</a>
+  </nav>
+</header>
+
+<main class="article">
+<h1>定价优化入门</h1>
+<blockquote class="lede"><p>四篇短文，一层一层把定价优化的数学骨架搭起来：从<strong>单个定价对象</strong>，到<strong>同时定很多个</strong>，到把它们绑在一起的<strong>业务约束</strong>，最后到<strong>互相抢需求的对象</strong>。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#四篇讲什么">四篇讲什么</a></li><li class="toc__l3"><a href="#一-·-单对象定价优化1-single-md-12-分钟"><a href="1-single.html">一 · 单对象定价优化</a>　<code>12 分钟</code></a></li><li class="toc__l3"><a href="#二-·-多对象定价与业务约束2-constraints-md-15-分钟"><a href="2-constraints.html">二 · 多对象定价与业务约束</a>　<code>15 分钟</code></a></li><li class="toc__l3"><a href="#三-·-替代品的定价优化3-substitution-md-13-分钟"><a href="3-substitution.html">三 · 替代品的定价优化</a>　<code>13 分钟</code></a></li><li class="toc__l3"><a href="#四-·-大规模定价优化4-scale-md-10-分钟"><a href="4-scale.html">四 · 大规模定价优化</a>　<code>10 分钟</code></a></li><li class="toc__l2"><a href="#完整符号表">完整符号表</a></li><li class="toc__l2"><a href="#公式速查">公式速查</a></li><li class="toc__l2"><a href="#这个专题不讲什么">这个专题不讲什么</a></li><li class="toc__l2"><a href="#参考文献">参考文献</a></li></ul></nav>
+<p>每一篇都有完整推导、配图，以及「这个参数在你的业务里对应什么、真上线时会踩什么坑」。四篇是递进的，但<strong>每一篇都能单独读</strong>——想从哪篇进都行。</p>
+<hr>
+<h2 id="四篇讲什么">四篇讲什么</h2>
+<h3 id="一-·-单对象定价优化1-single-md-12-分钟"><a href="1-single.html">一 · 单对象定价优化</a>　<code>12 分钟</code></h3>
+<blockquote><p>只有一个数要定。价格往上抬，每一单赚得更多，买的人却更少——利润走出一条倒 U 曲线。</p></blockquote>
+<p>求这条曲线的顶点。给出最优价满足的一般条件、线性需求与 Logit 需求两个具体例子，以及「涨价的赚与亏」的边际拆解。</p>
+<p><strong>读完能带走</strong>：一个可以直接套用的定价公式，和一个不用计算器也能估的基准——最优价大约落在「成本」与「贵到没人买的价格」的中点。</p>
+<h3 id="二-·-多对象定价与业务约束2-constraints-md-15-分钟"><a href="2-constraints.html">二 · 多对象定价与业务约束</a>　<code>15 分钟</code></h3>
+<blockquote><p>从一个对象变成 <span class="math math-inline">N</span> 个，问题并没有变难——它会干净地拆成 <span class="math math-inline">N</span> 个互不相干的小问题。真正让它变难的，是那条把所有价格重新绑回一起的业务红线。</p></blockquote>
+<p>先说清楚「无耦合时问题自动分解」这件事，再说明为什么那个解通常不能直接上线。然后加上真实业务里躲不掉的约束，<strong>旋钮</strong>出现了。</p>
+<p><strong>读完能带走</strong>：一个标量 <span class="math math-inline">\lambda</span>（影子价格），二分它就能拿到最优解；以及这个数本身怎么拿去做投放与预算分配的决策。</p>
+<h3 id="三-·-替代品的定价优化3-substitution-md-13-分钟"><a href="3-substitution.html">三 · 替代品的定价优化</a>　<code>13 分钟</code></h3>
+<blockquote><p>把一个产品的价格抬上去，另一个的销量反而涨了——它们在抢同一批需求。一旦有了这种牵连，价格就不能再一个一个单独定。</p></blockquote>
+<p>用离散选择模型描述替代效应，然后推出这个专题最漂亮的结论：<strong>所有产品的「边际 UE」（多卖一单净赚多少）必须被拉平到同一条水位线上</strong>。</p>
+<p><strong>读完能带走</strong>：一个不用重解优化问题、一条 SQL 就能跑的定价健康度诊断；以及一个反直觉的结论——「统一减 X 元」不会破坏最优结构，「统一打 X 折」会。</p>
+<h3 id="四-·-大规模定价优化4-scale-md-10-分钟"><a href="4-scale.html">四 · 大规模定价优化</a>　<code>10 分钟</code></h3>
+<blockquote><p>规模一上来，闭式解就不管用了。这一篇用一点精度换来可解，同时讲清楚：这个近似在什么情况下会悄悄失准。</p></blockquote>
+<p>真实问题是 <span class="math math-inline">M</span> 个用户群 × <span class="math math-inline">N</span> 个对象加一堆约束，得上运筹求解器。这一篇讲泰勒展开线性化、它的<strong>使用边界</strong>，以及信任域迭代，最后老实交代整个专题没覆盖的东西。</p>
+<p><strong>读完能带走</strong>：把非线性定价问题化成线性规划（LP）的标准做法，以及一套判断「线性近似在你的数据上能用到多大幅度」的验证流程。</p>
+<hr>
+<h2 id="完整符号表">完整符号表</h2>
+<p>四篇通用。每篇开头还有一个「本篇新增符号」的折叠小表。</p>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th><th>在你的业务里可能是</th></tr></thead><tbody><tr><td><span class="math math-inline">i, j</span></td><td>定价单元（定价对象）的编号</td><td>一个 SKU、一个用户分层、一条线路、一个套餐档位</td></tr><tr><td><span class="math math-inline">p_i</span></td><td>单元 <span class="math math-inline">i</span> 的价格，<strong>决策变量</strong></td><td>你真正能调的那个数字</td></tr><tr><td><span class="math math-inline">c_i</span></td><td>单元 <span class="math math-inline">i</span> 的单位成本，<strong>已知常数</strong></td><td>采购成本、边际服务成本、单位交付成本</td></tr><tr><td><span class="math math-inline">u_i = p_i - c_i</span></td><td>单均毛利</td><td>每成交一单赚多少</td></tr><tr><td><span class="math math-inline">q_i(p_i)</span></td><td>成交概率 / 转化率</td><td>曝光→下单、访问→购买、报价→承保</td></tr><tr><td><span class="math math-inline">q_0</span></td><td>不成交 / 什么都不买的概率</td><td>用户划走了</td></tr><tr><td><span class="math math-inline">k_i</span></td><td>价格系数，越大表示价格一动、转化率掉得越快</td><td>需求模型里价格项的系数</td></tr><tr><td><span class="math math-inline">\Pi</span></td><td>总收益（本专题统一指毛利，不是流水）</td><td>你的优化目标</td></tr><tr><td><span class="math math-inline">\lambda</span></td><td>约束的拉格朗日乘子</td><td>影子价格：多换一单要付出多少利润</td></tr></tbody></table></div>
+<p>关于「价格系数」：它和经济学里常说的「价格弹性」有关，但不是一回事。弹性衡量的是两个百分比变化之比，在 Logit 需求下等于 <span class="math math-inline">-k\,p\,(1-q)</span>。本专题一律用<strong>价格—需求关系</strong> 和 <strong>价格系数 <span class="math math-inline">k</span></strong> 来表述，指的就是那条曲线有多陡。</p>
+<hr>
+<h2 id="公式速查">公式速查</h2>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>最优性条件</th></tr></thead><tbody><tr><td>单个单元，一般需求</td><td><span class="math math-inline">p^\star = c + \dfrac{q}{-q&#x27;}</span></td></tr><tr><td>单个单元，线性需求 <span class="math math-inline">q = a - bp</span></td><td><span class="math math-inline">p^\star = \dfrac{a}{2b} + \dfrac{c}{2} = \dfrac{p_{\max} + c}{2}</span></td></tr><tr><td>单个单元，Logit 需求</td><td><span class="math math-inline">p^\star - c = \dfrac{1}{k\,q_0}</span></td></tr><tr><td><span class="math math-inline">N</span> 个单元，无耦合</td><td><span class="math math-inline">p_i^\star = c_i + \dfrac{q_i}{-q_i&#x27;}</span>，各自独立</td></tr><tr><td><span class="math math-inline">N</span> 个单元 + 总量约束</td><td><span class="math math-inline">p_i^\star = c_i - \lambda + \dfrac{q_i}{-q_i&#x27;}</span>，<span class="math math-inline">\lambda</span> 全局共享，二分求解</td></tr><tr><td>一张清单（MNL），无约束</td><td><span class="math math-inline">u_j - \dfrac{1}{k_j} = \Pi</span>，对所有 <span class="math math-inline">j</span> 相等</td></tr><tr><td>一张清单（MNL）+ 总量约束</td><td><span class="math math-inline">u_j - \dfrac{1}{k_j} = \Pi - \lambda q_0</span>，对所有 <span class="math math-inline">j</span> 相等</td></tr><tr><td>MNL 自身导数</td><td><span class="math math-inline">\dfrac{\partial q_j}{\partial p_j} = -k_jq_j(1-q_j)</span></td></tr><tr><td>MNL 交叉导数</td><td><span class="math math-inline">\dfrac{\partial q_m}{\partial p_j} = k_jq_jq_m \quad (m\ne j)</span></td></tr><tr><td>MNL 总量导数</td><td><span class="math math-inline">\sum_m \dfrac{\partial q_m}{\partial p_j} = -k_jq_jq_0</span></td></tr><tr><td>总转化率的海森</td><td><span class="math math-inline">H_{ij} = \bigl(k_i^2q_i\delta_{ij} - 2k_ik_jq_iq_j\bigr)q_0</span></td></tr></tbody></table></div>
+<hr>
+<h2 id="这个专题不讲什么">这个专题不讲什么</h2>
+<p>四篇都假设<strong>你已经有了一条靠谱的「价格 → 成交概率」曲线</strong>，讨论的是「拿到模型之后，价格该怎么定」。</p>
+<p>怎么<strong>得到</strong>那条曲线，其实是全流程里最难、最容易翻车的一步（核心难点是内生性：历史数据里的价格不是随机的）。这部分连同大规模求解的工程实现、跨期效应与博弈、不确定性、合规边界，都在<a href="4-scale.html#4-整个专题没有覆盖的东西">第四篇第 4 节</a>里老实列了出来。</p>
+<hr>
+<h2 id="参考文献">参考文献</h2>
+<ol><li>Guillermo Gallego, Ruxian Wang. <a href="https://pubsonline.informs.org/doi/10.1287/opre.2013.1249">Multiproduct Price Optimization and Competition Under the Nested Logit Model with Product-Differentiated Price Sensitivities</a>. Operations Research, 62(2):450–461, 2014.</li><li>Hongmin Li, Woonghee Tim Huh. <a href="https://pubsonline.informs.org/doi/10.1287/msom.1110.0344">Pricing Multiple Products with the Multinomial Logit and Nested Logit Models: Concavity and Implications</a>. Manufacturing &amp; Service Operations Management, 13(4):549–563, 2011.</li></ol>
+<hr>
+<p><em>专题里所有图均由代码根据文中模型直接计算生成，非示意图。所有推导都做了数值验证（用有限差分核对梯度和海森矩阵，用两种独立解法交叉验证最优解）。如果你发现哪一步有问题，欢迎指出。</em></p>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>

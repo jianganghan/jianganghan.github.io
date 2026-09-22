@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>预算平滑（Pacing） — Jiangang Han</title>
+<meta name="description" content="最优的 λ 没法事先算出来：早上 9 点，你不知道今晚的市场长什么样，只能边花边调。这一篇讲预算平滑的控制逻辑：为什么降价比限流好，更新规则什么时候收敛、什么时候振…">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/zh/posts/bidding/3-pacing.html">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/bidding/3-pacing.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/bidding/3-pacing.html">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/bidding/3-pacing.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="预算平滑（Pacing） — Jiangang Han">
+<meta property="og:description" content="最优的 λ 没法事先算出来：早上 9 点，你不知道今晚的市场长什么样，只能边花边调。这一篇讲预算平滑的控制逻辑：为什么降价比限流好，更新规则什么时候收敛、什么时候振…">
+<meta property="og:url" content="https://jianganghan.github.io/zh/posts/bidding/3-pacing.html">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/css/style.css">
+<link rel="stylesheet" href="../../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../../zh/index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../../zh/index.html">文章</a>
+    <a class="head__lang" href="../../../posts/bidding/3-pacing.html" hreflang="en">EN</a>
+  </nav>
+</header>
+
+<main class="article">
+<h1>预算平滑（Pacing）</h1>
+<blockquote class="lede"><p>最优的 <span class="math math-inline">\lambda</span> 没法事先算出来：早上 9 点，你不知道今晚的市场长什么样，只能边花边调。这一篇讲预算平滑的控制逻辑：为什么降价比限流好，更新规则什么时候收敛、什么时候振荡，起步偏了怎么追回来。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-先排除一个直觉做法-限流">1. 先排除一个直觉做法：限流</a></li><li class="toc__l2"><a href="#2-在线更新-一个恒温器">2. 在线更新：一个恒温器</a></li><li class="toc__l2"><a href="#3-步长-一个乘积决定收敛还是振荡">3. 步长：一个乘积决定收敛还是振荡</a></li><li class="toc__l2"><a href="#4-追赶-别让上午的错误延续到晚上">4. 追赶：别让上午的错误延续到晚上</a></li><li class="toc__l2"><a href="#5-多一个约束-就多一个旋钮">5. 多一个约束，就多一个旋钮</a></li><li class="toc__l2"><a href="#6-退一步看-大家都在调">6. 退一步看：大家都在调</a></li><li class="toc__l2"><a href="#7-这个专题没有覆盖的东西">7. 这个专题没有覆盖的东西</a></li></ul></nav>
+<blockquote><p><strong>出价专题 · 第 3 篇 / 共 3 篇</strong> · 阅读约 10 分钟</p>
+<p><a href="2-budget.html">← 预算约束下的出价</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p></blockquote>
+<p><strong>前情提要</strong>：上一篇的最优解是 <span class="math math-inline">b_t = v_t/\lambda^\star</span>，<span class="math math-inline">\lambda^\star</span> 由「总花费 = 预算」定出来，但算它需要事先知道一整天所有拍卖的 <span class="math math-inline">v_t</span> 和 <span class="math math-inline">w_t</span>。这一篇讲 <span class="math math-inline">\lambda</span> 怎么边投边找，以及随之而来的几个动态现象。</p>
+<details>
+<summary>本篇会用到的符号</summary>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">\alpha = 1/\lambda</span></td><td>出价系数，出价 <span class="math math-inline">b = \alpha\,v</span></td></tr><tr><td><span class="math math-inline">k</span></td><td>第 <span class="math math-inline">k</span> 个时间窗（比如每 15 分钟一个）</td></tr><tr><td><span class="math math-inline">R_k</span></td><td>第 <span class="math math-inline">k</span> 窗的「实际花费 ÷ 计划花费」</td></tr><tr><td><span class="math math-inline">\eta</span></td><td>更新步长</td></tr><tr><td><span class="math math-inline">e</span></td><td>花费对出价的弹性：出价涨 1%，花费涨 <span class="math math-inline">e</span>%</td></tr><tr><td><span class="math math-inline">p</span></td><td>限流时参加拍卖的概率</td></tr><tr><td><span class="math math-inline">C,\ \mu</span></td><td>成本上限（目标 CPA）及其乘子</td></tr></tbody></table></div>
+<p>完整符号表见<a href="index.html">专题目录</a>。</p>
+</details>
+<hr>
+<h2 id="1-先排除一个直觉做法-限流">1. 先排除一个直觉做法：限流</h2>
+<p>防止预算花得太快，最直觉的做法是<strong>限流</strong>（throttling）：出价不变，每次机会以概率 <span class="math math-inline">p</span> 参加。LinkedIn 2014 年发表的预算平滑系统就是这个思路。</p>
+<p>但上一篇证明过的凹性，直接给出一个结论：<strong>花同样多的钱，降价永远不比限流差。</strong></p>
+<details>
+<summary>展开：一行证明</summary>
+<p>记 <span class="math math-inline">N(S)</span> 为「只调出价、花 <span class="math math-inline">S</span> 这么多钱，最多能拿到的量」。上一篇 3.4 说明它是凹函数，且 <span class="math math-inline">N(0) = 0</span>。</p>
+<p>原出价下花 <span class="math math-inline">S_0</span>、拿 <span class="math math-inline">N_0</span>，显然 <span class="math math-inline">N_0 \le N(S_0)</span>。以概率 <span class="math math-inline">p</span> 限流，花 <span class="math math-inline">pS_0</span>、拿 <span class="math math-inline">pN_0</span>，落在原点和 <span class="math math-inline">(S_0, N_0)</span> 的连线上。改成降价、同样只花 <span class="math math-inline">pS_0</span>，能拿 <span class="math math-inline">N(pS_0)</span>。凹函数过原点，所以</p>
+<div class="math math-display">N(pS_0) = N\bigl(p\,S_0 + (1-p)\cdot 0\bigr) \;\ge\; p\,N(S_0) + (1-p)\,N(0) \;\ge\; p\,N_0</div>
+</details>
+<p>直觉：限流随机丢掉机会，贵的便宜的一视同仁；降价丢掉的<strong>全是最贵的那些</strong>。</p>
+<p><img src="../../../posts/bidding/images/fig5-throttle.svg" alt="限流与降价" loading="lazy"></p>
+<h2 id="2-在线更新-一个恒温器">2. 在线更新：一个恒温器</h2>
+<p>离线时可以二分 <span class="math math-inline">\lambda</span>。在线时，把一天切成很多小时间窗，每个窗结束后看一眼花快了还是慢了：</p>
+<div class="math math-display">R_k = \frac{\text{第 } k \text{ 窗实际花费}}{\text{第 } k \text{ 窗计划花费}}, \qquad \boxed{\ \alpha \leftarrow \alpha \cdot e^{-\eta\,(R_k - 1)}\ }</div>
+<p>花快了（<span class="math math-inline">R_k &gt; 1</span>），<span class="math math-inline">\alpha</span> 变小，出价降；花慢了，出价升。「计划花费」通常取「预算 × 这个窗的预测流量占比」。</p>
+<pre><code>初始化 α = α₀                        # 冷启动：拿历史拍卖日志回放，二分出一个初值
+每个时间窗结束时：
+    R = 这一窗实际花费 / 这一窗计划花费
+    α ← α · exp(−η · (R − 1))       # 花多了压价，花少了提价
+下一个时间窗里，每次机会出价 b = α · v</code></pre>
+<p>这不是拍脑袋想出来的经验规则。它是对偶问题上的在线梯度下降（Balseiro、Gur，2019）：<span class="math math-inline">R_k - 1</span> 正比于对偶目标在当前 <span class="math math-inline">\lambda</span> 处的梯度；写成乘法形式对应镜像下降（mirror descent），好处是 <span class="math math-inline">\alpha</span> 永远为正，调整幅度按比例计。</p>
+<h2 id="3-步长-一个乘积决定收敛还是振荡">3. 步长：一个乘积决定收敛还是振荡</h2>
+<p>假设市场不变，最优出价系数是 <span class="math math-inline">\alpha^\star</span>。记 <span class="math math-inline">x = \ln(\alpha/\alpha^\star)</span> 为出价的对数偏差。在 <span class="math math-inline">\alpha^\star</span> 附近，花费对出价的弹性是 <span class="math math-inline">e</span>，也就是 <span class="math math-inline">R \approx 1 + e\,x</span>。代入更新规则（两边取对数）：</p>
+<div class="math math-display">x_{k+1} = x_k - \eta\,(R_k - 1) \;\approx\; (1 - \eta e)\,x_k</div>
+<p>偏差每一步乘以 <span class="math math-inline">(1 - \eta e)</span>：</p>
+<ul><li><span class="math math-inline">0 &lt; \eta e &lt; 1</span>：单调收敛，<span class="math math-inline">\eta e</span> 越小越慢。</li><li><span class="math math-inline">\eta e = 1</span>：线性近似下一步到位。</li><li><span class="math math-inline">1 &lt; \eta e &lt; 2</span>：来回振荡，振幅逐步缩小。</li><li><span class="math math-inline">\eta e &gt; 2</span>：振荡发散。</li></ul>
+<p><strong>决定动态的不是 <span class="math math-inline">\eta</span> 本身，而是乘积 <span class="math math-inline">\eta e</span>。</strong> 弹性 <span class="math math-inline">e</span> 是个市场统计量，只有一类拍卖时 <span class="math math-inline">e = b^2 w&#x27;(b)/c(b)</span>，市场价均匀分布时恒等于 2。同一个 <span class="math math-inline">\eta</span>，放到弹性不同的广告主或流量上，行为可能完全不同。LinkedIn 论文里提到，归一化常数取大了会振荡、取小了收敛慢，本质上是同一件事：它改变的是等效的 <span class="math math-inline">\eta e</span>。</p>
+<p><img src="../../../posts/bidding/images/fig6-pacing.svg" alt="在线更新的动态" loading="lazy"></p>
+<p>真实环境里还有噪声：转化稀疏，单窗花费抖得厉害。<span class="math math-inline">\eta</span> 大，追得快，但把噪声也放大进了出价；<span class="math math-inline">\eta</span> 小，出价平稳，但追得慢。这是标准的偏差—方差权衡。</p>
+<h2 id="4-追赶-别让上午的错误延续到晚上">4. 追赶：别让上午的错误延续到晚上</h2>
+<p>图 (b) 模拟了一天：流量和市场价都随时段变化，起步出价只有最优值的一半，步长偏小。只盯着「本窗计划花费」的版本，上午少花的钱就永远少花了，一天只花掉 87% 的预算。</p>
+<p>改一处就好：<strong>每次都用「剩余预算 × 本窗占剩余流量的比例」重算计划花费。</strong> 上午少花了，下午的目标自动抬高。LinkedIn 论文把这种做法称为 MPC（模型预测控制）版本。同样的起步和步长，它花完了预算，量是事后最优的 97%。</p>
+<p>两点值得注意：</p>
+<ul><li><strong>事后最优不是「按流量均匀花」。</strong> 全天恒定出价时，花费会自然往便宜的时段倾斜：图 (b) 里，中午 12 点事后最优已经花掉 46%，按流量占比只该花 39%。「平滑花费」只是手段，真正该被拉平的是<strong>边际 ROI</strong>。</li><li><strong>起步值很重要。</strong> LinkedIn 论文拿真实拍卖日志回放过：带追赶的版本最终都能花完预算，但起步出价偏低一半时，单次曝光成本比最优高约 4%；偏高一半时高出 10% 以上（论文图 3）。偏高更伤，因为早早以高价花掉的钱追不回来。</li></ul>
+<h2 id="5-多一个约束-就多一个旋钮">5. 多一个约束，就多一个旋钮</h2>
+<p>这套框架可以组合，这一节的做法和下表的公式出自 LinkedIn 出价论文（Gao 等，2022）的第 4 节。每加一个约束，拉格朗日函数里就多一个乘子，出价公式里就多一个参数。新乘子的更新方式和 <span class="math math-inline">\lambda</span> 一样：约束被违反就加大，有富余就减小。</p>
+<div class="table-wrap"><table><thead><tr><th>约束</th><th>二价下的出价</th><th>新乘子的含义</th></tr></thead><tbody><tr><td>只有预算</td><td><span class="math math-inline">b = \dfrac{v}{\lambda}</span></td><td><span class="math math-inline">\lambda</span>：预算的影子价格</td></tr><tr><td>预算 + 成本上限（总花费 <span class="math math-inline">\le C \times</span> 总转化）</td><td><span class="math math-inline">b = \dfrac{1 + \mu C}{\lambda + \mu}\,v</span></td><td><span class="math math-inline">\mu</span>：成本约束有多紧</td></tr><tr><td>时段 <span class="math math-inline">k</span> 另有预算上限</td><td><span class="math math-inline">b = \dfrac{v}{\lambda + \lambda_k}</span></td><td><span class="math math-inline">\lambda_k</span>：只在时段 <span class="math math-inline">k</span> 里压价</td></tr><tr><td>时段 <span class="math math-inline">k</span> 有保量要求（按转化计）</td><td><span class="math math-inline">b = \dfrac{1 + \mu_k}{\lambda}\,v</span></td><td><span class="math math-inline">\mu_k</span>：只在时段 <span class="math math-inline">k</span> 里加价</td></tr></tbody></table></div>
+<p>成本上限这一行有个值得停下来看的推论。预算很宽松时（<span class="math math-inline">\lambda = 0</span>），出价是</p>
+<div class="math math-display">b = \Bigl(C + \frac{1}{\mu}\Bigr)\,v \;&gt;\; C\,v</div>
+<p><strong>最优出价高于「目标 CPA × pCVR」。</strong> 原因还是第一篇那个事实：约束管的是<strong>平均</strong>成本，出价决定的是<strong>边际</strong>成本，而边际高于平均。市场价均匀分布时，最优出价恰好是 <span class="math math-inline">2C \cdot v</span>。</p>
+<h2 id="6-退一步看-大家都在调">6. 退一步看：大家都在调</h2>
+<p>最后一个动态最容易被忽略。你面对的胜率曲线 <span class="math math-inline">w(b)</span>，就是<strong>其他广告主的出价</strong>，而他们也在用同样的方式调自己的 <span class="math math-inline">\alpha</span>。一个大广告主下午三点预算花完退场，市场价下降，所有人的花费速度随之变化，所有人的 <span class="math math-inline">\alpha</span> 随之调整，这些调整又反过来改变彼此面对的市场价。</p>
+<ul><li><strong>稳态存在。</strong> 每个人都用出价系数、并且各自要么恰好花完预算、要么预算根本不紧，这样的状态叫出价系数均衡（pacing equilibrium）。二价市场里它一定存在（Conitzer 等，2022）。</li><li><strong>做实验要小心。</strong> 线上 A/B 测一个出价算法时，实验组和对照组的广告在同一场拍卖里互相竞价，普通分流会有干扰偏差。LinkedIn 的做法是把用户随机分成两半，同时把每个广告计划的预算也按比例劈开，形成两个互不干扰的小市场（budget-split，Liu 等，2021）。</li></ul>
+<h2 id="7-这个专题没有覆盖的东西">7. 这个专题没有覆盖的东西</h2>
+<ul><li><strong>胜率曲线和价值怎么估。</strong> 删失数据、分时段分人群、预估校准，这是整个出价系统里最「统计」、也最容易翻车的部分。</li><li><strong>多广告位 GSP 的均衡</strong>，以及一价下怎么在线学压价。</li><li><strong>平台一侧的机制设计</strong>：当大部分出价者都是自动出价的价值最大化者时，拍卖规则和底价该怎么定。</li><li><strong>跨天的预算规划</strong>、流量预测的误差、强化学习类的出价方法。</li></ul>
+<p>想往下读，推荐从 Aggarwal 等人的综述（2024）开始，完整文献列表见<a href="index.html#参考文献">专题目录</a>。</p>
+<hr>
+<p><strong>出价专题 · 第 3 篇 / 共 3 篇</strong></p>
+<p><a href="2-budget.html">← 预算约束下的出价</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>

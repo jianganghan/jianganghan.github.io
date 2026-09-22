@@ -1,0 +1,7 @@
+# Everything on this site is meant to be indexed, except the home page
+# source, which is a fragment rather than a page of its own.
+User-agent: *
+Allow: /
+Disallow: /_home.html
+
+Sitemap: https://jianganghan.github.io/sitemap.xml

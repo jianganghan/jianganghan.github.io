@@ -15,17 +15,23 @@ Design choices:
     Doing it at build time would mean bundling KaTeX's fonts into the repo.
   · The .md sources are only read, never modified, so they can be republished
     elsewhere as is.
-  · Bilingual: xxx.md is the Chinese version and xxx.en.md, in the same
-    folder, is the English one. Both bodies are rendered into the same
-    xxx.html, and the language button in the top right switches between
-    them in place, without loading another page. A post without an .en.md is
-    rendered in Chinese only.
+  · Bilingual, one language per URL: xxx.md is the Chinese version and
+    xxx.en.md, in the same folder, is the English one. Each becomes its own
+    page -- English at the site root, Chinese under /zh/ -- so a search engine
+    can index and rank them separately and a shared link keeps its language.
+    The two are tied together by hreflang and by the link in the top right.
+    A post without an .en.md is published in Chinese only.
+  · The home page comes from _home.html, a fragment holding both languages,
+    rendered into /index.html and /zh/index.html by the same template.
+  · sitemap.xml and robots.txt are generated too, so a crawler can find the
+    pages without waiting to stumble on a link to them.
 """
-import html, os, re, sys, datetime
+import html, os, re, sys, datetime, unicodedata
 
 ROOT      = os.path.dirname(os.path.abspath(__file__))
 POSTS_DIR = os.path.join(ROOT, "posts")
 SITE_NAME = "Jiangang Han"
+SITE_URL  = "https://jianganghan.github.io"   # no trailing slash; used for canonical URLs and the sitemap
 KATEX_VER = "0.16.9"
 KATEX_CDN = f"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/{KATEX_VER}"
 
@@ -258,13 +264,100 @@ def split_front_matter(text):
 
 
 # ══════════════════════════════════════════════════════════════
+#  4b. Meta description
+#      Search results and link previews show this text, so it is
+#      taken from the lede (the opening blockquote), which is
+#      already written as a summary of the post.
+# ══════════════════════════════════════════════════════════════
+DESC_WIDTH = 160        # upper bound, counting a CJK character as two
+GREEK = {r"\lambda": "\u03bb", r"\varepsilon": "\u03b5", r"\epsilon": "\u03b5",
+         r"\delta": "\u03b4", r"\eta": "\u03b7", r"\mu": "\u03bc",
+         r"\alpha": "\u03b1", r"\beta": "\u03b2", r"\gamma": "\u03b3",
+         r"\theta": "\u03b8", r"\sigma": "\u03c3", r"\rho": "\u03c1",
+         r"\pi": "\u03c0", r"\times": "\u00d7", r"\cdot": "\u00b7",
+         r"\le": "\u2264", r"\ge": "\u2265", r"\approx": "\u2248"}
+
+
+def math_to_text(latex):
+    """A formula has no place in a meta description, so keep only what reads as prose."""
+    for k, v in GREEK.items():
+        latex = re.sub(re.escape(k) + r"(?![A-Za-z])", v, latex)
+    return re.sub(r"[\\{}$]", "", latex).strip()
+
+
+def text_width(s):
+    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in s)
+
+
+def shorten(s, width=DESC_WIDTH):
+    if text_width(s) <= width:
+        return s
+    cut, w = "", 0
+    for c in s:
+        w += 2 if unicodedata.east_asian_width(c) in "WF" else 1
+        if w > width - 1:
+            break
+        cut += c
+    # Prefer ending on a sentence, as long as that doesn't throw away too much
+    m = max((cut.rfind(c) for c in "\u3002\uff01\uff1f.!?"), default=-1)
+    if m >= len(cut) * 0.6:
+        return cut[:m + 1]
+    return cut.rstrip() + "\u2026"
+
+
+def summarize(body):
+    """Pull the lede out of the rendered body and flatten it to plain text."""
+    m = re.search(r'<blockquote class="lede">(.*?)</blockquote>', body, re.S)
+    if not m:      # no lede: fall back to the first paragraph
+        m = re.search(r"</h1>\s*<p>(.*?)</p>", body, re.S)
+    if not m:
+        return ""
+    chunk = re.sub(r'<span class="math[^"]*">(.*?)</span>',
+                   lambda mm: math_to_text(mm.group(1)), m.group(1), flags=re.S)
+    # Paragraph breaks become a space so sentences don't run together;
+    # inline tags (<strong>, <a>, <em>) just go away, leaving the text as written.
+    chunk = re.sub(r"</(?:p|div|li|h[1-6]|blockquote)>|<br\s*/?>", " ", chunk)
+    text = html.unescape(re.sub(r"<[^>]+>", "", chunk))
+    return shorten(re.sub(r"\s+", " ", text).strip())
+
+
+# ══════════════════════════════════════════════════════════════
 #  5. Page template
 # ══════════════════════════════════════════════════════════════
-# Interface text shown on the page. These are content, so the Chinese strings stay.
+# One page holds one language. The default language sits at the site root and
+# the other mirrors it under /<lang>/, so every version has its own URL and
+# hreflang can tie them together. Interface text is content, so it stays here.
+DEFAULT_LANG = "en"
 TOC_LABEL   = {"zh": "目录", "en": "Contents"}
 NAV_POSTS   = {"zh": "文章", "en": "Posts"}
 FOOTER_NOTE = {"zh": "观点仅代表个人。", "en": "Opinions are my own."}
-LANG_BUTTON = "中文"   # the button shows the language it switches to; lang.js updates it
+SWITCH_TO   = {"zh": "EN", "en": "中文"}        # the link names the language it leads to
+HTML_LANG   = {"zh": "zh-CN", "en": "en"}
+HREFLANG    = {"zh": "zh-Hans", "en": "en"}
+OG_LOCALE   = {"zh": "zh_CN", "en": "en_US"}
+HOME_SRC    = "_home.html"
+
+
+def lang_path(lang, base_rel):
+    """Output path of one language version, relative to the site root."""
+    return base_rel if lang == DEFAULT_LANG else f"{lang}/{base_rel}"
+
+
+def canonical_url(lang, base_rel):
+    """The one URL that stands for this page. A directory index is addressed as
+       the directory, so /posts/x/ and /posts/x/index.html don't compete."""
+    p = lang_path(lang, base_rel)
+    if p.endswith("index.html"):
+        p = p[:-len("index.html")]
+    return f"{SITE_URL}/{p}"
+
+
+def point_assets_at_root(body, rel_dir, up):
+    """Figures live next to the Markdown they belong to. A translated page sits
+       one level deeper, under /<lang>/, so send its <img> paths back there
+       instead of keeping a second copy of every file."""
+    return re.sub(r'(<img[^>]*?\ssrc=")(?!https?:|/)([^"]+)"',
+                  lambda m: f'{m.group(1)}{up}{rel_dir}/{m.group(2)}"', body)
 
 
 def decorate(body, toc, lang):
@@ -294,55 +387,34 @@ def decorate(body, toc, lang):
     return body
 
 
-def page(titles, body, depth):
-    zh_title, en_title = titles
-    up = "../" * depth
-    full_zh = html.escape(f"{zh_title} — {SITE_NAME}")
-    if en_title:
-        full_en = html.escape(f"{en_title} — {SITE_NAME}")
-        # lang.js swaps the <title> text for the current language, so the browser tab follows too
-        title_tag = f'<title data-zh="{full_zh}" data-en="{full_en}">{full_zh}</title>'
-    else:
-        title_tag = f"<title>{full_zh}</title>"
+def page(title, body, lang, base_rel, desc, langs, article=True):
+    out_rel = lang_path(lang, base_rel)
+    up      = "../" * out_rel.count("/")
+    prefix  = "" if lang == DEFAULT_LANG else f"{lang}/"
+    home    = f"{up}{prefix}index.html"
+    full    = html.escape(SITE_NAME if title == SITE_NAME else f"{title} — {SITE_NAME}")
+    d       = html.escape(desc, quote=True)
+    canon   = canonical_url(lang, base_rel)
+    og_type = "website" if base_rel.endswith("index.html") else "article"
 
-    return f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-{title_tag}
-<script>
-// Pick the language before the first paint (same rules as lang.js), so a bilingual post never flashes the other language
-(function(){{
-  var l = null;
-  try {{ l = localStorage.getItem('lang'); }} catch (e) {{}}
-  if (!l) l = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
-  document.documentElement.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en');
-}})();
-</script>
-<link rel="icon" href="{up}assets/img/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="{up}assets/css/style.css">
-<link rel="stylesheet" href="{up}assets/css/article.css">
-<link rel="stylesheet" href="{KATEX_CDN}/katex.min.css">
-</head>
-<body>
+    # hreflang has to be bidirectional and self-referencing, or it is ignored.
+    # x-default is the fallback for a reader whose language matches neither.
+    alt = [f'<link rel="alternate" hreflang="{HREFLANG[l]}" href="{canonical_url(l, base_rel)}">'
+           for l in sorted(langs)]
+    if DEFAULT_LANG in langs:
+        alt.append('<link rel="alternate" hreflang="x-default" '
+                   f'href="{canonical_url(DEFAULT_LANG, base_rel)}">')
 
-<header class="head">
-  <a class="head__name" href="{up}index.html">{SITE_NAME}</a>
-  <nav class="head__nav">
-    <a href="{up}index.html" data-en="{NAV_POSTS['en']}" data-zh="{NAV_POSTS['zh']}">{NAV_POSTS['en']}</a>
-    <button type="button" class="head__lang" id="langBtn" hidden>{LANG_BUTTON}</button>
-  </nav>
-</header>
+    others = sorted(l for l in langs if l != lang)
+    switch = (f'<a class="head__lang" href="{up}{lang_path(others[0], base_rel)}"'
+              f' hreflang="{HREFLANG[others[0]]}">{SWITCH_TO[lang]}</a>') if others else ""
+    alt_locale = (f'\n<meta property="og:locale:alternate" content="{OG_LOCALE[others[0]]}">'
+                  if others else "")
 
-<main class="article">
-{body}
-</main>
-
-<footer class="foot">&copy; <span id="y">{datetime.date.today().year}</span> {SITE_NAME}　·　<span data-en="{FOOTER_NOTE['en']}" data-zh="{FOOTER_NOTE['zh']}">{FOOTER_NOTE['en']}</span></footer>
-
-<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-<script src="{up}assets/js/lang.js"></script>
+    # KaTeX and the image zoom are only worth loading on a post
+    extra_css = f'\n<link rel="stylesheet" href="{up}assets/css/article.css">\n' \
+                f'<link rel="stylesheet" href="{KATEX_CDN}/katex.min.css">' if article else ""
+    extra_js  = f'''
 <script src="{up}assets/js/zoom.js"></script>
 <script src="{KATEX_CDN}/katex.min.js"></script>
 <script>
@@ -359,14 +431,83 @@ def page(titles, body, depth):
     }} catch(e) {{ el.classList.add('math--failed'); }}
   }});
 }})();
-</script>
+</script>''' if article else ""
+
+    return f"""<!DOCTYPE html>
+<html lang="{HTML_LANG[lang]}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{full}</title>
+<meta name="description" content="{d}">
+<meta name="author" content="{SITE_NAME}">
+<link rel="canonical" href="{canon}">
+{chr(10).join(alt)}
+<meta property="og:type" content="{og_type}">
+<meta property="og:site_name" content="{SITE_NAME}">
+<meta property="og:title" content="{full}">
+<meta property="og:description" content="{d}">
+<meta property="og:url" content="{canon}">
+<meta property="og:locale" content="{OG_LOCALE[lang]}">{alt_locale}
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="{up}assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="{up}assets/css/style.css">{extra_css}
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="{home}">{SITE_NAME}</a>
+  <nav class="head__nav">
+    <a href="{home}">{NAV_POSTS[lang]}</a>
+    {switch}
+  </nav>
+</header>
+
+<main{' class="article"' if article else ""}>
+{body}
+</main>
+
+<footer class="foot">&copy; <span id="y">{datetime.date.today().year}</span> {SITE_NAME}　·　{FOOTER_NOTE[lang]}</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>{extra_js}
 </body>
 </html>
 """
 
 
 # ══════════════════════════════════════════════════════════════
-#  6. Main
+#  6. Sitemap and robots.txt
+#     A new site has nothing linking to it, so these two files are
+#     how a crawler finds the pages in the first place.
+# ══════════════════════════════════════════════════════════════
+def newest(paths):
+    """Last modified date of the sources a page is built from, as YYYY-MM-DD."""
+    return datetime.date.fromtimestamp(max(os.path.getmtime(p) for p in paths)).isoformat()
+
+
+def write_sitemap(entries):
+    urls = "\n".join(
+        f"  <url><loc>{html.escape(loc)}</loc><lastmod>{mod}</lastmod></url>"
+        for loc, mod in entries)
+    doc = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           f"{urls}\n</urlset>\n")
+    open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8").write(doc)
+
+
+def write_robots():
+    open(os.path.join(ROOT, "robots.txt"), "w", encoding="utf-8").write(
+        "# Everything on this site is meant to be indexed, except the home page\n"
+        "# source, which is a fragment rather than a page of its own.\n"
+        "User-agent: *\n"
+        "Allow: /\n"
+        f"Disallow: /{HOME_SRC}\n"
+        "\n"
+        f"Sitemap: {SITE_URL}/sitemap.xml\n")
+
+
+# ══════════════════════════════════════════════════════════════
+#  7. Main
 # ══════════════════════════════════════════════════════════════
 def render_body(md_path, lang):
     raw = open(md_path, encoding="utf-8").read()
@@ -390,34 +531,81 @@ def render_body(md_path, lang):
     return title, decorate(body, toc, lang), len(toc)
 
 
-def convert(md_path, check=False):
-    zh_title, zh_body, nsec = render_body(md_path, "zh")
-    en_path = md_path[:-3] + ".en.md"
-    if os.path.exists(en_path):
-        en_title, en_body, _ = render_body(en_path, "en")
-        # Both bodies go into the same page; <html lang> decides which one is shown (see article.css)
-        body = (f'<div class="lang-zh" lang="zh-CN">\n{zh_body}\n</div>\n'
-                f'<div class="lang-en" lang="en">\n{en_body}\n</div>')
-    else:
-        en_title, body = None, zh_body
-
-    rel   = os.path.relpath(md_path, ROOT)
-    depth = rel.count(os.sep)
-    out_path = md_path[:-3] + ".html"
-    doc = page((zh_title, en_title), body, depth)
-
+def verify(doc, out_rel):
     leftovers = doc.count(SENTINEL)
     if leftovers:
-        raise RuntimeError(f"{rel}: {leftovers} placeholder(s) were not restored")
-
+        raise RuntimeError(f"{out_rel}: {leftovers} placeholder(s) were not restored")
     ids = re.findall(r'\sid="([^"]+)"', doc)
     dup = sorted({i for i in ids if ids.count(i) > 1})
     if dup:
-        raise RuntimeError(f"{rel}: duplicate anchor ids (do a Chinese and an English heading collide?): {dup}")
+        raise RuntimeError(f"{out_rel}: duplicate anchor ids: {dup}")
 
+
+def emit(out_rel, doc, check):
     if not check:
-        open(out_path, "w", encoding="utf-8").write(doc)
-    return rel, os.path.relpath(out_path, ROOT), len(doc), nsec, bool(en_title)
+        path = os.path.join(ROOT, out_rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        open(path, "w", encoding="utf-8").write(doc)
+
+
+def convert(md_path, check=False):
+    """Build every language version of one post. Returns a row per output."""
+    rel      = os.path.relpath(md_path, ROOT).replace(os.sep, "/")
+    base_rel = rel[:-3] + ".html"
+    rel_dir  = os.path.dirname(rel)
+
+    # xxx.md is the Chinese version, xxx.en.md the English one. A post without a
+    # translation is published in the language it was written in, and says so
+    # with a single hreflang instead of pointing at a page that isn't there.
+    sources = {"zh": md_path}
+    en_path = md_path[:-3] + ".en.md"
+    if os.path.exists(en_path):
+        sources["en"] = en_path
+    langs   = set(sources)
+    lastmod = newest(list(sources.values()))
+
+    rows = []
+    for lang in sorted(sources):
+        src = sources[lang]
+        title, body, nsec = render_body(src, lang)
+        out_rel = lang_path(lang, base_rel)
+        if lang != DEFAULT_LANG:
+            body = point_assets_at_root(body, rel_dir, "../" * out_rel.count("/"))
+        doc = page(title, body, lang, base_rel, summarize(body), langs)
+        verify(doc, out_rel)
+        emit(out_rel, doc, check)
+        rows.append((os.path.relpath(src, ROOT), out_rel, len(doc), nsec,
+                     canonical_url(lang, base_rel), lastmod))
+    return rows
+
+
+def pick_lang(fragment, lang):
+    """The home page fragment holds both languages: the visible text is the
+       default one and data-zh is the translation. Neither output keeps the
+       other language, not even in an attribute."""
+    if lang != DEFAULT_LANG:
+        fragment = re.sub(r'(<(\w+)[^>]*?\sdata-' + lang + r'="([^"]*)"[^>]*>)(.*?)(</\2>)',
+                          lambda m: m.group(1) + m.group(3) + m.group(5),
+                          fragment, flags=re.S)
+    fragment = re.sub(r'\s+data-(?:en|zh)="[^"]*"', "", fragment)
+    # The comments in the source are notes to the author, not part of the page
+    return re.sub(r"<!--.*?-->\s*", "", fragment, flags=re.S)
+
+
+def build_home(check=False):
+    src = os.path.join(ROOT, HOME_SRC)
+    meta, fragment = split_front_matter(open(src, encoding="utf-8").read())
+    langs = {"en", "zh"}
+    rows  = []
+    for lang in sorted(langs):
+        doc = page(meta[f"title_{lang}"], pick_lang(fragment, lang).strip(),
+                   lang, "index.html", meta[f"desc_{lang}"], langs, article=False)
+        out_rel = lang_path(lang, "index.html")
+        verify(doc, out_rel)
+        emit(out_rel, doc, check)
+        rows.append((HOME_SRC, out_rel, len(doc), 0,
+                     canonical_url(lang, "index.html"), newest([src])))
+    return rows
 
 
 def main():
@@ -425,19 +613,28 @@ def main():
     mds = []
     for dirpath, _, files in os.walk(POSTS_DIR):
         for f in sorted(files):
-            # xxx.en.md is the English version of xxx.md: it's rendered along with the Chinese and gets no page of its own
+            # xxx.en.md is the English version of xxx.md: both are built from the same call
             if f.endswith(".md") and not f.endswith(".en.md"):
                 mds.append(os.path.join(dirpath, f))
     if not mds:
         print("No .md files found under posts/"); return 1
 
-    print(f"{'Source':<42}{'Output':<44}{'Size':>7}{'Sections':>10}{'EN':>5}")
-    print("-" * 108)
+    rows = build_home(check)
     for p in sorted(mds):
-        src, dst, size, nsec, has_en = convert(p, check)
-        print(f"{src:<42}{dst:<44}{size/1024:>6.0f}K{nsec:>10}{'✓' if has_en else '—':>5}")
+        rows += convert(p, check)
+
+    print(f"{'Source':<44}{'Output':<47}{'Size':>7}{'Sections':>10}")
     print("-" * 108)
-    print(f"{'Checked (--check, nothing written)' if check else 'Done'}: {len(mds)} posts")
+    for src, out, size, nsec, _, _ in rows:
+        print(f"{src:<44}{out:<47}{size/1024:>6.0f}K{nsec or '':>10}")
+    print("-" * 108)
+
+    entries = [(loc, mod) for _, _, _, _, loc, mod in rows]
+    if not check:
+        write_sitemap(entries)
+        write_robots()
+    print(f"{'Checked (--check, nothing written)' if check else 'Done'}: "
+          f"{len(mds)} posts, {len(rows)} pages, {len(entries)} URLs in sitemap.xml")
     return 0
 
 

@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-zh="替代品的定价优化 — Jiangang Han" data-en="Pricing Substitutable Products — Jiangang Han">替代品的定价优化 — Jiangang Han</title>
-<script>
-// Pick the language before the first paint (same rules as lang.js), so a bilingual post never flashes the other language
-(function(){
-  var l = null;
-  try { l = localStorage.getItem('lang'); } catch (e) {}
-  if (!l) l = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
-  document.documentElement.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en');
-})();
-</script>
+<title>Pricing Substitutable Products — Jiangang Han</title>
+<meta name="description" content="Raise the price of one product and another one sells more — they&#x27;re competing for the same demand.">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/posts/pricing/3-substitution.html">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/pricing/3-substitution.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/pricing/3-substitution.html">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/pricing/3-substitution.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="Pricing Substitutable Products — Jiangang Han">
+<meta property="og:description" content="Raise the price of one product and another one sells more — they&#x27;re competing for the same demand.">
+<meta property="og:url" content="https://jianganghan.github.io/posts/pricing/3-substitution.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary">
 <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="../../assets/css/article.css">
@@ -23,121 +28,12 @@
 <header class="head">
   <a class="head__name" href="../../index.html">Jiangang Han</a>
   <nav class="head__nav">
-    <a href="../../index.html" data-en="Posts" data-zh="文章">Posts</a>
-    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+    <a href="../../index.html">Posts</a>
+    <a class="head__lang" href="../../zh/posts/pricing/3-substitution.html" hreflang="zh-Hans">中文</a>
   </nav>
 </header>
 
 <main class="article">
-<div class="lang-zh" lang="zh-CN">
-<h1>替代品的定价优化</h1>
-<blockquote class="lede"><p>把一个产品的价格抬上去，另一个的销量反而涨了——它们在抢同一批需求。一旦有了这种牵连，价格就不能再一个一个单独定。而最优解的形式意外地干净：所有产品的「边际 UE」，也就是多卖一单净赚多少，必须落在同一条水位线上。</p></blockquote>
-<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-问题出在哪">1. 问题出在哪</a></li><li class="toc__l2"><a href="#2-用离散选择模型描述它">2. 用离散选择模型描述它</a></li><li class="toc__l2"><a href="#3-先算导数-替代效应长什么样">3. 先算导数：替代效应长什么样</a></li><li class="toc__l2"><a href="#4-求最优解-旋钮的显式形式">4. 求最优解：旋钮的显式形式</a></li><li class="toc__l2"><a href="#5-怎么读这个结果">5. 怎么读这个结果</a></li></ul></nav>
-<blockquote><p><strong>定价专题 · 第 3 篇 / 共 4 篇</strong> · 阅读约 13 分钟</p>
-<p><a href="2-constraints.html">← 多对象定价与业务约束</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="4-scale.html">大规模定价优化 →</a></p></blockquote>
-<p><strong>前情提要</strong>：前两篇都假设「改一个单元的价格，不影响别的单元」。这一篇打破这个假设 —— 当用户面对的是一整张候选清单，这些候选会互相抢量。</p>
-<details>
-<summary>本篇会用到的符号</summary>
-<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">u_j = p_j - c_j</span></td><td>候选项 <span class="math math-inline">j</span> 的单均毛利</td></tr><tr><td><span class="math math-inline">b_j</span></td><td>与价格无关的吸引力（品牌、口碑、评分……）</td></tr><tr><td><span class="math math-inline">D</span></td><td>Logit 分母，<span class="math math-inline">D = 1 + \sum_m e^{\,b_m - k_m p_m}</span></td></tr><tr><td><span class="math math-inline">q_j = e^{\,b_j-k_jp_j}/D</span></td><td>选中候选项 <span class="math math-inline">j</span> 的概率</td></tr><tr><td><span class="math math-inline">q_0 = 1/D</span></td><td><strong>什么都不买</strong>的概率</td></tr><tr><td><span class="math math-inline">\mathrm{mUE}_j</span></td><td>边际 UE（marginal unit economics）：让 <span class="math math-inline">j</span> 多卖一单净多赚多少，<span class="math math-inline">u_j - 1/k_j</span>；文献里叫 adjusted markup</td></tr></tbody></table></div>
-<p>完整符号表见<a href="index.html">专题目录</a>。</p>
-</details>
-<hr>
-<h2 id="1-问题出在哪">1. 问题出在哪</h2>
-<p>前两篇所有内容都建立在一个假设上：<strong>改一个单元的价格，不影响别的单元的转化率</strong>。</p>
-<p>真实场景往往不是这样。一个用户面前摆着的不是一个选项，而是<strong>一整张候选清单</strong>（一屏商品、一列套餐、一组车型、一批保险方案）。这时候：</p>
-<blockquote><p>你把清单里第 1 项的价格调高了，用户不一定就不买了——可能转头去买了第 2 项。</p></blockquote>
-<p>于是<strong>改一个价格，整张清单的转化率全都会变</strong>。</p>
-<p><strong>这个现象在不同领域有不同的叫法：</strong></p>
-<ul><li>经济学里叫 <strong>交叉价格效应（cross-price effect）</strong>，这些选项互为 <strong>替代品（substitutes）</strong></li><li>零售 / 收益管理里叫 <strong>蚕食效应（cannibalization）</strong>，即自家产品互相抢量</li><li>数学上，就是<strong>海森矩阵（或需求雅可比矩阵）的非对角项不再为零</strong></li></ul>
-<p>第二篇开头说的三个解耦条件，这次破坏的是第三条。</p>
-<h2 id="2-用离散选择模型描述它">2. 用离散选择模型描述它</h2>
-<p>标准工具是 <strong>多项 Logit 模型（Multinomial Logit, MNL）</strong>。</p>
-<p>用户面对 <span class="math math-inline">N</span> 个候选，外加一个「什么都不买」的选项。选中第 <span class="math math-inline">j</span> 项的概率是：</p>
-<div class="math math-display">\boxed{\ q_j \;=\; \frac{e^{\,b_j - k_j p_j}}{\underbrace{1}_{\text{什么都不买}} + \sum_{m=1}^{N} e^{\,b_m - k_m p_m}}\ }</div>
-<ul><li>分子：第 <span class="math math-inline">j</span> 项自身的吸引力，价格越高越小</li><li>分母里那个孤零零的 <strong>1</strong>：<strong>外部选项</strong>（不购买）。它是整个模型的锚，没有它，涨价就只会导致用户在内部转移、总量永不下降，模型会失真</li><li><span class="math math-inline">b_j</span>：与价格无关的吸引力（品牌、口碑、评分、交付速度……）</li><li><span class="math math-inline">k_j</span>：第 <span class="math math-inline">j</span> 项的价格系数</li></ul>
-<p>为书写方便，记：</p>
-<div class="math math-display">D = 1 + \sum_m e^{\,b_m - k_m p_m}, \qquad e_j = e^{\,b_j - k_j p_j}, \qquad q_j = \frac{e_j}{D}, \qquad q_0 = \frac{1}{D}</div>
-<p><span class="math math-inline">q_0</span> 就是「什么都没买」的概率，且显然 <span class="math math-inline">q_0 + \sum_j q_j = 1</span>。</p>
-<h2 id="3-先算导数-替代效应长什么样">3. 先算导数：替代效应长什么样</h2>
-<p>这是后面所有推导的基础，一步步来。</p>
-<p><strong>自身导数</strong>（改 <span class="math math-inline">p_j</span> 对 <span class="math math-inline">q_j</span> 自己的影响）：</p>
-<div class="math math-display">\frac{\partial q_j}{\partial p_j} = \frac{\partial}{\partial p_j}\left(\frac{e_j}{D}\right) = \frac{\frac{\partial e_j}{\partial p_j}\cdot D - e_j\cdot\frac{\partial D}{\partial p_j}}{D^2}</div>
-<p>其中 <span class="math math-inline">\frac{\partial e_j}{\partial p_j} = -k_j e_j</span>，而 <span class="math math-inline">\frac{\partial D}{\partial p_j} = -k_j e_j</span>（<span class="math math-inline">D</span> 里只有第 <span class="math math-inline">j</span> 项含 <span class="math math-inline">p_j</span>）。代入：</p>
-<div class="math math-display">= \frac{-k_je_jD + k_je_j^2}{D^2} = -k_j\frac{e_j}{D}\left(1 - \frac{e_j}{D}\right)</div>
-<div class="math math-display">\boxed{\ \frac{\partial q_j}{\partial p_j} = -k_j\,q_j\,(1 - q_j) \;&lt;\; 0\ }</div>
-<p><strong>交叉导数</strong>（改 <span class="math math-inline">p_j</span> 对<strong>别人</strong> <span class="math math-inline">q_m</span> 的影响，<span class="math math-inline">m \ne j</span>）：</p>
-<p>此时分子 <span class="math math-inline">e_m</span> 与 <span class="math math-inline">p_j</span> 无关，只有分母在变：</p>
-<div class="math math-display">\frac{\partial q_m}{\partial p_j} = e_m\cdot\frac{\partial}{\partial p_j}\left(\frac{1}{D}\right) = -\frac{e_m}{D^2}\cdot\frac{\partial D}{\partial p_j} = -\frac{e_m}{D^2}\cdot(-k_je_j)</div>
-<div class="math math-display">\boxed{\ \frac{\partial q_m}{\partial p_j} = k_j\,q_j\,q_m \;&gt;\; 0\ }</div>
-<p><strong>这两个式子就是「替代效应」的数学表达：自己涨价，自己掉量（负），别人受益（正）。</strong></p>
-<p><img src="images/fig6-substitution.svg" alt="替代效应：动一个价格，所有份额都会动" loading="lazy"></p>
-<p>还有一个后面要用的量 —— 涨 <span class="math math-inline">p_j</span> 对<strong>总成交量</strong>的影响：</p>
-<div class="math math-display">\sum_{m}\frac{\partial q_m}{\partial p_j} = \underbrace{-k_jq_j(1-q_j)}_{m=j} + \underbrace{\sum_{m\ne j}k_jq_jq_m}_{m \ne j} = -k_jq_j\Bigl(1 - \sum_m q_m\Bigr)</div>
-<div class="math math-display">\boxed{\ \sum_m \frac{\partial q_m}{\partial p_j} = -\,k_j\,q_j\,q_0\ }</div>
-<p>很漂亮：涨价流失的量，最终<strong>只有漏到「什么都不买」那一档的部分才是真的丢了</strong>，内部转移不算损失。</p>
-<h2 id="4-求最优解-旋钮的显式形式">4. 求最优解：旋钮的显式形式</h2>
-<p>目标函数（记单均毛利 <span class="math math-inline">u_j = p_j - c_j</span>）：</p>
-<div class="math math-display">\Pi = \sum_j q_j\,u_j</div>
-<p>对 <span class="math math-inline">p_j</span> 求导。注意 <span class="math math-inline">p_j</span> 有两条影响路径：直接影响自己的毛利 <span class="math math-inline">u_j</span>，以及通过份额影响<strong>所有</strong> <span class="math math-inline">q_m</span>：</p>
-<div class="math math-display">\frac{\partial \Pi}{\partial p_j} = \underbrace{q_j}_{\text{毛利变化}} + \underbrace{\sum_m u_m\frac{\partial q_m}{\partial p_j}}_{\text{份额变化}}</div>
-<p>把导数代进去：</p>
-<div class="math math-display">= q_j + u_j\bigl(-k_jq_j(1-q_j)\bigr) + \sum_{m\ne j}u_m\,k_jq_jq_m</div>
-<p>提出公因子 <span class="math math-inline">q_j</span>：</p>
-<div class="math math-display">= q_j\left[1 - k_ju_j(1-q_j) + k_j\sum_{m\ne j}u_mq_m\right]</div>
-<p>把 <span class="math math-inline">(1-q_j)</span> 展开：</p>
-<div class="math math-display">= q_j\left[1 - k_ju_j + k_ju_jq_j + k_j\sum_{m\ne j}u_mq_m\right]</div>
-<p>注意中间两项可以合并 —— <span class="math math-inline">u_jq_j</span> 正好把求和补成对<strong>所有</strong> <span class="math math-inline">m</span> 的求和：</p>
-<div class="math math-display">= q_j\Bigl[\,1 - k_ju_j + k_j\underbrace{\textstyle\sum_{m}u_mq_m}_{\text{这就是 }\Pi\text{ 本身}}\Bigr]</div>
-<div class="math math-display">\boxed{\ \frac{\partial \Pi}{\partial p_j} = q_j\bigl[1 - k_ju_j + k_j\Pi\bigr]\ }</div>
-<p>令导数为零。因为 <span class="math math-inline">q_j &gt; 0</span>，方括号必须为零：</p>
-<div class="math math-display">1 - k_ju_j + k_j\Pi = 0</div>
-<p>两边除以 <span class="math math-inline">k_j</span>，整理：</p>
-<div class="math math-display">\boxed{\ u_j - \frac{1}{k_j} \;=\; \Pi \qquad \text{对每一个 } j \text{ 都成立}\ }</div>
-<p><strong>这就是那个旋钮。</strong></p>
-<p>等式右边 <span class="math math-inline">\Pi</span> 是总收益 —— <strong>它跟 <span class="math math-inline">j</span> 完全无关</strong>。也就是说：</p>
-<blockquote><p><strong>在最优解处，所有候选项的 <span class="math math-inline">u_j - \frac{1}{k_j}</span> 都相等，等于同一个常数。</strong></p></blockquote>
-<p>我把这个量叫做该候选项的 <strong>mUE</strong>，全称 <strong>marginal unit economics</strong>，中文叫<strong>边际 UE</strong>：</p>
-<div class="math math-display">\mathrm{mUE}_j \;\equiv\; u_j - \frac{1}{k_j} \;=\; (p_j - c_j) - \frac{1}{k_j}</div>
-<p>UE（unit economics，单位经济）是业务里常说的「一单生意赚不赚钱」，「边际」指的是<strong>多卖的那一单</strong>。合起来，mUE 回答一个很实际的问题：<strong>让 <span class="math math-inline">j</span> 多卖一单，净多赚多少钱？</strong> 公式里的两项正好是这笔账的一收一支：</p>
-<ul><li><strong>收：<span class="math math-inline">u_j = p_j - c_j</span></strong>，多卖的这一单本身的毛利。</li><li><strong>支：<span class="math math-inline">1/k_j</span></strong>，为多卖这一单付出的代价。想让 <span class="math math-inline">j</span> 多卖一单，就得把 <span class="math math-inline">j</span> 的价格降一点，而这点降价会落到 <span class="math math-inline">j</span> <strong>已有的每一单</strong>上，合计让掉的钱正好是 <span class="math math-inline">1/k_j</span>。用户越在意价格（<span class="math math-inline">k_j</span> 越大），降一点价就能多卖不少，代价也就越小。</li></ul>
-<p>收减支，就是经济学里最基本的「边际收益减边际成本」（MR − MC）。严格说还有一笔对所有产品都一样的公共成本，比较时互相抵消，见下面的展开。</p>
-<p><strong>最优解的特征：所有候选项的 mUE 被拉平到同一条水位线上，而且这条水位线正好等于总收益 <span class="math math-inline">\Pi</span>。</strong> 用上面这笔账来读，道理很直白：如果多卖 A 一单比多卖 B 一单更赚，就该把量从 B 挪给 A；只要各项之间还有高低，就还能这样挪，<strong>挪到各项相等才停</strong>。这就是经济学里的等边际原则。</p>
-<details>
-<summary>展开：为什么说 mUE 就是「多卖一单的净收益」</summary>
-<p>换个角度：不把价格当决策变量，而把各候选项的份额 <span class="math math-inline">q_j</span> 当决策变量，价格由 Logit 公式反解出来，<span class="math math-inline">p_j = \bigl(b_j - \ln(q_j/q_0)\bigr)/k_j</span>。对 <span class="math math-inline">q_j</span> 求导（其他候选项的份额不变）：</p>
-<div class="math math-display">\frac{\partial \Pi}{\partial q_j} = \underbrace{\Bigl(u_j - \frac{1}{k_j}\Bigr)}_{\mathrm{mUE}_j} \;-\; \underbrace{\frac{1}{q_0}\sum_m \frac{q_m}{k_m}}_{\text{对所有 } j \text{ 都一样}}</div>
-<ul><li>第一项就是 mUE：<span class="math math-inline">u_j</span> 是多出来那一单的毛利；<span class="math math-inline">q_j</span> 每提高一个单位，<span class="math math-inline">j</span> 要降价 <span class="math math-inline">1/(k_jq_j)</span>，作用在已有的 <span class="math math-inline">q_j</span> 上，合计让掉 <span class="math math-inline">1/k_j</span>。</li><li>第二项是「拉新」的公共成本：多卖的这一单来自原本什么都不买的人，要在其他候选项销量不变的前提下把他拉进来，所有价格（包括 <span class="math math-inline">j</span> 自己）都得再降一点。这一项对每个 <span class="math math-inline">j</span> 都一样，比较时互相抵消。</li></ul>
-<p>最优时每个 <span class="math math-inline">\partial\Pi/\partial q_j</span> 都为零，所以所有 mUE 都等于同一个数，这就是拉平；和上面按价格求导的结果对照，这个数正是 <span class="math math-inline">\Pi</span>。</p>
-</details>
-<blockquote><p><strong>文献里怎么叫。</strong> 这个量在学术文献里叫 <strong>adjusted markup</strong>（按价格敏感度调整后的加价），定义就是「价格 − 成本 − 价格敏感度的倒数」。<a href="https://pubsonline.informs.org/doi/10.1287/opre.2013.1249">Gallego 和 Wang（2014）</a>在更一般的嵌套 Logit 模型下证明：最优时，同一个嵌套里所有产品的 adjusted markup 都相等。MNL 是嵌套 Logit 的特例，放到 MNL 下就是上面这条结论。<a href="https://pubsonline.informs.org/doi/10.1287/msom.1110.0344">Li 和 Huh（2011）</a>则证明：在 MNL 下，即使各产品的价格系数不同，把总利润写成市场份额的函数后，它也是凹函数。所以一阶条件解出来的就是全局最优，不会停在局部极值上。本专题用 mUE 这个名字，因为它直接说出了这个量在经济上是什么：多卖一单的净收益。</p></blockquote>
-<p>记这个公共水位为 <span class="math math-inline">\theta^\star</span>，那么每个价格立刻确定：</p>
-<div class="math math-display">\boxed{\ p_j^\star \;=\; c_j + \theta^\star + \frac{1}{k_j}\ }</div>
-<p><strong><span class="math math-inline">N</span> 个价格，只剩下一个自由度。</strong> 给定 <span class="math math-inline">\theta^\star</span>，全部价格一次算完，不需要任何迭代求根。</p>
-<p>而 <span class="math math-inline">\theta^\star</span> 满足一个一维不动点方程 <span class="math math-inline">\theta = \Pi(\theta)</span>，其中 <span class="math math-inline">\Pi(\theta)</span> 是按水位 <span class="math math-inline">\theta</span> 定价时的总收益 —— 二分即可。</p>
-<p><img src="images/fig8-leveling.svg" alt="优化的过程，就是各单元 mUE 拉平的过程" loading="lazy"></p>
-<p>上图记录的是梯度上升的全过程：四个候选项从很离谱的初始价格出发，它们的 mUE 从四面八方收敛到同一条水位线上；与此同时总收益单调上升。收敛后我验证了一下，<strong>公共水位的数值恰好等于最优总收益</strong>（吻合到 <span class="math math-inline">10^{-14}</span> 量级），正如公式所说。</p>
-<p><strong>加上量约束，结构不变。</strong> 这一点很重要，说明这个旋钮很稳健：</p>
-<div class="math math-display">L = \sum_j q_ju_j + \lambda\Bigl(\sum_j q_j - Q\Bigr)</div>
-<p>用第 3 节最后那个结论 <span class="math math-inline">\sum_m \partial q_m/\partial p_j = -k_jq_jq_0</span>：</p>
-<div class="math math-display">\frac{\partial L}{\partial p_j} = q_j\bigl[1 - k_ju_j + k_j\Pi\bigr] - \lambda\,k_jq_jq_0 = 0</div>
-<div class="math math-display">\Rightarrow\ \boxed{\ u_j - \frac{1}{k_j} \;=\; \Pi - \lambda\,q_0\ }</div>
-<p>右边<strong>仍然与 <span class="math math-inline">j</span> 无关</strong>。约束没有改变「mUE 必须拉平」这个结构，只是把水位整体压低了一点。</p>
-<h2 id="5-怎么读这个结果">5. 怎么读这个结果</h2>
-<p><strong><span class="math math-inline">1/k_j</span> 是「这个候选项天然该有的加价空间」。</strong></p>
-<p>它的单位就是钱。价格系数 <span class="math math-inline">k_j</span> 越小（用户对这一项的价格越不在意），<span class="math math-inline">1/k_j</span> 越大，这一项就该加更多的价。这和上一节那笔账是同一件事：用户越不在意价格，想多卖一单要让的钱就越多，不如少卖一点、把价定高。</p>
-<p><strong>最优定价 = 统一水位 + 各自的天然加价空间 + 各自的成本。</strong></p>
-<p>这句话可以直接讲给业务方听，而且很好接受：大家共享一个「基准盈利水平」，然后各自按「客户有多不在意价格」和「成本有多高」做偏移。</p>
-<p><strong>它给了一个可以直接用的诊断工具。</strong></p>
-<p>拿你现在线上的价格，算一遍每个候选项的 <span class="math math-inline">\mathrm{mUE}_j = (p_j - c_j) - 1/k_j</span>，然后排序：</p>
-<ul><li>mUE <strong>明显高于</strong>其他项的 → 这一项<strong>定价偏高</strong>：多卖它一单比多卖别的更赚，该降价多卖</li><li>mUE <strong>明显低于</strong>其他项的 → 这一项<strong>定价偏低</strong>：多卖它一单不如别的划算，该提价，把量让给别人</li><li>极差越大，说明离最优越远，可优化空间越大</li></ul>
-<p>这个诊断不需要重新求解整个优化问题，一个 SQL 就能跑出来，非常适合做日常监控看板。</p>
-<p><strong>它也解释了「为什么不能一刀切地打折」。</strong> 全场统一打八折，每一项降掉的钱和它的原价成正比，贵的降得多、便宜的降得少；而 <span class="math math-inline">1/k_j</span> 不会跟着变——原本拉平的 mUE 会被打散，离最优更远。正确的做法是移动<strong>水位</strong>，也就是所有 <span class="math math-inline">p_j</span> 同时<strong>加减同样多的钱</strong>，而不是乘同一个折扣。</p>
-<blockquote><p>这是一个很反直觉、但很有用的结论：<strong>在这个模型下，「统一加减多少钱」不会破坏最优结构（只是移动了水位），「统一打几折」会。</strong></p></blockquote>
-<hr>
-<p><strong>定价专题 · 第 3 篇 / 共 4 篇</strong></p>
-<p><a href="2-constraints.html">← 多对象定价与业务约束</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="4-scale.html">大规模定价优化 →</a></p>
-</div>
-<div class="lang-en" lang="en">
 <h1>Pricing Substitutable Products</h1>
 <blockquote class="lede"><p>Raise the price of one product and another one sells more — they're competing for the same demand. Once prices are linked like this, you can no longer set them one at a time. Yet the optimum turns out to be surprisingly clean: every product's marginal unit economics, what one more sale of it nets you, has to sit at the same water level.</p></blockquote>
 <nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-what-changes">1. What changes</a></li><li class="toc__l2"><a href="#2-modeling-it-with-a-discrete-choice-model">2. Modeling it with a discrete choice model</a></li><li class="toc__l2"><a href="#3-the-derivatives-what-substitution-looks-like">3. The derivatives: what substitution looks like</a></li><li class="toc__l2"><a href="#4-finding-the-optimum-the-knob-in-explicit-form">4. Finding the optimum: the knob in explicit form</a></li><li class="toc__l2"><a href="#5-how-to-read-the-result">5. How to read the result</a></li></ul></nav>
@@ -244,13 +140,11 @@
 <hr>
 <p><strong>Price Optimization · Part 3 of 4</strong></p>
 <p><a href="2-constraints.html">← Pricing Many Items Under Constraints</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　<a href="4-scale.html">Pricing at Scale →</a></p>
-</div>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span></footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-<script src="../../assets/js/lang.js"></script>
 <script src="../../assets/js/zoom.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script>

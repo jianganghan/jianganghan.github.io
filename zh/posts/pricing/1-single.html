@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>单对象定价优化 — Jiangang Han</title>
+<meta name="description" content="只有一个数要定。价格往上抬，每一单赚得更多，买的人却更少——利润走出一条倒 U 曲线。这一篇把顶点的位置算出来，并给出一个不用计算器也能估的基准。">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/zh/posts/pricing/1-single.html">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/pricing/1-single.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/pricing/1-single.html">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/pricing/1-single.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="单对象定价优化 — Jiangang Han">
+<meta property="og:description" content="只有一个数要定。价格往上抬，每一单赚得更多，买的人却更少——利润走出一条倒 U 曲线。这一篇把顶点的位置算出来，并给出一个不用计算器也能估的基准。">
+<meta property="og:url" content="https://jianganghan.github.io/zh/posts/pricing/1-single.html">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/css/style.css">
+<link rel="stylesheet" href="../../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../../zh/index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../../zh/index.html">文章</a>
+    <a class="head__lang" href="../../../posts/pricing/1-single.html" hreflang="en">EN</a>
+  </nav>
+</header>
+
+<main class="article">
+<h1>单对象定价优化</h1>
+<blockquote class="lede"><p>只有一个数要定。价格往上抬，每一单赚得更多，买的人却更少——利润走出一条倒 U 曲线。这一篇把顶点的位置算出来，并给出一个不用计算器也能估的基准。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-把问题写下来">1. 把问题写下来</a></li><li class="toc__l2"><a href="#2-求最优解">2. 求最优解</a></li><li class="toc__l2"><a href="#3-两个具体例子">3. 两个具体例子</a></li><li class="toc__l3"><a href="#例-1-线性需求">例 1：线性需求</a></li><li class="toc__l3"><a href="#例-2-logit-需求（更接近真实）">例 2：Logit 需求（更接近真实）</a></li><li class="toc__l2"><a href="#4-这几个公式在业务里怎么读">4. 这几个公式在业务里怎么读</a></li><li class="toc__l2"><a href="#5-落地时会踩的坑">5. 落地时会踩的坑</a></li></ul></nav>
+<blockquote><p><strong>定价专题 · 第 1 篇 / 共 4 篇</strong> · 阅读约 12 分钟</p>
+<p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-constraints.html">多对象定价与业务约束 →</a></p></blockquote>
+<p>这是「定价优化入门」的第一篇。不需要任何前置知识，只要你接受「东西越贵，买的人越少」这个事实。</p>
+<details>
+<summary>本篇会用到的符号</summary>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">p</span></td><td>价格，<strong>决策变量</strong></td></tr><tr><td><span class="math math-inline">c</span></td><td>单位成本，已知常数</td></tr><tr><td><span class="math math-inline">q(p)</span></td><td>成交概率 / 转化率，随 <span class="math math-inline">p</span> 单调递减</td></tr><tr><td><span class="math math-inline">k</span></td><td>价格系数，越大表示价格一动、转化率掉得越快</td></tr><tr><td><span class="math math-inline">\Pi</span></td><td>总收益（本专题统一指毛利，不是流水）</td></tr><tr><td><span class="math math-inline">q_0 = 1-q</span></td><td>不成交概率</td></tr></tbody></table></div>
+<p>完整符号表见<a href="index.html">专题目录</a>。</p>
+</details>
+<hr>
+<h2 id="1-把问题写下来">1. 把问题写下来</h2>
+<p>只有一个定价单元。它有一条自己的价格—需求关系：价格越高，成交概率越低。</p>
+<div class="math math-display">q = q(p), \qquad q&#x27;(p) &lt; 0</div>
+<p>成本 <span class="math math-inline">c</span> 固定。那么总收益是</p>
+<div class="math math-display">\boxed{\ \Pi(p) = \underbrace{q(p)}_{\text{成交概率}} \times \underbrace{(p - c)}_{\text{单均毛利}}\ }</div>
+<p>这个式子里有一对天然的矛盾：</p>
+<ul><li>涨价 → 每单赚得多（<span class="math math-inline">p-c</span> 变大）</li><li>涨价 → 成交的人变少（<span class="math math-inline">q</span> 变小）</li></ul>
+<p>两者相乘，通常是一条<strong>倒 U 曲线</strong>：太便宜不赚钱，太贵没人买，中间某处有个最高点。</p>
+<p><img src="../../../posts/pricing/images/fig1-demand-profit.svg" alt="价格—需求关系与总收益曲线" loading="lazy"></p>
+<h2 id="2-求最优解">2. 求最优解</h2>
+<p>对 <span class="math math-inline">p</span> 求导，令导数为零：</p>
+<div class="math math-display">\frac{d\Pi}{dp} = \underbrace{q(p)}_{\text{①}} + \underbrace{(p-c)\,q&#x27;(p)}_{\text{②}} = 0</div>
+<p>这两项各有清楚的含义：</p>
+<ul><li><strong>① <span class="math math-inline">q(p)</span></strong>：价格每涨 1 元，<strong>已经成交的那部分订单</strong>每单多赚 1 元，总共多赚 <span class="math math-inline">q</span>。这是<strong>好处</strong>，恒为正。</li><li><strong>② <span class="math math-inline">(p-c)q&#x27;(p)</span></strong>：价格每涨 1 元，<strong>丢掉</strong> <span class="math math-inline">|q&#x27;(p)|</span> 那么多订单，每丢一单损失一份毛利 <span class="math math-inline">(p-c)</span>。这是<strong>代价</strong>，只要价格高于成本，它就是负的。</li></ul>
+<p>最优价，就是这两股力量<strong>恰好抵消</strong>的那个点。</p>
+<p><img src="../../../posts/pricing/images/fig2-marginal.svg" alt="涨价的两股力量" loading="lazy"></p>
+<p>整理一下，就得到最优价满足的一般条件：</p>
+<div class="math math-display">\boxed{\ p^\star = c + \frac{q(p^\star)}{-\,q&#x27;(p^\star)}\ }</div>
+<p>读作：<strong>最优价 = 成本 + 一个加价项</strong>，而</p>
+<div class="math math-display">\text{加价项} \;=\; \frac{\text{当前转化率}}{\text{转化率下降的速度}}</div>
+<p>这很符合直觉：转化率下降得越慢（客户越不在乎价格），加价空间就越大。</p>
+<p>同一个式子在广告拍卖里出现过两次：平台定底价，就是成本为 0 时的这个问题；买方在一价拍卖里的最优出价 <span class="math math-inline">b^\star = v - w/w&#x27;</span> 则是它的镜像，在价值上压价，而不是在成本上加价。见<a href="../bidding/1-auction.html">出价专题第 1 篇</a>。</p>
+<h2 id="3-两个具体例子">3. 两个具体例子</h2>
+<p>上面是一般形式。代入具体的需求函数，就能得到真正能算的公式。</p>
+<h3 id="例-1-线性需求">例 1：线性需求</h3>
+<div class="math math-display">q(p) = a - b\,p \qquad (a, b &gt; 0)</div>
+<p>代入目标函数：</p>
+<div class="math math-display">\Pi(p) = (a - bp)(p - c) = -bp^2 + (a + bc)\,p - ac</div>
+<p>这是开口向下的抛物线，求导：</p>
+<div class="math math-display">\frac{d\Pi}{dp} = -2bp + (a + bc) = 0</div>
+<div class="math math-display">\boxed{\ p^\star = \frac{a + bc}{2b} = \frac{a}{2b} + \frac{c}{2}\ }</div>
+<p>二阶导 <span class="math math-inline">\frac{d^2\Pi}{dp^2} = -2b &lt; 0</span>，确实是极大值。</p>
+<p>这个结果有个漂亮的说法。记 <span class="math math-inline">p_{\max} = a/b</span> 为「零需求价」（价格涨到这里，就完全没人买了），则</p>
+<div class="math math-display">p^\star = \frac{p_{\max} + c}{2}</div>
+<p><strong>最优价恰好是「成本」和「零需求价」的中点。</strong> 这是一个非常好用的心算基准：如果你能估出「多贵就完全卖不动了」，最优价大约就在它和成本的正中间。</p>
+<h3 id="例-2-logit-需求（更接近真实）">例 2：Logit 需求（更接近真实）</h3>
+<p>线性需求有个毛病：价格再高一点，<span class="math math-inline">q</span> 会变成负数。实践中更常用 Logit 形式：</p>
+<div class="math math-display">q(p) = \frac{1}{1 + e^{-(b_0 - k p)}} = \sigma(b_0 - kp)</div>
+<p>其中 <span class="math math-inline">\sigma(\cdot)</span> 是 sigmoid 函数，<span class="math math-inline">b_0</span> 决定基础吸引力，<span class="math math-inline">k &gt; 0</span> 是价格系数。它天然落在 <span class="math math-inline">(0,1)</span> 内，且单调递减。</p>
+<p>它有一个极好用的导数性质：</p>
+<div class="math math-display">q&#x27;(p) = \frac{dq}{dp} = -k\,q\,(1-q)</div>
+<details>
+<summary>展开：这一步怎么来的</summary>
+<p>令 <span class="math math-inline">z = b_0 - kp</span>，则 <span class="math math-inline">q = \sigma(z) = \frac{1}{1+e^{-z}}</span>。</p>
+<p>sigmoid 的经典性质是 <span class="math math-inline">\sigma&#x27;(z) = \sigma(z)\bigl(1-\sigma(z)\bigr)</span>：</p>
+<div class="math math-display">\sigma&#x27;(z) = \frac{e^{-z}}{(1+e^{-z})^2} = \frac{1}{1+e^{-z}} \cdot \frac{e^{-z}}{1+e^{-z}} = \sigma(z)\bigl(1-\sigma(z)\bigr)</div>
+<p>再用链式法则，<span class="math math-inline">\frac{dz}{dp} = -k</span>：</p>
+<div class="math math-display">\frac{dq}{dp} = \sigma&#x27;(z)\cdot\frac{dz}{dp} = q(1-q)\cdot(-k) = -k\,q(1-q)</div>
+</details>
+<p>代入一阶条件 <span class="math math-inline">q + (p-c)q&#x27; = 0</span>：</p>
+<div class="math math-display">q - (p-c)\,k\,q\,(1-q) = 0</div>
+<p>两边除以 <span class="math math-inline">q</span>（<span class="math math-inline">q &gt; 0</span>，可以除）：</p>
+<div class="math math-display">1 - k\,(p-c)(1-q) = 0</div>
+<div class="math math-display">\boxed{\ p^\star - c = \frac{1}{k\,\bigl(1 - q(p^\star)\bigr)} = \frac{1}{k\,q_0}\ }</div>
+<p>其中 <span class="math math-inline">q_0 = 1 - q</span> 是<strong>不成交概率</strong>。</p>
+<p>这是个<strong>隐式方程</strong>（右边还含着 <span class="math math-inline">p^\star</span>），不过它只有一个未知数、而且单调，二分法或牛顿法几步就能收敛，工程上完全不是问题。</p>
+<h2 id="4-这几个公式在业务里怎么读">4. 这几个公式在业务里怎么读</h2>
+<p><strong>读法一：<span class="math math-inline">k</span> 越大，加价越小。</strong></p>
+<p><span class="math math-inline">k</span> 是价格系数。<span class="math math-inline">k</span> 大 = 客户对价格敏感 = 曲线陡 = 稍微涨一点就掉一大片量。这时候公式告诉你老老实实少加价。反过来，对价格不敏感的场景（刚需、无替代、紧急需求），<span class="math math-inline">1/k</span> 大，加价空间就大。</p>
+<p><strong>读法二：<span class="math math-inline">q_0</span> 出现在分母，说明「当前卖得怎么样」会反过来影响该定多少钱。</strong></p>
+<p>这里容易读岔，多说一句。假如你现在的价格下几乎人人都买（<span class="math math-inline">q \to 1</span>，<span class="math math-inline">q_0 \to 0</span>），公式给出的加价趋于无穷大 —— 这不是公式坏了，而是它在喊：<strong>你价格定得太低了</strong>。涨价之后 <span class="math math-inline">q</span> 会掉下来、<span class="math math-inline">q_0</span> 会涨上去，加价项随之变小，最优价落在两者平衡的地方。所以别把它当成一步到位的公式：右边含着 <span class="math math-inline">p^\star</span>，要用上一节说的二分法或牛顿法去解。</p>
+<p><strong>读法三：结果对「成本」怎么算很敏感。</strong></p>
+<p><span class="math math-inline">c</span> 到底算哪些？只算变动成本，还是要分摊固定成本？这个选择会直接改变最优价。一般来说，做短期定价决策时 <span class="math math-inline">c</span> 应该只包含<strong>边际成本</strong>（多成交一单额外多花的钱）。把固定成本摊进去再去优化，会系统性地把价格定高、把量做小。</p>
+<h2 id="5-落地时会踩的坑">5. 落地时会踩的坑</h2>
+<ul><li><strong>曲线不是天上掉下来的。</strong> 上面所有推导都建立在「你知道 <span class="math math-inline">q(p)</span>」这个前提上。这个前提比看上去难得多，本专题第四篇会展开说。</li><li><strong><span class="math math-inline">c</span> 可能不是常数。</strong> 很多业务里成本随量变化（规模效应、阶梯运力、库存分档）。这时 <span class="math math-inline">\Pi = q\cdot(p - c(q))</span>，要重新求导，但框架不变。</li><li><strong>别忘了检查二阶条件。</strong> 一阶导为零只说明是驻点。Logit 需求下 <span class="math math-inline">\Pi(p)</span> 对 <span class="math math-inline">p</span> <strong>未必</strong>处处是凹的，但它是单峰的，所以一阶条件的解就是全局最优。</li></ul>
+<details>
+<summary>展开：一个能让后面所有算法都变简单的技巧 —— 换个变量，问题就凹了</summary>
+<p><span class="math math-inline">\Pi(p)</span> 对 <span class="math math-inline">p</span> 不一定凹，这会让优化算法不好写。但如果<strong>把决策变量从「价格」换成「转化率」</strong>，问题立刻变成严格凹的。</p>
+<p>从 <span class="math math-inline">q = \sigma(b_0 - kp)</span> 反解出价格：</p>
+<div class="math math-display">p = \frac{1}{k}\left(b_0 - \ln\frac{q}{1-q}\right)</div>
+<p>代回目标函数：</p>
+<div class="math math-display">\Pi(q) = q\left(\frac{b_0}{k} - c\right) - \frac{1}{k}\underbrace{\left(q\ln q - q\ln(1-q)\right)}_{\;\equiv\, f(q)}</div>
+<p>第一项是 <span class="math math-inline">q</span> 的线性函数。只要证明 <span class="math math-inline">f(q)</span> 是凸的，<span class="math math-inline">\Pi(q)</span> 就是凹的：</p>
+<div class="math math-display">f&#x27;(q) = \ln q + 1 - \ln(1-q) + \frac{q}{1-q}</div>
+<div class="math math-display">f&#x27;&#x27;(q) = \frac{1}{q} + \frac{1}{1-q} + \frac{1}{(1-q)^2} \;&gt;\; 0 \quad \text{(在 } 0&lt;q&lt;1 \text{ 上恒成立)}</div>
+<p>所以 <span class="math math-inline">\Pi&#x27;&#x27;(q) = -f&#x27;&#x27;(q)/k &lt; 0</span>，<strong>严格凹</strong>。</p>
+<p>这个变换的实际价值：一旦问题在 <span class="math math-inline">q</span> 空间是凹的，就可以直接上凸优化求解器，全局最优有保证，也不用担心初值和局部解。第三篇的拉格朗日推导之所以那么干净，本质上也是因为这个结构。</p>
+</details>
+<hr>
+<p><strong>定价专题 · 第 1 篇 / 共 4 篇</strong></p>
+<p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-constraints.html">多对象定价与业务约束 →</a></p>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>

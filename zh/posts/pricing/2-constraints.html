@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多对象定价与业务约束 — Jiangang Han</title>
+<meta name="description" content="从一个对象变成 N 个，问题并没有变难——它会干净地拆成 N 个互不相干的小问题。真正让它变难的，是那条把所有价格重新绑回一起的业务红线；而一旦绑上，N 个价格就由一个…">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/zh/posts/pricing/2-constraints.html">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/pricing/2-constraints.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/pricing/2-constraints.html">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/pricing/2-constraints.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="多对象定价与业务约束 — Jiangang Han">
+<meta property="og:description" content="从一个对象变成 N 个，问题并没有变难——它会干净地拆成 N 个互不相干的小问题。真正让它变难的，是那条把所有价格重新绑回一起的业务红线；而一旦绑上，N 个价格就由一个…">
+<meta property="og:url" content="https://jianganghan.github.io/zh/posts/pricing/2-constraints.html">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/css/style.css">
+<link rel="stylesheet" href="../../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../../zh/index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../../zh/index.html">文章</a>
+    <a class="head__lang" href="../../../posts/pricing/2-constraints.html" hreflang="en">EN</a>
+  </nav>
+</header>
+
+<main class="article">
+<h1>多对象定价与业务约束</h1>
+<blockquote class="lede"><p>从一个对象变成 N 个，问题并没有变难——它会干净地拆成 N 个互不相干的小问题。真正让它变难的，是那条把所有价格重新绑回一起的业务红线；而一旦绑上，N 个价格就由<strong>一个标量</strong>说了算。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-两个定价单元">1. 两个定价单元</a></li><li class="toc__l3"><a href="#1-1-问题">1.1 问题</a></li><li class="toc__l3"><a href="#1-2-求解">1.2 求解</a></li><li class="toc__l3"><a href="#1-3-业务解读">1.3 业务解读</a></li><li class="toc__l2"><a href="#2-n-个定价单元-有没有一个「旋钮」？">2. N 个定价单元：有没有一个「旋钮」？</a></li><li class="toc__l3"><a href="#2-1-先把结论说清楚">2.1 先把结论说清楚</a></li><li class="toc__l3"><a href="#2-2-关于那个「旋钮」">2.2 关于那个「旋钮」</a></li><li class="toc__l2"><a href="#3-加上业务约束">3. 加上业务约束</a></li><li class="toc__l3"><a href="#3-1-约束都是从哪来的">3.1 约束都是从哪来的</a></li><li class="toc__l3"><a href="#3-2-关键区分-约束分两类">3.2 关键区分：约束分两类</a></li><li class="toc__l3"><a href="#3-3-跨单元约束怎么解">3.3 跨单元约束怎么解</a></li><li class="toc__l3"><a href="#3-4-旋钮登场">3.4 旋钮登场</a></li><li class="toc__l3"><a href="#3-5-lambda-的业务含义-它是一个可以直接拿去做决策的数">3.5 <span class="math math-inline">\lambda</span> 的业务含义：它是一个可以直接拿去做决策的数</a></li><li class="toc__l3"><a href="#3-6-多个约束怎么办">3.6 多个约束怎么办</a></li><li class="toc__l3"><a href="#3-7-落地时会踩的坑">3.7 落地时会踩的坑</a></li></ul></nav>
+<blockquote><p><strong>定价专题 · 第 2 篇 / 共 4 篇</strong> · 阅读约 15 分钟</p>
+<p><a href="1-single.html">← 单对象定价优化</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="3-substitution.html">替代品的定价优化 →</a></p></blockquote>
+<p><strong>前情提要</strong>：上一篇解决了「只有一个价格要定」的情况，得到最优价满足的条件 <span class="math math-inline">p^\star = c + \dfrac{q}{-q&#x27;}</span>。这一篇把单元数量推到 <span class="math math-inline">N</span> 个，并加上真实业务里躲不掉的约束。</p>
+<details>
+<summary>本篇会用到的符号</summary>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">i, j</span></td><td>定价单元的编号</td></tr><tr><td><span class="math math-inline">N</span></td><td>定价单元的总数</td></tr><tr><td><span class="math math-inline">p_i,\ c_i,\ q_i,\ k_i</span></td><td>单元 <span class="math math-inline">i</span> 各自的价格 / 成本 / 转化率 / 价格系数</td></tr><tr><td><span class="math math-inline">Q</span></td><td>总成交量的下限（业务红线）</td></tr><tr><td><span class="math math-inline">\alpha</span></td><td>要保住的量的比例，<span class="math math-inline">Q = \alpha\,q^{(0)}</span></td></tr><tr><td><span class="math math-inline">\lambda</span></td><td>约束的拉格朗日乘子，即<strong>影子价格</strong></td></tr></tbody></table></div>
+<p>完整符号表见<a href="index.html">专题目录</a>。</p>
+</details>
+<hr>
+<h2 id="1-两个定价单元">1. 两个定价单元</h2>
+<h3 id="1-1-问题">1.1 问题</h3>
+<p>现在有两个单元。它们<strong>行为规律相同</strong>（都服从同一族的价格—需求关系），只是<strong>参数不同</strong>：单元 1 可能更敏感，单元 2 可能更迟钝；成本也可能不一样。</p>
+<p>总收益就是两份相加：</p>
+<div class="math math-display">\Pi(p_1, p_2) = q_1(p_1)\,(p_1 - c_1) \;+\; q_2(p_2)\,(p_2 - c_2)</div>
+<h3 id="1-2-求解">1.2 求解</h3>
+<p>分别对两个变量求偏导：</p>
+<div class="math math-display">\frac{\partial \Pi}{\partial p_1} = q_1(p_1) + (p_1 - c_1)\,q_1&#x27;(p_1) = 0</div>
+<div class="math math-display">\frac{\partial \Pi}{\partial p_2} = q_2(p_2) + (p_2 - c_2)\,q_2&#x27;(p_2) = 0</div>
+<p><strong>关键的一点</strong>：第一个方程里<strong>完全没有出现 <span class="math math-inline">p_2</span></strong>，第二个方程里也完全没有 <span class="math math-inline">p_1</span>。</p>
+<p>海森矩阵是对角的：</p>
+<div class="math math-display">H = \begin{pmatrix} \dfrac{\partial^2\Pi}{\partial p_1^2} &amp; 0 \\[6pt] 0 &amp; \dfrac{\partial^2\Pi}{\partial p_2^2}\end{pmatrix}</div>
+<p>非对角项为零，意味着<strong>两个决策之间没有任何耦合</strong>。</p>
+<p>所以最优解就是把第一篇的结论各用一次：</p>
+<div class="math math-display">p_1^\star = c_1 + \frac{q_1}{-q_1&#x27;}, \qquad p_2^\star = c_2 + \frac{q_2}{-q_2&#x27;}</div>
+<p>Logit 需求下：</p>
+<div class="math math-display">p_1^\star - c_1 = \frac{1}{k_1 q_{0,1}}, \qquad p_2^\star - c_2 = \frac{1}{k_2 q_{0,2}}</div>
+<p><img src="../../../posts/pricing/images/fig3-two-units.svg" alt="两个单元，敏感度不同，最优价也不同" loading="lazy"></p>
+<h3 id="1-3-业务解读">1.3 业务解读</h3>
+<p>这一节的结论听起来像废话（「各算各的」），但它其实是整个专题的分水岭。</p>
+<p><strong>结论本身有价值</strong>：模型会自动推出「对价格越敏感的单元，价格应该定得越低」。这个结论不需要你拍脑袋，是从数据里长出来的。上图里两个单元的曲线形状一模一样，只是陡峭程度不同，最优价就差了一倍多。</p>
+<p><strong>更重要的是它成立的条件</strong>。「各算各的」需要同时满足三件事：</p>
+<ol><li>目标函数是<strong>可加的</strong>（总收益 = 各单元收益之和）</li><li>约束<strong>不跨单元</strong>（没有「所有单元加起来要满足什么」这类要求）</li><li>需求<strong>不交叉</strong>（改单元 1 的价格，不影响单元 2 的转化率）</li></ol>
+<p>本篇和后面两篇，每一次加复杂度，都是在破坏其中一条。</p>
+<hr>
+<h2 id="2-n-个定价单元-有没有一个「旋钮」？">2. N 个定价单元：有没有一个「旋钮」？</h2>
+<h3 id="2-1-先把结论说清楚">2.1 先把结论说清楚</h3>
+<p>推广到 <span class="math math-inline">N</span> 个单元：</p>
+<div class="math math-display">\max_{p_1,\dots,p_N} \ \Pi = \sum_{i=1}^{N} q_i(p_i)\,(p_i - c_i)</div>
+<p>如果三个条件仍然成立（可加、无跨单元约束、无交叉影响），那么：</p>
+<div class="math math-display">\frac{\partial \Pi}{\partial p_i} = q_i(p_i) + (p_i - c_i)q_i&#x27;(p_i) = 0, \qquad i = 1,\dots,N</div>
+<p><strong>海森矩阵是 <span class="math math-inline">N \times N</span> 的对角阵</strong>，问题彻底分解成 <span class="math math-inline">N</span> 个互不相干的一维问题。</p>
+<div class="math math-display">\boxed{\ p_i^\star = c_i + \frac{q_i(p_i^\star)}{-\,q_i&#x27;(p_i^\star)}, \qquad i = 1,\dots,N\ }</div>
+<p><img src="../../../posts/pricing/images/fig4-decompose.svg" alt="无耦合时，一个大问题就是 N 个小问题" loading="lazy"></p>
+<p><strong>所以「N 个单元能不能解」这个问题，答案是：能，而且 <span class="math math-inline">N</span> 多大都不难。</strong> 一百万个定价单元就是一百万个独立的一维求根，天然可并行，几秒钟的事。</p>
+<h3 id="2-2-关于那个「旋钮」">2.2 关于那个「旋钮」</h3>
+<p>一个常见的问题是：有没有一个关键的调控量，只要按它来调价，就能保证达到最优？</p>
+<p><strong>在上面这个无约束、无耦合的设定下，答案是「不需要」</strong> —— 每个单元只看自己的曲线爬到自己的顶点就行，没有任何需要全局协调的东西。这时候如果硬要找一个全局旋钮（比如「所有价格统一上浮 x%」），反而会<strong>破坏</strong>最优性：不同单元的最优价本来就不该按同一比例移动。</p>
+<p><strong>但是，这个解基本上不能直接上线。</strong> 原因很实在：</p>
+<ul><li>它是<strong>纯利润最优</strong>的解。纯利润最优往往意味着价格偏高、量偏小。在第 3.4 节配图的算例里，无约束最优解的总成交量只有不调价时的 <strong>80%</strong> —— 少了两成的量，业务方大概率不会接受。</li><li>它完全不看任何业务红线。</li></ul>
+<p><strong>一旦你往里加任何一个「把 N 个单元捆在一起」的东西 —— 一条跨单元的约束（本篇第 3 节），或者单元之间的互相影响（第三篇）—— 旋钮就出现了。</strong></p>
+<p>而且它的形式非常简单：<strong>它是一个标量</strong>。给定这一个数，<span class="math math-inline">N</span> 个价格全部唯一确定。</p>
+<p>后面会把它推出来。先把结论放在这里，方便你带着问题往下看：</p>
+<blockquote><p><strong>旋钮 = 一个把所有单元的「边际贡献」拉平到同一高度的公共水位。</strong></p>
+<p>数学上，它就是耦合约束的<strong>拉格朗日乘子</strong>（也叫影子价格）。在有替代效应的场景里，它还有一个特别漂亮的显式形式，见第三篇。</p></blockquote>
+<hr>
+<h2 id="3-加上业务约束">3. 加上业务约束</h2>
+<h3 id="3-1-约束都是从哪来的">3.1 约束都是从哪来的</h3>
+<p>真实业务里价格从来不是随便定的。常见的约束来源：</p>
+<div class="table-wrap"><table><thead><tr><th>类型</th><th>例子</th><th>数学形式</th></tr></thead><tbody><tr><td><strong>量的底线</strong></td><td>总成交量 / GMV / 活跃度不能低于当前的 X%</td><td><span class="math math-inline">\sum_i q_i \ge Q</span></td></tr><tr><td><strong>预算上限</strong></td><td>补贴、折扣总额有预算</td><td><span class="math math-inline">\sum_i q_i\,s_i \le B</span></td></tr><tr><td><strong>竞争与市占</strong></td><td>关键对象的价格不能高于竞品</td><td><span class="math math-inline">p_i \le p_i^{\text{comp}}</span></td></tr><tr><td><strong>价格带</strong></td><td>监管要求、平台规则、最低毛利线</td><td><span class="math math-inline">l_i \le p_i \le h_i</span></td></tr><tr><td><strong>变动幅度</strong></td><td>相比上期涨跌不超过 ±X%（用户感知、舆情风险）</td><td><span class="math math-inline">\lvert p_i - p_i^{\text{old}}\rvert \le \Delta_i</span></td></tr><tr><td><strong>一致性 / 公平性</strong></td><td>条件相近的对象，价格不能差太多</td><td><span class="math math-inline">\lvert p_i - p_j\rvert \le \varepsilon</span></td></tr><tr><td><strong>业务逻辑自洽</strong></td><td>成本更高的对象，价格不能反而更便宜</td><td><span class="math math-inline">p_i \ge p_j</span>（当 <span class="math math-inline">c_i &gt; c_j</span>）</td></tr><tr><td><strong>可落地性</strong></td><td>价格必须是 0.5 的整数倍 / 必须落在固定档位上</td><td><span class="math math-inline">p_i \in \{v_1, v_2, \dots\}</span></td></tr><tr><td><strong>供给侧承载</strong></td><td>产能、库存、运力有限，量不能超</td><td><span class="math math-inline">\sum_i q_i \le C</span></td></tr><tr><td><strong>合同锁定</strong></td><td>部分对象价格被协议固定</td><td><span class="math math-inline">p_i = \bar p_i</span></td></tr></tbody></table></div>
+<h3 id="3-2-关键区分-约束分两类">3.2 关键区分：约束分两类</h3>
+<p>这个区分决定了求解难度，一定要先做。</p>
+<p><strong>第一类：单元内约束（box constraint）。</strong> 只涉及单个 <span class="math math-inline">p_i</span>，比如上下限、变动幅度、合同价。</p>
+<p>这类约束<strong>不破坏解耦</strong>。做法：先算无约束最优解，然后直接<strong>截断</strong>到可行区间：</p>
+<div class="math math-display">p_i^{\text{可行}} = \min\bigl(\max(p_i^\star,\ l_i),\ h_i\bigr)</div>
+<p>因为每个单元的目标函数是单峰的，截断到边界就是该区间上的最优。<span class="math math-inline">N</span> 个单元依然各算各的。</p>
+<p><strong>第二类：跨单元约束（coupling constraint）。</strong> 形如 <span class="math math-inline">\sum_i(\cdots) \ge</span> 某个数，比如总量底线、总预算。</p>
+<p>这类约束<strong>会把所有单元绑在一起</strong>：为了满足总量，你必须决定「牺牲哪些单元的利润去换量」。这才是需要旋钮的地方。</p>
+<h3 id="3-3-跨单元约束怎么解">3.3 跨单元约束怎么解</h3>
+<p>以最常见的「总量不能跌太多」为例：</p>
+<div class="math math-display">\max_{p_1,\dots,p_N}\ \sum_i q_i(p_i)(p_i - c_i) \qquad \text{s.t.}\quad \sum_i q_i(p_i) \ \ge\ Q</div>
+<p>其中 <span class="math math-inline">Q = \alpha \cdot q^{(0)}</span>，<span class="math math-inline">q^{(0)}</span> 是不调价时的总量，<span class="math math-inline">\alpha</span> 是你要求保住的量的比例（比如 0.97，表示「量最多掉 3%」）。</p>
+<p><strong>第一步：写拉格朗日函数。</strong> 把约束用一个乘子 <span class="math math-inline">\lambda</span> 挂到目标上：</p>
+<div class="math math-display">L(\mathbf{p}, \lambda) = \sum_i q_i(p_i)(p_i - c_i) \;+\; \lambda\Bigl(\sum_i q_i(p_i) - Q\Bigr)</div>
+<p><strong>第二步：对每个 <span class="math math-inline">p_i</span> 求偏导。</strong></p>
+<div class="math math-display">\frac{\partial L}{\partial p_i} = \underbrace{q_i + (p_i - c_i)q_i&#x27;}_{\text{原来的一阶条件}} \;+\; \lambda\,q_i&#x27; \;=\; 0</div>
+<p>把含 <span class="math math-inline">q_i&#x27;</span> 的项合并：</p>
+<div class="math math-display">q_i + \bigl(p_i - c_i + \lambda\bigr)\,q_i&#x27; = 0</div>
+<p><strong>第三步：解出来。</strong></p>
+<div class="math math-display">\boxed{\ p_i^\star \;=\; \underbrace{c_i - \lambda}_{\text{被修正过的成本}} \;+\; \frac{q_i}{-q_i&#x27;}\ }</div>
+<p>对比第 2 节的无约束解 <span class="math math-inline">p_i^\star = c_i + \frac{q_i}{-q_i&#x27;}</span>，唯一的变化是<strong>成本被减掉了一个 <span class="math math-inline">\lambda</span></strong>。</p>
+<p>Logit 需求下形式更清楚：</p>
+<div class="math math-display">p_i^\star - c_i + \lambda \;=\; \frac{1}{k_i\,q_{0,i}}</div>
+<h3 id="3-4-旋钮登场">3.4 旋钮登场</h3>
+<p>上面这个 <span class="math math-inline">\lambda</span>，<strong>对所有 <span class="math math-inline">N</span> 个单元是同一个数</strong>。</p>
+<p>这就是旋钮。它的作用机制是：</p>
+<div class="math math-display">\lambda \uparrow \;\Longrightarrow\; \text{所有 } p_i \downarrow \;\Longrightarrow\; \text{所有 } q_i \uparrow \;\Longrightarrow\; \sum_i q_i \uparrow</div>
+<p>总量对 <span class="math math-inline">\lambda</span> <strong>单调递增</strong>。所以求解算法极其简单：</p>
+<pre><code>给定 λ：
+    for i in 1..N:                       # 完全并行
+        解一维方程得到 p_i(λ)
+    返回 总量(λ) = Σ q_i(p_i(λ))
+
+二分 λ，直到 总量(λ) == Q</code></pre>
+<p><strong>二分一个标量，就解出了 N 个价格，并且保证是最优的。</strong> 这就是那个「只需要按它调控就能达到最优」的旋钮。</p>
+<p>为了完整，补上 KKT 条件：<span class="math math-inline">\lambda \ge 0</span>，且满足互补松弛 <span class="math math-inline">\lambda\bigl(\sum_i q_i - Q\bigr) = 0</span>。意思是：如果无约束最优解本来就满足量的要求，那么 <span class="math math-inline">\lambda = 0</span>，约束不起作用，结果就退回第 2 节的无约束解。</p>
+<p><img src="../../../posts/pricing/images/fig5-knob.svg" alt="转动旋钮，扫出整条前沿" loading="lazy"></p>
+<p>图里的旋钮记作 <span class="math math-inline">\theta</span>，它是第三篇要讲的「公共水位」，算例也取自第三篇的清单模型。把水位 <span class="math math-inline">\theta</span> 调低，作用和这里把 <span class="math math-inline">\lambda</span> 调高一样：价格整体下降，量随之上升。</p>
+<h3 id="3-5-lambda-的业务含义-它是一个可以直接拿去做决策的数">3.5 <span class="math math-inline">\lambda</span> 的业务含义：它是一个可以直接拿去做决策的数</h3>
+<p><span class="math math-inline">\lambda</span> 不只是个数学中间量，它有非常实在的经济含义：</p>
+<blockquote><p><span class="math math-inline">\lambda</span> = <strong>影子价格</strong> = 为了多换来一单，你愿意（也必须）付出多少利润。</p></blockquote>
+<p>单位是「元 / 单」。</p>
+<p>这个数一旦算出来，可以立刻拿去横向比较：</p>
+<ul><li>如果 <span class="math math-inline">\lambda = 0.8</span> 元/单，而你的投放渠道能用 0.5 元/单买到同样质量的增量 —— <strong>那就别靠降价买量，去投放</strong>。</li><li>如果不同区域 / 不同品类跑出来的 <span class="math math-inline">\lambda</span> 差异很大，说明<strong>量的目标分配得不合理</strong>：应该把一部分量的目标从 <span class="math math-inline">\lambda</span> 高的地方挪到 <span class="math math-inline">\lambda</span> 低的地方，达成同样的总量，付出的利润会更少。</li><li><span class="math math-inline">\lambda</span> 随时间的变化，是一个很好的健康度指标：它持续上升，说明你的量越来越贵了。</li></ul>
+<p>上面那张图 (a) 里的曲线还有个用法：<strong>它就是「量—利润」的可达前沿</strong>。把整条曲线画给业务方看，比争论「量到底掉 3% 还是 5%」有用得多——大家能直接看到每多保一个点的量，要让出多少利润。</p>
+<h3 id="3-6-多个约束怎么办">3.6 多个约束怎么办</h3>
+<p>每个跨单元约束配一个乘子。比如同时有量的底线和预算上限：</p>
+<div class="math math-display">L = \sum_i q_i u_i + \lambda_1\Bigl(\sum_i q_i - Q\Bigr) + \lambda_2\Bigl(B - \sum_i q_i s_i\Bigr)</div>
+<p>这时旋钮从一个标量变成一个低维向量 <span class="math math-inline">(\lambda_1, \lambda_2)</span>。二分法用不上了，但可以用<strong>对偶次梯度法</strong>：</p>
+<pre><code>初始化 λ = 0
+重复：
+    给定 λ，并行解出所有 p_i(λ)          # 内层依然完全解耦
+    计算每个约束的违反量 g_k(λ)
+    λ_k ← max(0, λ_k + 步长 · g_k(λ))    # 违反了就加大乘子
+直到收敛</code></pre>
+<p>关键在于：<strong>不管有几个跨单元约束，内层永远是解耦的</strong>。耦合被完全压缩进了那几个乘子里。这就是拉格朗日方法在大规模定价问题上好用的根本原因 —— 它把一个 <span class="math math-inline">N</span> 维的耦合问题，变成了「低维搜索 + <span class="math math-inline">N</span> 个独立子问题」。</p>
+<h3 id="3-7-落地时会踩的坑">3.7 落地时会踩的坑</h3>
+<ul><li><strong>约束别一次加满。</strong> 一上来就把十几条约束全塞进去，很可能直接无解，而且你无从判断是哪条造成的。建议一条条加，每加一条看一眼可行域和目标值掉了多少。</li><li><strong>软约束往往比硬约束好。</strong> 「量不能掉超过 3%」写成硬约束，遇到一些边角情况，可能让整个问题无解。写成软约束（超出的部分在目标里扣分）更稳，也更符合业务的真实意图。</li><li><strong>注意负价格。</strong> 量的要求一高，<span class="math math-inline">\lambda</span> 就大。<span class="math math-inline">\lambda</span> 一旦超过加价项 <span class="math math-inline">q_i/(-q_i&#x27;)</span>，解出来的价格就会低于成本，再大还会变成负数（数学上就是补贴）。如果业务不允许，一定要显式加价格下限，否则解出来没法用。</li><li><strong>离散化放最后做。</strong> 价格必须是 0.5 的整数倍这类要求，是整数约束，会让问题难很多。实践中通常先按连续解优化，最后再取整并做一次局部修补，而不是一开始就上整数规划。</li><li><strong>二分要设好边界和迭代上限。</strong> <span class="math math-inline">\lambda</span> 的搜索区间要给一个合理的范围，否则容易停在区间端点上「假收敛」（我自己验证时就踩过一次：二分方向写反，结果直接跑到了端点）。</li></ul>
+<hr>
+<p><strong>定价专题 · 第 2 篇 / 共 4 篇</strong></p>
+<p><a href="1-single.html">← 单对象定价优化</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="3-substitution.html">替代品的定价优化 →</a></p>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>大规模定价优化 — Jiangang Han</title>
+<meta name="description" content="规模一上来，闭式解就不管用了。这一篇用一点精度换来可解：把需求模型线性化，交给求解器；同时讲清楚，这个近似在什么情况下会悄悄失准。">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/zh/posts/pricing/4-scale.html">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/pricing/4-scale.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/pricing/4-scale.html">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/pricing/4-scale.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="大规模定价优化 — Jiangang Han">
+<meta property="og:description" content="规模一上来，闭式解就不管用了。这一篇用一点精度换来可解：把需求模型线性化，交给求解器；同时讲清楚，这个近似在什么情况下会悄悄失准。">
+<meta property="og:url" content="https://jianganghan.github.io/zh/posts/pricing/4-scale.html">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/css/style.css">
+<link rel="stylesheet" href="../../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../../zh/index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../../zh/index.html">文章</a>
+    <a class="head__lang" href="../../../posts/pricing/4-scale.html" hreflang="en">EN</a>
+  </nav>
+</header>
+
+<main class="article">
+<h1>大规模定价优化</h1>
+<blockquote class="lede"><p>规模一上来，闭式解就不管用了。这一篇用一点精度换来可解：把需求模型线性化，交给求解器；同时讲清楚，这个近似在什么情况下会悄悄失准。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-泰勒展开做线性化">1. 泰勒展开做线性化</a></li><li class="toc__l2"><a href="#2-线性化能用到什么程度-必须知道它的边界">2. 线性化能用到什么程度：必须知道它的边界</a></li><li class="toc__l2"><a href="#3-落地时会踩的坑">3. 落地时会踩的坑</a></li><li class="toc__l2"><a href="#4-整个专题没有覆盖的东西">4. 整个专题没有覆盖的东西</a></li><li class="toc__l3"><a href="#4-1-怎么得到那条曲线（整个专题都没讲-而它是最难的）">4.1 怎么得到那条曲线（整个专题都没讲，而它是最难的）</a></li><li class="toc__l3"><a href="#4-2-大规模求解的工程实现">4.2 大规模求解的工程实现</a></li><li class="toc__l3"><a href="#4-3-动态与博弈">4.3 动态与博弈</a></li><li class="toc__l3"><a href="#4-4-不确定性">4.4 不确定性</a></li><li class="toc__l3"><a href="#4-5-多目标与合规">4.5 多目标与合规</a></li><li class="toc__l2"><a href="#专题小结">专题小结</a></li></ul></nav>
+<blockquote><p><strong>定价专题 · 第 4 篇 / 共 4 篇</strong> · 阅读约 10 分钟</p>
+<p><a href="3-substitution.html">← 替代品的定价优化</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p></blockquote>
+<p><strong>前情提要</strong>：上一篇给出了替代效应下最优解的显式形式，但它只在「一个用户群 × 一张清单」的规模上成立。这一篇处理真实规模，并老实交代整个专题没讲的东西。</p>
+<details>
+<summary>本篇会用到的符号</summary>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">\boldsymbol\delta</span></td><td>调价量向量，<span class="math math-inline">\delta_j</span> 是候选项 <span class="math math-inline">j</span> 的调价幅度</td></tr><tr><td><span class="math math-inline">Q(\mathbf p)</span></td><td>总转化率（至少买一个），<span class="math math-inline">= 1 - q_0</span></td></tr><tr><td><span class="math math-inline">H</span></td><td>海森矩阵，<span class="math math-inline">H_{ij} = \partial^2 Q/\partial p_i\partial p_j</span></td></tr><tr><td><span class="math math-inline">\delta_{ij}</span></td><td>Kronecker 符号：<span class="math math-inline">i=j</span> 时为 1，否则为 0</td></tr></tbody></table></div>
+<p>完整符号表见<a href="index.html">专题目录</a>。</p>
+</details>
+<hr>
+<h2 id="1-泰勒展开做线性化">1. 泰勒展开做线性化</h2>
+<p>上一篇那个显式解看着很美，但它成立有前提：<strong>一个用户群 × 一张清单</strong>，而且只有量约束这种简单约束。</p>
+<p>真实问题通常是：<span class="math math-inline">M</span> 个用户群 × <span class="math math-inline">N</span> 个候选项，决策变量 <span class="math math-inline">M \times N</span> 个，外加一堆跨行、跨列、跨品类的约束。这时候显式解不再适用，得上运筹求解器。而求解器擅长线性、二次这类问题，不擅长 Logit 这种「指数套分式」的结构。</p>
+<p><strong>标准做法：在当前价格点做泰勒展开，把转化率线性化。</strong></p>
+<p>设当前价格 <span class="math math-inline">\mathbf{p}^{(0)}</span>，调价量为 <span class="math math-inline">\boldsymbol\delta</span>。总转化率（至少买一个）：</p>
+<div class="math math-display">Q(\mathbf{p}) = 1 - q_0(\mathbf{p}) = 1 - \frac{1}{1+\sum_m e^{\,b_m - k_mp_m}}</div>
+<p>展开：</p>
+<div class="math math-display">Q(\mathbf{p}^{(0)} + \boldsymbol\delta) \;=\; \underbrace{Q^{(0)}}_{\text{零阶}} \;+\; \underbrace{\nabla Q^{\top}\boldsymbol\delta}_{\text{一阶}} \;+\; \underbrace{\tfrac12\,\boldsymbol\delta^{\top}H\,\boldsymbol\delta}_{\text{二阶}} \;+\; O(\lVert\boldsymbol\delta\rVert^3)</div>
+<p><strong>零阶项</strong>（当前值）：</p>
+<div class="math math-display">Q^{(0)} = 1 - \frac{1}{1 + \sum_m e^{\,b_m - k_m p_m^{(0)}}}</div>
+<p><strong>一阶项（梯度）</strong>：由上一篇第 3 节，<span class="math math-inline">\frac{\partial Q}{\partial p_j} = -\frac{\partial q_0}{\partial p_j}</span>，而</p>
+<div class="math math-display">\frac{\partial q_0}{\partial p_j} = \frac{\partial}{\partial p_j}\left(\frac{1}{D}\right) = -\frac{1}{D^2}\cdot\frac{\partial D}{\partial p_j} = -\frac{1}{D^2}(-k_je_j) = k_j\,q_j\,q_0</div>
+<p>所以</p>
+<div class="math math-display">\boxed{\ \nabla Q^{\top}\boldsymbol\delta \;=\; -\sum_j k_j\,q_j\,q_0\,\delta_j\ }</div>
+<p><strong>二阶项（海森）</strong>：从 <span class="math math-inline">\frac{\partial Q}{\partial p_i} = -k_i\frac{e_i}{D^2}</span> 出发，对 <span class="math math-inline">p_j</span> 再求一次导：</p>
+<div class="math math-display">H_{ij} = \frac{\partial}{\partial p_j}\left(-k_i\frac{e_i}{D^2}\right) = -k_i\left[\frac{\partial e_i/\partial p_j}{D^2} - \frac{2e_i\,(\partial D/\partial p_j)}{D^3}\right]</div>
+<p>代入 <span class="math math-inline">\frac{\partial e_i}{\partial p_j} = -k_ie_i\delta_{ij}</span>（<span class="math math-inline">\delta_{ij}</span> 是 Kronecker 符号，<span class="math math-inline">i=j</span> 时为 1，否则为 0）和 <span class="math math-inline">\frac{\partial D}{\partial p_j} = -k_je_j</span>：</p>
+<div class="math math-display">= -k_i\left[\frac{-k_ie_i\delta_{ij}}{D^2} + \frac{2k_je_ie_j}{D^3}\right] = \frac{k_i^2e_i\delta_{ij}}{D^2} - \frac{2k_ik_je_ie_j}{D^3}</div>
+<p>再用 <span class="math math-inline">q_i = e_i/D</span>、<span class="math math-inline">q_0 = 1/D</span> 整理：</p>
+<div class="math math-display">\boxed{\ H_{ij} = \bigl(k_i^2\,q_i\,\delta_{ij} \;-\; 2\,k_i k_j\, q_i q_j\bigr)\,q_0\ }</div>
+<p>于是二阶项写成</p>
+<div class="math math-display">\tfrac12\boldsymbol\delta^{\top}H\boldsymbol\delta = \frac{q_0}{2}\sum_{i,j}\bigl(k_i^2q_i\delta_{ij} - 2k_ik_jq_iq_j\bigr)\delta_i\delta_j</div>
+<p><strong>这两个式子的结构值得看一眼</strong>：<span class="math math-inline">\delta_{ij}</span> 那一项是「自己影响自己」，<span class="math math-inline">-2k_ik_jq_iq_j</span> 那一项是「互相影响」。替代效应就藏在后一项里。</p>
+<blockquote><p>我用有限差分对上面的梯度和海森做了数值验证：梯度吻合到 <span class="math math-inline">10^{-11}</span>，海森吻合到 <span class="math math-inline">10^{-5}</span>（后者受限于差分精度本身）。</p></blockquote>
+<p><strong>只保留到一阶</strong>，转化率就成了 <span class="math math-inline">\boldsymbol\delta</span> 的线性函数，和量有关的约束随之都是线性的；目标函数也只保留一阶项的话，整个问题就化成一个线性规划（LP），可以直接交给成熟的求解器，第二篇那一堆跨单元约束也能直接加进去。这是工业界处理大规模定价最常见的做法。</p>
+<h2 id="2-线性化能用到什么程度-必须知道它的边界">2. 线性化能用到什么程度：必须知道它的边界</h2>
+<p>线性近似不是免费的。<strong>调价幅度一大，误差会迅速膨胀。</strong></p>
+<p><img src="../../../posts/pricing/images/fig7-taylor.svg" alt="近似误差随调价幅度的增长" loading="lazy"></p>
+<p>上图来自一个三候选项的算例（所有价格同方向调整）。层次很清楚：0 阶（完全不考虑价格变化，直接用当前转化率）误差最大；一阶近似在小幅调价时相当准；二阶的误差再低一个量级。</p>
+<p><strong>请务必用你自己的数据重画这张图</strong>，不要直接信任何人给的经验值 —— 误差大小完全取决于你的 <span class="math math-inline">k</span> 有多大、清单有多长、份额分布多集中。做法很简单：</p>
+<ol><li>取一批真实的调价样本（最好来自随机调价实验，理由见第 4 节）</li><li>对每个样本，分别用 0 / 1 / 2 阶近似算出预测转化率</li><li>和真实转化率对比，按调价幅度分桶，统计 <strong>ME</strong>（平均误差，看有没有系统性偏差）、<strong>MAE</strong>（平均绝对误差，看整体准度）、<strong>RMSE</strong>（看长尾）</li><li>定出一个「可信调价区间」：误差可接受的最大幅度</li></ol>
+<p><strong>然后用信任域迭代</strong>，把线性化用在它该用的地方：</p>
+<pre><code>Δ ← 初始步长
+重复：
+    在当前价格 p 处展开，得到线性模型
+    解 LP，但额外限制 |δ| ≤ Δ           # 只在可信范围内走
+    用【真实模型】评估这一步的实际收益
+    如果实际有改善：  p ← p + δ；适当放大 Δ
+    否则：            缩小 Δ，重来
+直到 Δ 足够小</code></pre>
+<p>这样既享受了 LP 的求解效率，又不会因为一步迈太大而掉进近似失效的坑里。</p>
+<h2 id="3-落地时会踩的坑">3. 落地时会踩的坑</h2>
+<ul><li><strong>IIA 假设。</strong> MNL 有个著名的性质叫「无关选项独立性」：两个候选项的份额之比，与第三个候选项的存在与否无关。现实中这经常不成立（两个几乎一样的选项，本该主要互相抢量，而不是按份额比例从所有对手那里抢）。如果你的清单里有大量高度相似的候选，考虑 Nested Logit 或 Mixed Logit。</li><li><strong>清单是动态的。</strong> 上面假设候选集固定。真实场景里排序、召回、库存都在变，清单本身就是个变量。定价和排序其实是耦合的，整个专题都没有处理这一层。</li><li><strong><span class="math math-inline">q_0</span> 极难估准。</strong> 「什么都没买」这件事通常没有明确的标签 —— 用户只是划走了。而 <span class="math math-inline">q_0</span> 恰恰出现在几乎所有公式里，它估偏了，整套结论都会偏。这是这类模型在实践中最大的不确定性来源，务必单独做敏感性分析。</li><li><strong>别拿一个用户群的最优解直接上线。</strong> 上面推的是一个用户群面对一张清单。真实系统要对海量用户群同时定价，还要考虑一个候选项在不同用户群清单里的价格是否需要一致（往往需要，出于公平性和舆情考虑）。这会引入跨用户群的一致性约束，是个更难的问题。</li></ul>
+<hr>
+<h2 id="4-整个专题没有覆盖的东西">4. 整个专题没有覆盖的东西</h2>
+<p>整个专题反复说「假设你已经有了价格—需求关系」。这里把这些被跳过的部分老实列出来，免得读者以为照着推导就能直接上线。</p>
+<h3 id="4-1-怎么得到那条曲线（整个专题都没讲-而它是最难的）">4.1 怎么得到那条曲线（整个专题都没讲，而它是最难的）</h3>
+<p>这是整个链路里最容易翻车的一环。核心难点叫 <strong>内生性（endogeneity）</strong>：</p>
+<blockquote><p>历史数据里的价格<strong>不是随机的</strong>。它是人（或上一版策略）根据当时的需求情况定出来的。</p></blockquote>
+<p>举个典型的例子：需求旺盛时你涨价，需求疲软时你降价。那么在数据里，你会看到「价格高的时候成交量也高」。直接拿这批数据回归，会得出<strong>「价格越高，买的人越多」</strong>的荒谬结论（估出来的 <span class="math math-inline">k</span> 是负的）——模型会告诉你「涨价能增量」。</p>
+<p>常见的应对手段（每一个都值得单独一篇）：</p>
+<ul><li><strong>随机调价实验</strong>：最干净，但有真金白银的成本，且需要业务方同意</li><li><strong>工具变量（IV）</strong>：找一个只影响价格、不直接影响需求的变量（比如上游成本冲击）</li><li><strong>断点回归（RDD）</strong>：利用规则造成的价格跳变</li><li><strong>双重差分（DID）</strong>：利用分批上线造成的自然对照</li></ul>
+<p>另外还有：曲线用什么形式（Logit / 线性 / 半参数）、在多细的粒度上估（太细样本不够，太粗会抹平差异）、能外推多远（历史上从没定过的价格，模型说了不算）。</p>
+<h3 id="4-2-大规模求解的工程实现">4.2 大规模求解的工程实现</h3>
+<p>这个专题里的算法都只是「原理上可行」。真到百万级决策变量：列生成、拉格朗日分解、ADMM、分布式求解、warm start、数值稳定性 —— 都是硬工程。</p>
+<h3 id="4-3-动态与博弈">4.3 动态与博弈</h3>
+<p>整个专题讨论的都是<strong>静态、单期</strong>的问题：定完价、看结果，就结束了。真实世界里：</p>
+<ul><li>今天降价会改变用户对明天价格的预期（跨期效应）</li><li>竞争对手会跟进（博弈）</li><li>用户会学会等促销（策略性行为）</li></ul>
+<h3 id="4-4-不确定性">4.4 不确定性</h3>
+<p>这个专题把 <span class="math math-inline">q(p)</span> 当作<strong>已知的确定函数</strong>。实际上它是估出来的，带着置信区间。在估计误差比较大的地方，最优解可能非常脆弱。稳健优化、贝叶斯定价，以及探索—利用（bandit）方法，都是为解决这个问题而生的。</p>
+<h3 id="4-5-多目标与合规">4.5 多目标与合规</h3>
+<p>这个专题只优化利润。真实目标往往是「利润 + 份额 + 体验」的加权，而权重本身是个业务决策。差异化定价还有明确的法律和伦理边界，不同地区规则不同，这部分完全在专题范围之外。</p>
+<hr>
+<h2 id="专题小结">专题小结</h2>
+<p>把四篇串起来：</p>
+<ol><li><strong>一个价格</strong>：最优价 = 成本 + 加价项，加价项 = 转化率 ÷ 转化率下降速度。倒 U 曲线的顶点。</li><li><strong>两个价格</strong>：只要不耦合，就是各算各的。对价格越敏感的，定价越低。</li><li><strong>N 个价格</strong>：无耦合时完全分解，<span class="math math-inline">N</span> 再大也不难 —— 但这个解通常不能直接上线。</li><li><strong>加约束</strong>：跨单元约束会把所有价格绑在一起，此时出现一个<strong>标量旋钮</strong> <span class="math math-inline">\lambda</span>（影子价格）。二分它，就能拿到最优解；而且它本身是个可以拿去做业务决策的数。</li><li><strong>有替代效应</strong>：旋钮有了显式形式 —— <strong>所有候选项的 mUE（多卖一单的净收益）<span class="math math-inline">= (p_j - c_j) - 1/k_j</span> 必须被拉平到同一条水位线上</strong>。最优定价 = 统一水位 + 各自的天然加价空间 + 各自的成本。</li></ol>
+<p>如果只带走一句话，我希望是这句：</p>
+<blockquote><p><strong>定价优化的本质，不是给每个对象单独找一个「好价格」，而是找到那条正确的水位线，然后让所有对象一起站上去。</strong></p></blockquote>
+<hr>
+<p><strong>定价专题 · 第 4 篇 / 共 4 篇</strong></p>
+<p><a href="3-substitution.html">← 替代品的定价优化</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>

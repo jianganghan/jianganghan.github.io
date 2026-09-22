@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-zh="冯·诺依曼 1952：多数表决、阈值与多路复用 — Jiangang Han" data-en="Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing — Jiangang Han">冯·诺依曼 1952：多数表决、阈值与多路复用 — Jiangang Han</title>
-<script>
-// Pick the language before the first paint (same rules as lang.js), so a bilingual post never flashes the other language
-(function(){
-  var l = null;
-  try { l = localStorage.getItem('lang'); } catch (e) {}
-  if (!l) l = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
-  document.documentElement.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en');
-})();
-</script>
+<title>Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing — Jiangang Han</title>
+<meta name="description" content="Can you build a machine that almost never fails out of parts that fail all the time? Von Neumann&#x27;s answer was yes, on two conditions: each part&#x27;s error rate ha…">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/posts/reliability/1-von-neumann.html">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/reliability/1-von-neumann.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/reliability/1-von-neumann.html">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/reliability/1-von-neumann.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing — Jiangang Han">
+<meta property="og:description" content="Can you build a machine that almost never fails out of parts that fail all the time? Von Neumann&#x27;s answer was yes, on two conditions: each part&#x27;s error rate ha…">
+<meta property="og:url" content="https://jianganghan.github.io/posts/reliability/1-von-neumann.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary">
 <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="../../assets/css/article.css">
@@ -23,121 +28,12 @@
 <header class="head">
   <a class="head__name" href="../../index.html">Jiangang Han</a>
   <nav class="head__nav">
-    <a href="../../index.html" data-en="Posts" data-zh="文章">Posts</a>
-    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+    <a href="../../index.html">Posts</a>
+    <a class="head__lang" href="../../zh/posts/reliability/1-von-neumann.html" hreflang="zh-Hans">中文</a>
   </nav>
 </header>
 
 <main class="article">
-<div class="lang-zh" lang="zh-CN">
-<h1>冯·诺依曼 1952：多数表决、阈值与多路复用</h1>
-<blockquote class="lede"><p>每个元件都会出错，能不能用它们搭出一台几乎不出错的机器？冯·诺依曼的回答是：能，但有两个前提。单个元件的出错率要低于一道门槛，各处的错误还要互相独立。这一篇沿着他 1952 年的讲稿，把这个回答从头推一遍。</p></blockquote>
-<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-问题从哪来">1. 问题从哪来</a></li><li class="toc__l2"><a href="#2-放着不管-会怎样">2. 放着不管，会怎样</a></li><li class="toc__l2"><a href="#3-多数表决-什么时候能纠错">3. 多数表决：什么时候能纠错</a></li><li class="toc__l2"><a href="#4-1-6-一条分界线">4. 1/6：一条分界线</a></li><li class="toc__l2"><a href="#5-严格证明的代价-0-73%-与-3^mu">5. 严格证明的代价：0.73% 与 <span class="math math-inline">3^\mu</span></a></li><li class="toc__l2"><a href="#6-多路复用-不要求每根线都对">6. 多路复用：不要求每根线都对</a></li><li class="toc__l2"><a href="#7-他搁置的那个假设">7. 他搁置的那个假设</a></li><li class="toc__l2"><a href="#参考文献">参考文献</a></li></ul></nav>
-<blockquote><p><strong>可靠性专题 · 第 1 篇 / 共 2 篇</strong> · 阅读约 18 分钟</p>
-<p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-verifier-cascades.html">多加几道检查，为什么不够 →</a></p></blockquote>
-<p>这是「用不可靠的模型，搭可靠的系统」的第一篇。这一篇里没有大模型，主角是电子管、继电器和神经元。只需要一点概率基础：独立事件的乘法，和二项分布。</p>
-<details>
-<summary>本篇会用到的符号</summary>
-<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">\varepsilon</span></td><td>单个元件每次操作出错的概率</td></tr><tr><td><span class="math math-inline">p_s</span></td><td>记忆单元经过 <span class="math math-inline">s</span> 步后仍处于正确状态的概率</td></tr><tr><td><span class="math math-inline">\eta</span></td><td>一条线上信号出错概率的上界</td></tr><tr><td><span class="math math-inline">f_\varepsilon(\eta)</span></td><td>多数表决器的误差映射：输入出错 <span class="math math-inline">\eta</span> 时，输出出错多少</td></tr><tr><td><span class="math math-inline">\eta_0</span></td><td>反复表决之后，误差稳定下来的水平</td></tr><tr><td><span class="math math-inline">\mu</span></td><td>逻辑深度：从输入到输出，最长的一串元件有多少个</td></tr><tr><td><span class="math math-inline">N,\ \Delta</span></td><td>一束线里有多少根线；读一束线时用的判定阈值</td></tr><tr><td><span class="math math-inline">\delta</span></td><td>允许整台机器最终出错的概率</td></tr></tbody></table></div>
-<p>专题的整体介绍见<a href="index.html">专题目录</a>。</p>
-</details>
-<hr>
-<h2 id="1-问题从哪来">1. 问题从哪来</h2>
-<p>1948 年 9 月，冯·诺依曼在帕萨迪纳的 Hixon 研讨会上作了一场报告。那是一次讨论大脑与行为的会议，他开场就说自己对在座多数领域是个外行，然后讲起了自动机，把计算机和神经系统放在一起对照。</p>
-<p>报告中间，他算了一笔账。元件每做一次操作，失败的概率很小，但不是零；操作链一长，这些小概率累积起来就会接近 1，机器等于完全不可靠。一台高速计算机解一道典型的题，可能要做 <span class="math math-inline">10^{12}</span> 次操作，所以单次操作的出错率必须远低于 <span class="math math-inline">10^{-12}</span>。而在当时，一只电话继电器出错率 <span class="math math-inline">10^{-8}</span> 算合格，<span class="math math-inline">10^{-9}</span> 就算优秀了。</p>
-<p>他由此断言，自动机的逻辑必须把「推理链」（chains of reasoning）的实际长度考虑进去，还要允许每一步以很小的概率出错。这件事「需要一个不平凡的理论」。</p>
-<p>三年多以后，他自己给出了这个理论。1952 年 1 月，他在加州理工连讲五次，R. S. Pierce 做了笔记；1956 年，讲稿以 <em>Probabilistic Logics and the Synthesis of Reliable Organisms from Unreliable Components</em> 为题，收进香农（C. E. Shannon）和麦卡锡（J. McCarthy）主编的《Automata Studies》。</p>
-<p>前言里有一句话，定下了全文的基调：错误不该被看成过程之外的偶然事故，它就是过程本身的一部分；在自动机的设计里，它和「正确的逻辑结构」同样重要。</p>
-<p>他要回答的问题，可以写成一句话：</p>
-<blockquote><p>给定一种每次操作以概率 ε 出错的元件，能不能搭出一台机器，让它最终出错的概率不超过任意指定的 δ？δ 最小能到多少？</p></blockquote>
-<details>
-<summary>展开：出处的时间线</summary>
-<div class="table-wrap"><table><thead><tr><th>时间</th><th>事件</th></tr></thead><tbody><tr><td>1948 年 9 月 20 日</td><td>在 Hixon 研讨会（帕萨迪纳）报告 <em>The General and Logical Theory of Automata</em>，1951 年收入会议文集。问题第一次被提出</td></tr><tr><td>1951 年</td><td>在伊利诺伊大学与 K. A. Brueckner、M. Gell-Mann 讨论，论文前言致谢说这些讨论给了他重要的启发</td></tr><tr><td>1952 年 1 月 4–15 日</td><td>加州理工五次讲座，R. S. Pierce 记笔记</td></tr><tr><td>1956 年</td><td>正式发表于《Automata Studies》（Annals of Mathematics Studies 第 34 册），第 43–98 页</td></tr></tbody></table></div>
-<p>讲稿的原始打字稿存于加州理工。2010 年 Michael Godfrey 据此重新排印了一版，并指出正式出版的版本在插图上有几处错误。下文提到的节号，都是原文的节号。</p>
-</details>
-<h2 id="2-放着不管-会怎样">2. 放着不管，会怎样</h2>
-<p>先写下他的错误模型（§7.1）：每个元件每次操作以概率 ε 出错，而且与网络所处的状态、与别处的故障都统计独立。不妨设 <span class="math math-inline">\varepsilon &lt; 1/2</span>，因为一个多数时候都出错的元件，把输出取反就是一个好元件。</p>
-<p>最简单的例子是记忆单元：它被触发一次之后，应当一直保持激发。设它每一步以概率 ε 翻转，<span class="math math-inline">p_s</span> 是 <span class="math math-inline">s</span> 步之后仍处于正确状态的概率，那么</p>
-<div class="math math-display">p_{s+1} = (1-\varepsilon)\,p_s + \varepsilon\,(1-p_s)</div>
-<p>两边同时减去 ½，得到</p>
-<div class="math math-display">p_s - \tfrac12 = (1-2\varepsilon)^s\,\bigl(p_0 - \tfrac12\bigr) \approx e^{-2\varepsilon s}\,\bigl(p_0 - \tfrac12\bigr)</div>
-<p><span class="math math-inline">p_s - \tfrac12</span> 衡量的是这个单元还记得多少。它按指数衰减，<span class="math math-inline">p_s</span> 最终趋于 ½：存进去的东西变成了抛硬币。ε = 0.5% 时，大约 70 步就忘掉一半。</p>
-<p>冯·诺依曼特别强调，错误的麻烦不在于得到错误的结果，而在于得到无关的结果：输出和输入不再有任何关系。</p>
-<p><img src="images/fig1-decay.svg" alt="放着不管，错误会累积" loading="lazy"></p>
-<p>他还指出了一个看上去绕不过去的限制（§7.3）：机器的每个输出，都出自最后那一个元件，整台机器不可能比这个元件更可靠。所以，只要信号是在单根线上传的，最终出错率 δ 就不可能低于 ε。</p>
-<p>这个限制后来被绕过去了。不过在那之前，得先有一个能纠错的部件。</p>
-<h2 id="3-多数表决-什么时候能纠错">3. 多数表决：什么时候能纠错</h2>
-<p>他选的纠错部件是多数表决器（majority organ）：三个输入，输出其中占多数的那个值。它也是用同样的元件做的，自己也以概率 ε 出错。</p>
-<p>设三路输入出错的概率分别不超过 <span class="math math-inline">\eta_1, \eta_2, \eta_3</span>。输出出错的概率，有两种估计（§8.2）。</p>
-<p><strong>一般情形。</strong> 什么都不假设，就只能把各种出错的可能加起来：</p>
-<div class="math math-display">P(\text{输出出错}) \le \varepsilon + \eta_1 + \eta_2 + \eta_3</div>
-<p>每一路都不超过 η 时，这个界是 <span class="math math-inline">\varepsilon + 3\eta</span>，比 η 还大。也就是说，信号每经过一个元件，误差只会变大，机器一深就谈不上精度。</p>
-<p><strong>特殊情形。</strong> 如果下面两个条件同时成立：</p>
-<ol><li>三路输入各自独立地出错；</li><li>正常工作时，三路输入本该相同。</li></ol>
-<p>那么只有至少两路同时出错，表决才会出错。每路出错概率不超过 η 时，这件事的概率是 <span class="math math-inline">3\eta^2(1-\eta) + \eta^3 = 3\eta^2 - 2\eta^3</span>。再算上表决器自己以 ε 把结果弄反，输出出错的概率为</p>
-<div class="math math-display">\boxed{\ f_\varepsilon(\eta) = \varepsilon + (1-2\varepsilon)\,(3\eta^2 - 2\eta^3)\ }</div>
-<p>η 小的时候，它约等于 <span class="math math-inline">\varepsilon + 3\eta^2</span>，可以比 η 小。<strong>表决确实能纠错，但前提是这两个条件都成立。</strong> 冯·诺依曼接下来的所有构造，都是在想办法让每一个表决器都处在这个特殊情形里。</p>
-<p>最直接的办法是三重化：把原来的网络复制三份，喂给它们同样的输入，每个输出后面接一个多数表决器。三份副本各自独立地出错，结果又本该一致，两个条件正好满足。于是输出出错概率的上界，从 η 变成了 <span class="math math-inline">f_\varepsilon(\eta)</span>。</p>
-<h2 id="4-1-6-一条分界线">4. 1/6：一条分界线</h2>
-<p>三重化可以一层套一层地做。所以真正要问的是：反复作用 <span class="math math-inline">\eta \to f_\varepsilon(\eta)</span>，误差最后会停在哪里？</p>
-<p>先找不动点，也就是 <span class="math math-inline">f_\varepsilon(\eta) = \eta</span> 的解。<span class="math math-inline">\eta = \tfrac12</span> 总是一个。把因子 <span class="math math-inline">\eta - \tfrac12</span> 提出来，剩下的部分是</p>
-<div class="math math-display">(1-2\varepsilon)\,\eta^2 - (1-2\varepsilon)\,\eta + \varepsilon = 0
-\quad\Longrightarrow\quad
-\eta = \frac12\left(1 \pm \sqrt{\frac{1-6\varepsilon}{1-2\varepsilon}}\right)</div>
-<p>根号里的数非负，当且仅当 <span class="math math-inline">\varepsilon \le 1/6</span>。于是分成两种情况。</p>
-<p><strong><span class="math math-inline">\varepsilon &lt; 1/6</span> 时</strong>，有三个不动点 <span class="math math-inline">\eta_0 &lt; \tfrac12 &lt; 1-\eta_0</span>。只要初始误差低于 ½，反复表决就会把它拉到</p>
-<div class="math math-display">\eta_0 = \frac12\left(1 - \sqrt{\frac{1-6\varepsilon}{1-2\varepsilon}}\right) = \varepsilon + 3\varepsilon^2 + \cdots</div>
-<p><strong><span class="math math-inline">\varepsilon \ge 1/6</span> 时</strong>，只剩 ½ 这一个不动点。不管初始误差多小，反复表决都会把它推向 ½，信息全部丢失，和上一节的记忆单元一样。</p>
-<p>分界点也可以一行算出来。在 ½ 处，映射的斜率是 <span class="math math-inline">f_\varepsilon&#x27;(\tfrac12) = \tfrac32(1-2\varepsilon)</span>。斜率大于 1，½ 就是个排斥点，误差会离开它，跑向 <span class="math math-inline">\eta_0</span>；斜率小于 1，½ 就把一切都吸过去。斜率恰好等于 1 的地方，正是 <span class="math math-inline">\varepsilon = 1/6</span>。</p>
-<p><img src="images/fig2-majority.svg" alt="多数表决的误差映射：ε 在 1/6 两侧" loading="lazy"></p>
-<p>这个结果有两层意思：</p>
-<ul><li><strong>误差有底。</strong> 稳定点 <span class="math math-inline">\eta_0 \approx \varepsilon</span>，表决最多把误差压到和元件本身差不多的水平，不会更低，这就是第 2 节 δ ≥ ε 的限制。但它挡住了 <span class="math math-inline">(1-\varepsilon)^L</span> 那样的雪崩，误差不再随深度增长。</li><li><strong>有一道门槛。</strong> 元件太差（ε ≥ 1/6，约 16.7%）时，叠多少层表决都没用。门槛两边是截然不同的两种局面：一边误差能稳住，另一边一切归于噪声。</li></ul>
-<h2 id="5-严格证明的代价-0-73%-与-3^mu">5. 严格证明的代价：0.73% 与 <span class="math math-inline">3^\mu</span></h2>
-<p>上面的推理是启发式的。要严格证明（§8.3.2），冯·诺依曼对网络的逻辑深度 μ 做归纳。麻烦在于，他的构造里总有一部分表决器，输入并不处在特殊情形，只能用一般情形的界 <span class="math math-inline">\varepsilon + 3\eta</span>。</p>
-<p>把这部分也算进去，归纳要成立，就需要对某个小于 ½ 的 η 满足</p>
-<div class="math math-display">\varepsilon + 3 f_\varepsilon(\eta) \le \eta
-\quad\Longleftrightarrow\quad
-4\varepsilon + 3(1-2\varepsilon)(3\eta^2 - 2\eta^3) \le \eta</div>
-<p>算下来，这个不等式只在 <span class="math math-inline">\varepsilon &lt; 0.0073</span> 时有解，能保证的最小误差约为 <span class="math math-inline">4\varepsilon + 152\varepsilon^2</span>。比如要把最终误差控制在 2%，元件的出错率就得低于 0.41%。</p>
-<p><img src="images/fig3-threshold.svg" alt="1/6 是启发式的门槛，严格证明要求 0.73%" loading="lazy"></p>
-<p>冯·诺依曼说，0.73% 这个数没有绝对的意义，构造改进一下还可以放宽；1/6 却是硬的，一旦超过它，哪怕在最有利的情形下，表决也改善不了误差。</p>
-<p>真正要命的是成本。深度每加一层，元件数就乘以 3，整台机器需要原来 <span class="math math-inline">3^\mu</span> 倍的元件。他算了一下：逻辑深度 160 对一次普通计算来说并不算深，可 <span class="math math-inline">3^{160} \approx 2 \times 10^{76}</span>，已经超过了人们估计的宇宙电子总数；深度再加 25% 到 200，还要再乘上 <span class="math math-inline">1.2 \times 10^{19}</span>。他对此只写了一句：无需多言。</p>
-<p>单线的方案回答了「能不能」，却造不出来。</p>
-<h2 id="6-多路复用-不要求每根线都对">6. 多路复用：不要求每根线都对</h2>
-<p>出路在 §7.4 的「多线技巧」：每个信号不再用一根线传，而是用一束 N 根线同时传。再取一个判定阈值 Δ（0 &lt; Δ &lt; ½）：一束里至少有 <span class="math math-inline">(1-\Delta)N</span> 根被激发，就读作 1；至多 <span class="math math-inline">\Delta N</span> 根被激发，就读作 0；介于两者之间，算作机器出了故障。</p>
-<p>这样一来，δ ≥ ε 的限制就不成立了。单根线仍然以 ε 左右的概率出错，但一束线只有在出错的线超过 ΔN 根时才算错。</p>
-<p>在线束上做运算，需要两类部件。</p>
-<p><strong>执行器官</strong>（executive organ）负责逻辑运算本身，比如把三束线逐根配对，送进 N 个多数表决器。问题出在「二对一」的时候，也就是两束输入压过第三束：输出束里出错线的比例，可能接近这两束的出错比例之和。运算一级级做下去，线束就会滑进中间的故障区。</p>
-<p><strong>恢复器官</strong>（restoring organ）负责把退化的线束拉回来。做法是（§9.2.3）：把一束线的每根都一分为三，经过一个随机置换 U 打乱，再每三根送进一个多数表决器。如果输入束里有比例为 α 的线被激发，那么一个表决器收到至少两根激发线的概率是</p>
-<div class="math math-display">\alpha^* = 3\alpha^2 - 2\alpha^3</div>
-<p>这和第 3 节是同一个三次式，只不过现在作用在一束线的比例上。它把 α 往离它更近的 0 或 1 推：比例离两端 21.2% 时推得最狠，一次能拉回 9.6 个百分点。再算上表决器自身的出错，出错线比例的变化就服从 <span class="math math-inline">f_\varepsilon</span>。</p>
-<p><strong>随机置换是整个构造的关键。</strong> 置换之前，每三根线都是同一根线分出来的，状态完全一样；而 <span class="math math-inline">3\alpha^2 - 2\alpha^3</span> 这个公式，要求进入同一个表决器的三根线相互独立。冯·诺依曼说得很直接：这种随机性必须始终保持。他在 §11.2 又补了一个反面例子：网络有反馈时，如果不打乱，脉冲会回到它出发的那个器官，错误之间出现强相关，机器会「记住自己的错误，并一直延续下去」。</p>
-<p>那么，线束为什么能突破 δ ≥ ε？看一束线里出错线的比例。N 根线大致独立地出错，这个比例的涨落约为 <span class="math math-inline">1/\sqrt N</span>。线束失效，要求这个比例偶然涨过 Δ，这是个大偏差事件，概率随 N 指数下降。</p>
-<p><img src="images/fig4-multiplex.svg" alt="恢复器官，以及线束大小与失效概率" loading="lazy"></p>
-<p>冯·诺依曼为一套完全用 Sheffer 元件（与非门）搭的方案算了具体数字（§10.5）。判定阈值取 Δ = 0.07 时，元件出错率必须低于 1.07%，否则线束再粗，失效概率也降不到某个正数以下。取 ε = 0.005，一束线失效的概率约为</p>
-<div class="math math-display">\varrho(N) \approx \frac{1}{\sqrt{2\pi}}\int_\kappa^\infty e^{-x^2/2}\,dx, \qquad \kappa = 0.062\sqrt{N}</div>
-<p>由此可以算出 <span class="math math-inline">\varrho \sim e^{-0.0019N}</span>：N 每多约 1,200 根，失效概率就降一个数量级。他的表里，N = 1,000 时失效概率约 2.7%，N = 10,000 时约 <span class="math math-inline">1.6 \times 10^{-10}</span>，N = 20,000 时约 <span class="math math-inline">2.8 \times 10^{-19}</span>。</p>
-<p>接着他举了两个例子（§10.5.3）。</p>
-<p><strong>一台电子管计算机。</strong> 2,500 只电子管，平均每 5 微秒动作一次，要求平均 8 小时才出一次错。8 小时里共有约 <span class="math math-inline">1.4 \times 10^{13}</span> 次动作，所以每次动作允许的出错概率 δ ≈ <span class="math math-inline">7 \times 10^{-14}</span>，查表得 N ≈ 14,000。N 再加 25%，可靠性提高约 1,600 倍。</p>
-<p><strong>人的神经系统。</strong> 按 <span class="math math-inline">10^{13}</span> 个基本单元、每秒动作 10 次、一万年才允许出一次严重错误来估，N 在 19,000 到 28,000 之间，取决于具体的假设。</p>
-<p>他的结论是：只要要求足够严，N 对具体要求很不敏感，大约都在两万上下。</p>
-<p>代价是线数乘以 N，元件数乘以约 3N。N ≈ 20,000 对当时的电子管技术不现实，但对神经元这样微小的元件并不离谱。更要紧的是增长方式：N 只随机器规模和精度要求缓慢增长，而单线方案要乘的是 <span class="math math-inline">3^\mu</span>。</p>
-<h2 id="7-他搁置的那个假设">7. 他搁置的那个假设</h2>
-<p>回到第 2 节的错误模型。冯·诺依曼写下「各处的错误相互独立」之后，紧接着提到另一种假设：故障与网络的状态有关，彼此之间也相关，他说这种假设「要现实得多」。然后他写道，这里先采用前一种，更窄、也更简单的假设。</p>
-<p>到了 §11.3，他又回到这个问题：把每个元件的出错概率当成一个与时间、与此前输入都无关的常数 ε，「是不现实的」。出错率可能随输入组合而变，随历史漂移，也因元件而异。对这种情况的分析，「这里不做尝试」。</p>
-<p>把全文连起来看，独立性是整座建筑的地基：</p>
-<ul><li>第 3 节的多数表决，只有在三路输入各自独立地出错时，才能把 η 压成 <span class="math math-inline">3\eta^2</span> 量级；</li><li>第 6 节的恢复器官，要靠随机置换去制造独立性；</li><li>线束的失效概率随 N 指数下降，同样依赖 N 根线大致独立地出错。</li></ul>
-<p>有独立性，冗余就能换来任意高的可靠性，代价只是常数倍的元件。没有独立性，这些结论一个也拿不到。</p>
-<p>七十多年后，搭 AI 系统的人面对的是同一个问题：每次调用模型都可能出错，而我们想要一个几乎不出错的系统。多采样几次再投票，就是多数表决；让另一次调用来检查结果，就是恢复器官；agent 一步接一步地执行，就是冯·诺依曼说的推理链。不同的是，同一个模型面对同一道题，常常错在同一个地方。<strong>错误并不独立。</strong></p>
-<p>这恰好是他搁置的那种情况。<a href="index.html">专题目录</a>里有一张完整的对照表；<a href="2-verifier-cascades.html">第 2 篇</a>讨论，错误相关时，为什么多加几道检查就不够了，内容基于我 2026 年的一篇论文（参考文献 3）。</p>
-<hr>
-<h2 id="参考文献">参考文献</h2>
-<ol><li>John von Neumann. <a href="https://static.ias.edu/pitp/archive/2012files/Probabilistic_Logics.pdf">Probabilistic Logics and the Synthesis of Reliable Organisms from Unreliable Components</a>. In C. E. Shannon, J. McCarthy (eds.), <em>Automata Studies</em>, Annals of Mathematics Studies 34, pp. 43–98. Princeton University Press, 1956.（链接为据 1952 年加州理工讲稿重新排印的版本）</li><li>John von Neumann. The General and Logical Theory of Automata. In L. A. Jeffress (ed.), <em>Cerebral Mechanisms in Behavior: The Hixon Symposium</em>, pp. 1–41. Wiley, 1951.</li><li>Jiangang Han. <a href="https://arxiv.org/abs/2607.13918">Partially Correlated Verifier Cascades in LLM Harnesses: Concave Log-Odds, Polynomial Reliability, and Blind-Spot Ceilings</a>. arXiv:2607.13918, 2026.</li></ol>
-<hr>
-<p><strong>可靠性专题 · 第 1 篇 / 共 2 篇</strong></p>
-<p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-verifier-cascades.html">多加几道检查，为什么不够 →</a></p>
-</div>
-<div class="lang-en" lang="en">
 <h1>Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing</h1>
 <blockquote class="lede"><p>Can you build a machine that almost never fails out of parts that fail all the time? Von Neumann's answer was yes, on two conditions: each part's error rate has to stay below a threshold, and failures in different places have to be independent. This post follows his 1952 lectures and works through that answer from the beginning.</p></blockquote>
 <nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-where-the-question-came-from">1. Where the question came from</a></li><li class="toc__l2"><a href="#2-what-happens-if-you-do-nothing">2. What happens if you do nothing</a></li><li class="toc__l2"><a href="#3-majority-voting-and-when-it-works">3. Majority voting, and when it works</a></li><li class="toc__l2"><a href="#4-one-sixth-a-dividing-line">4. One-sixth: a dividing line</a></li><li class="toc__l2"><a href="#5-the-price-of-rigor-0-73%-and-3^mu">5. The price of rigor: 0.73% and <span class="math math-inline">3^\mu</span></a></li><li class="toc__l2"><a href="#6-multiplexing-not-every-line-has-to-be-right">6. Multiplexing: not every line has to be right</a></li><li class="toc__l2"><a href="#7-the-assumption-he-set-aside">7. The assumption he set aside</a></li><li class="toc__l2"><a href="#references">References</a></li></ul></nav>
@@ -244,13 +140,11 @@
 <hr>
 <p><strong>Reliability · Part 1 of 2</strong></p>
 <p>← First part　·　<a href="index.html"><strong>Series index</strong></a>　·　<a href="2-verifier-cascades.html">Why More Checks Stop Helping →</a></p>
-</div>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span></footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-<script src="../../assets/js/lang.js"></script>
 <script src="../../assets/js/zoom.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script>

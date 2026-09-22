@@ -21,9 +21,7 @@
 .article p{ margin:0 0 1.05rem; }
 /* <main> is a flex item (see body in style.css), so the last block's bottom margin no longer
    collapses into the footer's top margin; drop it so the gap above the footer stays the same */
-.article > :last-child,
-.article > .lang-zh > :last-child,
-.article > .lang-en > :last-child{ margin-bottom:0; }
+.article > :last-child{ margin-bottom:0; }
 .article ul,.article ol{ margin:0 0 1.05rem; padding-left:1.35rem; }
 .article ul{ list-style:disc; }
 .article ol{ list-style:decimal; }
@@ -134,10 +132,6 @@
 }
 html.zoom-open{ overflow:hidden; }          /* the page behind stays put while zoomed */
 @media (prefers-reduced-motion:reduce){ .zoom{ transition:none; } }
-
-/* ── Bilingual: both versions live in one page; <html lang> picks which one shows ── */
-html[lang="en"] .lang-zh,
-html:not([lang="en"]) .lang-en{ display:none; }
 
 /* ── Lede: the highlighted opening of a post ───────────── */
 .article blockquote.lede{

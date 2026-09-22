@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-zh="单次拍卖的出价 — Jiangang Han" data-en="Bidding in a Single Auction — Jiangang Han">单次拍卖的出价 — Jiangang Han</title>
-<script>
-// Pick the language before the first paint (same rules as lang.js), so a bilingual post never flashes the other language
-(function(){
-  var l = null;
-  try { l = localStorage.getItem('lang'); } catch (e) {}
-  if (!l) l = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
-  document.documentElement.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en');
-})();
-</script>
+<title>Bidding in a Single Auction — Jiangang Han</title>
+<meta name="description" content="In an auction, all you do is name one number. To you, all your competitors combined are just one random &quot;market price&quot;: from it you can work out your win rate…">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/posts/bidding/1-auction.html">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/bidding/1-auction.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/bidding/1-auction.html">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/bidding/1-auction.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="Bidding in a Single Auction — Jiangang Han">
+<meta property="og:description" content="In an auction, all you do is name one number. To you, all your competitors combined are just one random &quot;market price&quot;: from it you can work out your win rate…">
+<meta property="og:url" content="https://jianganghan.github.io/posts/bidding/1-auction.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary">
 <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="../../assets/css/article.css">
@@ -23,77 +28,12 @@
 <header class="head">
   <a class="head__name" href="../../index.html">Jiangang Han</a>
   <nav class="head__nav">
-    <a href="../../index.html" data-en="Posts" data-zh="文章">Posts</a>
-    <button type="button" class="head__lang" id="langBtn" hidden>中文</button>
+    <a href="../../index.html">Posts</a>
+    <a class="head__lang" href="../../zh/posts/bidding/1-auction.html" hreflang="zh-Hans">中文</a>
   </nav>
 </header>
 
 <main class="article">
-<div class="lang-zh" lang="zh-CN">
-<h1>单次拍卖的出价</h1>
-<blockquote class="lede"><p>一场拍卖里，你只需要报一个数。对你来说，所有竞争对手加起来只是一个随机的「市场价」：由它推出胜率和花费，就能看清为什么二价下该如实报价、一价下要压价。顺带从平台一侧看一眼——底价其实就是一个定价问题。</p></blockquote>
-<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-把问题写下来">1. 把问题写下来</a></li><li class="toc__l2"><a href="#2-关键事实-二价下-多赢一次的成本正好是你的出价">2. 关键事实：二价下，多赢一次的成本正好是你的出价</a></li><li class="toc__l2"><a href="#3-这一次该出多少">3. 这一次该出多少</a></li><li class="toc__l2"><a href="#4-从平台看-底价就是一个定价问题">4. 从平台看：底价就是一个定价问题</a></li><li class="toc__l2"><a href="#5-落地时会踩的坑">5. 落地时会踩的坑</a></li></ul></nav>
-<blockquote><p><strong>出价专题 · 第 1 篇 / 共 3 篇</strong> · 阅读约 8 分钟</p>
-<p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-budget.html">预算约束下的出价 →</a></p></blockquote>
-<p>这是「广告出价入门」的第一篇，只看一次拍卖、一个出价，不需要任何前置知识。</p>
-<details>
-<summary>本篇会用到的符号</summary>
-<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th></tr></thead><tbody><tr><td><span class="math math-inline">b</span></td><td>你的出价，<strong>决策变量</strong></td></tr><tr><td><span class="math math-inline">z</span></td><td>市场价：其他所有竞争者里的最高出价，对你来说是个随机数</td></tr><tr><td><span class="math math-inline">w(b)</span></td><td>胜率曲线 <span class="math math-inline">P(z \le b)</span>，也就是 <span class="math math-inline">z</span> 的分布函数</td></tr><tr><td><span class="math math-inline">w&#x27;(b)</span></td><td>胜率曲线的斜率，也就是 <span class="math math-inline">z</span> 的概率密度</td></tr><tr><td><span class="math math-inline">c(b)</span></td><td>这次机会的期望花费（输了算 0），<span class="math math-inline">c_1</span> 是一价，<span class="math math-inline">c_2</span> 是二价</td></tr><tr><td><span class="math math-inline">v</span></td><td>这次曝光对你值多少</td></tr><tr><td><span class="math math-inline">r</span></td><td>平台设的底价</td></tr></tbody></table></div>
-<p>完整符号表见<a href="index.html">专题目录</a>。</p>
-</details>
-<hr>
-<h2 id="1-把问题写下来">1. 把问题写下来</h2>
-<p>用户刷一次信息流，就产生一次广告曝光机会，平台为它办一场拍卖。你是某个广告主的出价代理，这一次只做一件事：报一个价 <span class="math math-inline">b</span>。</p>
-<p><strong>对你来说，其他所有竞争者加在一起，只体现为一个数</strong>：他们之中的最高出价 <span class="math math-inline">z</span>，下文叫<strong>市场价</strong>。你事先不知道 <span class="math math-inline">z</span>，但可以从历史日志里估计它的分布。于是赢的概率就是</p>
-<div class="math math-display">w(b) = P(z \le b)</div>
-<p>这条曲线叫<strong>胜率曲线</strong>（业内也叫 bid landscape）。它就是市场价的分布函数：从 0 出发，单调上升，趋向 1。它的斜率 <span class="math math-inline">w&#x27;(b)</span> 就是市场价的概率密度。</p>
-<p>赢了之后付多少，取决于平台的计费规则：</p>
-<ul><li><strong>一价</strong>（first price）：付自己的出价 <span class="math math-inline">b</span>。</li><li><strong>二价</strong>（second price）：付「刚好能赢的价格」，也就是市场价 <span class="math math-inline">z</span>。</li></ul>
-<p>对这一次机会取期望（输了花 0），两种规则下的期望花费分别是</p>
-<div class="math math-display">c_1(b) = b\,w(b), \qquad c_2(b) = \int_0^b z\,w&#x27;(z)\,dz</div>
-<p>二价的式子读作：把所有你能赢下的市场价 <span class="math math-inline">z \le b</span>，按出现的概率加权求和。</p>
-<p><strong>关于单位。</strong> 广告平台一般按 eCPM（每千次曝光的期望收入）排序。你按点击出价 <span class="math math-inline">b_{\text{click}}</span> 元，折算到每次曝光就是 <span class="math math-inline">b = b_{\text{click}} \times \text{pCTR}</span>。本专题的 <span class="math math-inline">b</span>、<span class="math math-inline">z</span>、<span class="math math-inline">v</span> 一律换算到「每次曝光」上。单广告位的 GSP 按点击计费时，赢家每次点击付 <span class="math math-inline">z/\text{pCTR}</span>，折回每次曝光正好是 <span class="math math-inline">z</span>，所以它就是二价。</p>
-<h2 id="2-关键事实-二价下-多赢一次的成本正好是你的出价">2. 关键事实：二价下，多赢一次的成本正好是你的出价</h2>
-<p>「每赢一次花多少」有两种算法：</p>
-<ul><li><strong>平均成本</strong>：<span class="math math-inline">c_2(b)/w(b) = E[z \mid z \le b]</span>，即赢下的那些拍卖的平均成交价。它一定<strong>小于</strong> <span class="math math-inline">b</span>。</li><li><strong>边际成本</strong>：出价从 <span class="math math-inline">b</span> 抬到 <span class="math math-inline">b + db</span>，多花的钱除以多赢的次数。</li></ul>
-<p>边际成本的结果非常简洁。对 <span class="math math-inline">c_2</span> 的积分上限求导，<span class="math math-inline">c_2&#x27;(b) = b\,w&#x27;(b)</span>，于是</p>
-<div class="math math-display">\boxed{\ \frac{dc_2}{dw} = \frac{c_2&#x27;(b)}{w&#x27;(b)} = b\ }</div>
-<p>直觉：出价抬高一点点，多赢下的恰好是市场价落在 <span class="math math-inline">[b,\ b+db]</span> 里的那些拍卖，每一场都付 <span class="math math-inline">b</span> 左右。</p>
-<p>一价就不一样了：</p>
-<div class="math math-display">\frac{dc_1}{dw} = \frac{w(b) + b\,w&#x27;(b)}{w&#x27;(b)} = b + \frac{w(b)}{w&#x27;(b)} \;&gt;\; b</div>
-<p>多出来的 <span class="math math-inline">w/w&#x27;</span>，是因为一价下抬价不只多赢了新的拍卖，还让<strong>本来就能赢的每一场</strong>都多付了钱。二价没有这一项，因为你付的是 <span class="math math-inline">z</span>，不是 <span class="math math-inline">b</span>。</p>
-<p><img src="images/fig1-market.svg" alt="市场价的分布与每赢一次的成本" loading="lazy"></p>
-<p>用均匀分布算一个简单的例子：若 <span class="math math-inline">z</span> 在 <span class="math math-inline">[0, m]</span> 上均匀，则 <span class="math math-inline">w = b/m</span>，<span class="math math-inline">c_2 = b^2/(2m)</span>。二价的<strong>平均成本恰好是出价的一半</strong>，边际成本等于出价；一价的边际成本则是 <span class="math math-inline">2b</span>。</p>
-<h2 id="3-这一次该出多少">3. 这一次该出多少</h2>
-<p>这次曝光对你值 <span class="math math-inline">v</span>（比如 <span class="math math-inline">v = \text{pCTR} \times</span> 一次点击对你值多少钱）。赢了拿到价值、同时付钱，期望收益是</p>
-<div class="math math-display">\max_b\ \ v\,w(b) - c(b)</div>
-<p><strong>二价。</strong> 求导：</p>
-<div class="math math-display">\frac{d}{db}\Bigl[v\,w(b) - c_2(b)\Bigr] = v\,w&#x27;(b) - b\,w&#x27;(b) = (v - b)\,w&#x27;(b)</div>
-<p><span class="math math-inline">w&#x27;(b) \ge 0</span>，所以 <span class="math math-inline">b &lt; v</span> 时导数不为负，<span class="math math-inline">b &gt; v</span> 时导数不为正：</p>
-<div class="math math-display">\boxed{\ b_2^\star = v\ }</div>
-<p>这个结论<strong>不依赖 <span class="math math-inline">w</span> 的任何性质</strong>。竞争强也好弱也好，分布是单峰、双峰还是别的形状，二价下如实报价都是最优的。</p>
-<p><strong>一价。</strong> 令导数为零：</p>
-<div class="math math-display">(v - b)\,w&#x27;(b) - w(b) = 0 \quad\Longrightarrow\quad \boxed{\ b_1^\star = v - \frac{w(b_1^\star)}{w&#x27;(b_1^\star)}\ }</div>
-<p>一价要<strong>压价</strong>（bid shading），压多少取决于 <span class="math math-inline">w</span>，也就是说你必须先估计市场。均匀分布下 <span class="math math-inline">b_1^\star = v/2</span>。</p>
-<p><img src="images/fig2-truthful.svg" alt="二价的最优出价与市场无关，一价则取决于市场" loading="lazy"></p>
-<p>读法：<strong>二价把「估计市场」和「决定出价」彻底拆开了，一价没有。</strong> 这是二价在工程上好用的根本原因。现实里两种都有：LinkedIn 的公开论文提到，它自己的信息流广告位用带底价的 GSP，而站外合作媒体的流量大多是一价。</p>
-<p>如果你读过定价专题：一价的 <span class="math math-inline">b^\star = v - w/w&#x27;</span> 和<a href="../pricing/1-single.html">定价的 <span class="math math-inline">p^\star = c + q/(-q&#x27;)</span></a> 是同一个结构的两面。卖方在成本上<strong>加价</strong>，买方在价值上<strong>压价</strong>，幅度都是「当前的量 ÷ 量对价格的敏感度」。</p>
-<h2 id="4-从平台看-底价就是一个定价问题">4. 从平台看：底价就是一个定价问题</h2>
-<p>平台可以设一个<strong>底价</strong> <span class="math math-inline">r</span>（reserve price）：低于 <span class="math math-inline">r</span> 的出价不算数，赢家至少付 <span class="math math-inline">r</span>。</p>
-<p>最简单的情形：只有一个出价者，二价下他报的就是自己的价值 <span class="math math-inline">X</span>，<span class="math math-inline">X</span> 的分布函数是 <span class="math math-inline">F</span>、密度是 <span class="math math-inline">f</span>。平台的期望收入是</p>
-<div class="math math-display">\text{收入}(r) = r \cdot P(X \ge r) = r\,\bigl(1 - F(r)\bigr)</div>
-<p>这正是定价专题第一篇的原题：价格是 <span class="math math-inline">r</span>，成交概率 <span class="math math-inline">q(r) = 1 - F(r)</span>，成本为 0。套用那里的结论：</p>
-<div class="math math-display">\boxed{\ r^\star = \frac{1 - F(r^\star)}{f(r^\star)}\ }</div>
-<p>价值在 <span class="math math-inline">[0, 1]</span> 上均匀时，<span class="math math-inline">r^\star = 1/2</span>。</p>
-<p>一个经典结论（Myerson，1981）：各出价者的价值独立同分布、且分布满足一个叫「正则」的温和条件时（均匀分布就满足），<strong>最优底价跟有几个出价者无关</strong>，还是上面这个 <span class="math math-inline">r^\star</span>。</p>
-<p>站回出价者这边，底价只是改了一下市场价：把 <span class="math math-inline">z</span> 换成 <span class="math math-inline">\max(z,\ r)</span>，前面所有公式照用。</p>
-<h2 id="5-落地时会踩的坑">5. 落地时会踩的坑</h2>
-<ul><li><strong>胜率曲线要从日志里估，而日志是删失的。</strong> 二价下赢了才看到 <span class="math math-inline">z</span>，输了只知道 <span class="math math-inline">z &gt; b</span>。直接拿成交价画直方图，看到的全是比你出价低的市场价，会系统性低估竞争。这是标准的删失数据问题，可以借用生存分析的工具。一价更麻烦，赢了通常也看不到 <span class="math math-inline">z</span>，只知道 <span class="math math-inline">z \le b</span>。</li><li><strong><span class="math math-inline">v</span> 估不准，出价就跟着偏。</strong> 二价下 <span class="math math-inline">b = v</span>，pCTR 高估多少，出价就高多少；而且你赢下的恰恰是被高估的那一批（赢家诅咒）。所以对出价来说，预估值的<strong>校准</strong>和排序能力（AUC）同样要紧。</li><li><strong>多个广告位的 GSP 里，如实报价不再是最优。</strong> 本篇结论只对单个广告位严格成立，多广告位的情况见 Edelman、Ostrovsky、Schwarz（2007）。</li></ul>
-<hr>
-<p><strong>出价专题 · 第 1 篇 / 共 3 篇</strong></p>
-<p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-budget.html">预算约束下的出价 →</a></p>
-</div>
-<div class="lang-en" lang="en">
 <h1>Bidding in a Single Auction</h1>
 <blockquote class="lede"><p>In an auction, all you do is name one number. To you, all your competitors combined are just one random "market price": from it you can work out your win rate and your spend, and see why you bid your true value under second price but shade your bid under first price. We'll also take the platform's side for a moment — setting a reserve price turns out to be a pricing problem.</p></blockquote>
 <nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-setting-up-the-problem">1. Setting up the problem</a></li><li class="toc__l2"><a href="#2-the-key-fact-under-second-price-one-more-win-costs-exactly-your-bid">2. The key fact: under second price, one more win costs exactly your bid</a></li><li class="toc__l2"><a href="#3-how-much-to-bid-this-time">3. How much to bid this time</a></li><li class="toc__l2"><a href="#4-the-platform's-view-a-reserve-price-is-a-pricing-problem">4. The platform's view: a reserve price is a pricing problem</a></li><li class="toc__l2"><a href="#5-pitfalls-in-practice">5. Pitfalls in practice</a></li></ul></nav>
@@ -156,13 +96,11 @@
 <hr>
 <p><strong>Ad Bidding · Part 1 of 3</strong></p>
 <p>← First part　·　<a href="index.html"><strong>Series index</strong></a>　·　<a href="2-budget.html">Bidding Under a Budget →</a></p>
-</div>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　<span data-en="Opinions are my own." data-zh="观点仅代表个人。">Opinions are my own.</span></footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-<script src="../../assets/js/lang.js"></script>
 <script src="../../assets/js/zoom.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script>

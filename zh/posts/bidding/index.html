@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>广告出价入门 — Jiangang Han</title>
+<meta name="description" content="三篇短文，站在广告主出价代理的位置，把广告拍卖里「该出多少钱」的基本数学讲清楚：从一次拍卖，到一整天共用一份预算，再到边投边调的预算平滑（pacing）。">
+<meta name="author" content="Jiangang Han">
+<link rel="canonical" href="https://jianganghan.github.io/zh/posts/bidding/">
+<link rel="alternate" hreflang="en" href="https://jianganghan.github.io/posts/bidding/">
+<link rel="alternate" hreflang="zh-Hans" href="https://jianganghan.github.io/zh/posts/bidding/">
+<link rel="alternate" hreflang="x-default" href="https://jianganghan.github.io/posts/bidding/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jiangang Han">
+<meta property="og:title" content="广告出价入门 — Jiangang Han">
+<meta property="og:description" content="三篇短文，站在广告主出价代理的位置，把广告拍卖里「该出多少钱」的基本数学讲清楚：从一次拍卖，到一整天共用一份预算，再到边投边调的预算平滑（pacing）。">
+<meta property="og:url" content="https://jianganghan.github.io/zh/posts/bidding/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/css/style.css">
+<link rel="stylesheet" href="../../../assets/css/article.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+</head>
+<body>
+
+<header class="head">
+  <a class="head__name" href="../../../zh/index.html">Jiangang Han</a>
+  <nav class="head__nav">
+    <a href="../../../zh/index.html">文章</a>
+    <a class="head__lang" href="../../../posts/bidding/index.html" hreflang="en">EN</a>
+  </nav>
+</header>
+
+<main class="article">
+<h1>广告出价入门</h1>
+<blockquote class="lede"><p>三篇短文，站在广告主出价代理的位置，把广告拍卖里「该出多少钱」的基本数学讲清楚：从<strong>一次拍卖</strong>，到<strong>一整天共用一份预算</strong>，再到<strong>边投边调的预算平滑（pacing）</strong>。</p></blockquote>
+<nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#先分清三个词-pricing-bidding-pacing">先分清三个词：pricing、bidding、pacing</a></li><li class="toc__l2"><a href="#三篇讲什么">三篇讲什么</a></li><li class="toc__l3"><a href="#一-·-单次拍卖的出价1-auction-md-8-分钟"><a href="1-auction.html">一 · 单次拍卖的出价</a>　<code>8 分钟</code></a></li><li class="toc__l3"><a href="#二-·-预算约束下的出价2-budget-md-10-分钟"><a href="2-budget.html">二 · 预算约束下的出价</a>　<code>10 分钟</code></a></li><li class="toc__l3"><a href="#三-·-预算平滑（pacing）3-pacing-md-10-分钟"><a href="3-pacing.html">三 · 预算平滑（Pacing）</a>　<code>10 分钟</code></a></li><li class="toc__l2"><a href="#和定价专题的关系">和定价专题的关系</a></li><li class="toc__l2"><a href="#完整符号表">完整符号表</a></li><li class="toc__l2"><a href="#公式速查">公式速查</a></li><li class="toc__l2"><a href="#这个专题不讲什么">这个专题不讲什么</a></li><li class="toc__l2"><a href="#参考文献">参考文献</a></li></ul></nav>
+<p>每篇只围绕一个核心公式展开，配推导、配图，也说明这个公式在业务里怎么读、上线时会踩什么坑。三篇是递进的，但<strong>每一篇都能单独读</strong>。只想快速了解全貌的话，读完下面「先分清三个词」和「三篇讲什么」两节就够了。</p>
+<hr>
+<h2 id="先分清三个词-pricing-bidding-pacing">先分清三个词：pricing、bidding、pacing</h2>
+<p>一句话：<strong>pricing 是卖方定规则，bidding 是买方每一次出多少，pacing 是买方控制钱花多快。</strong></p>
+<p>打个比方。拍卖行一天要拍 1000 件货，你带着 10 万块进场：</p>
+<ul><li><strong>Pricing（计价）</strong>：拍卖行定的规则。按最高价成交还是按第二高的价成交，起拍价（底价）是多少。</li><li><strong>Bidding（出价）</strong>：你对眼前这一件举多高的牌，依据是这件货对你值多少。</li><li><strong>Pacing（预算平滑）</strong>：你不想上午就把钱花光，于是边拍边看钱包，花快了就整体收着点，花慢了就放开一点。</li></ul>
+<p>放到广告里，三件事每天都在发生：</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>谁来做</th><th>多久做一次</th><th>在广告里是什么</th><th>在哪篇讲</th></tr></thead><tbody><tr><td><strong>Pricing</strong></td><td>平台</td><td>规则很少变，底价可以动态调</td><td>一价、二价、GSP；底价；按曝光、点击还是转化扣费</td><td>第 1 篇</td></tr><tr><td><strong>Bidding</strong></td><td>广告主，或替它出价的自动出价系统</td><td>每个曝光机会出一次价，毫秒级</td><td>手动出价，或「最大化转化」「目标 CPA」这类自动出价</td><td>第 1、2 篇</td></tr><tr><td><strong>Pacing</strong></td><td>同上</td><td>每几分钟一次</td><td>限流，或整体调高、调低出价</td><td>第 3 篇</td></tr></tbody></table></div>
+<p>三件事靠一个公式串起来：<strong>出价 <span class="math math-inline">b = \alpha \times v</span></strong>。</p>
+<p><img src="../../../posts/bidding/images/fig0-pipeline.svg" alt="一次出价是怎么来的" loading="lazy"></p>
+<ul><li><strong><span class="math math-inline">v</span> 管「这一次值多少」</strong>：来自预估模型，决定这次曝光和别的机会比，该多出还是少出。这是 bidding 的部分。</li><li><strong><span class="math math-inline">\alpha</span> 管「整体出多高」</strong>：由 pacing 根据花钱快慢来调。它最优应该是多少，第 2 篇算；怎么在线调到位，第 3 篇讲。</li><li><strong>pricing 规则决定这个公式怎么用</strong>：二价下直接按它出价就是最优；一价下还要在它的基础上再压一点价。这是第 1 篇的内容。</li></ul>
+<details>
+<summary>展开：几个容易混的说法</summary>
+<ul><li>广告里说的 pricing，多数时候指平台侧的计价规则和底价，不是广告主在定价。本站定价专题讲的是卖方定价，对应到广告里，就是平台怎么定底价。</li><li>早期的 pacing 系统常常就是限流。第 3 篇会说明，调出价比限流更好，所以现在的 pacing 本质上是出价系统的一部分。</li><li>CPC、CPM 说的是按什么扣费，属于 pricing；怎么出价是另一回事。比如 oCPC 就是按转化目标出价、按点击扣费。</li></ul>
+</details>
+<hr>
+<h2 id="三篇讲什么">三篇讲什么</h2>
+<h3 id="一-·-单次拍卖的出价1-auction-md-8-分钟"><a href="1-auction.html">一 · 单次拍卖的出价</a>　<code>8 分钟</code></h3>
+<p><strong>回答的问题</strong>：只有一次拍卖，该出多少？平台用一价还是二价，对出价有什么影响？</p>
+<p>对出价者来说，市场只是一个随机数：其他人的最高出价。由它得到胜率曲线和花费曲线，推出二价下「如实报价」、一价下「压价」。最后从平台一侧看一眼底价，它其实就是定价专题第一篇的原题。</p>
+<p><strong>读完能带走</strong>：二价下，多赢一次的边际成本正好等于你的出价。后两篇的结论都从这一句长出来。</p>
+<h3 id="二-·-预算约束下的出价2-budget-md-10-分钟"><a href="2-budget.html">二 · 预算约束下的出价</a>　<code>10 分钟</code></h3>
+<p><strong>回答的问题</strong>：一整天成千上万次拍卖共用一份预算，每一次该出多少？</p>
+<p>加上预算约束。拉格朗日函数一拆开，每一次拍卖又变回第一篇的问题，只是价值都除以了同一个数 <span class="math math-inline">\lambda</span>，相当于上面公式里的 <span class="math math-inline">\alpha = 1/\lambda</span>。</p>
+<p><strong>读完能带走</strong>：<span class="math math-inline">b = v/\lambda</span>；价值相同就出同一个价，不管竞争强弱；以及「预算翻倍，量不会翻倍」的精确版本。</p>
+<h3 id="三-·-预算平滑（pacing）3-pacing-md-10-分钟"><a href="3-pacing.html">三 · 预算平滑（Pacing）</a>　<code>10 分钟</code></h3>
+<p><strong>回答的问题</strong>：最优的 <span class="math math-inline">\lambda</span> 事先算不出来，边投边该怎么调？</p>
+<p>为什么降价比限流好，更新规则什么时候收敛、什么时候振荡，起步偏了怎么追回来，以及加上成本约束、所有广告主都在调时会发生什么。</p>
+<p><strong>读完能带走</strong>：一条几行代码的更新规则，和一个判断它会不会振荡的乘积 <span class="math math-inline">\eta e</span>。</p>
+<hr>
+<h2 id="和定价专题的关系">和定价专题的关系</h2>
+<p><a href="../pricing/index.html">定价专题</a>站在<strong>卖方</strong>：面对一条随价格下降的需求曲线 <span class="math math-inline">q(p)</span>，决定卖多少钱。这个专题站在<strong>买方</strong>：面对一条随出价上升的胜率曲线 <span class="math math-inline">w(b)</span>，决定出多少钱。两边的骨架几乎一一对应：</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>定价（卖方）</th><th>出价（买方）</th></tr></thead><tbody><tr><td>面对的曲线</td><td>需求 <span class="math math-inline">q(p)</span>，递减</td><td>胜率 <span class="math math-inline">w(b)</span>，递增</td></tr><tr><td>单点最优</td><td><span class="math math-inline">p^\star = c + q/(-q&#x27;)</span>，在成本上加价</td><td>一价 <span class="math math-inline">b^\star = v - w/w&#x27;</span>，在价值上压价</td></tr><tr><td>耦合约束带来的旋钮</td><td>影子价格 <span class="math math-inline">\lambda</span></td><td>影子价格 <span class="math math-inline">\lambda</span>，出价系数 <span class="math math-inline">1/\lambda</span></td></tr><tr><td>最优解的样子</td><td>边际 UE 拉平</td><td>边际 ROI 拉平</td></tr></tbody></table></div>
+<hr>
+<h2 id="完整符号表">完整符号表</h2>
+<p>三篇通用。每篇开头还有一个「本篇会用到的符号」的折叠小表。</p>
+<div class="table-wrap"><table><thead><tr><th>符号</th><th>含义</th><th>在你的业务里可能是</th></tr></thead><tbody><tr><td><span class="math math-inline">b</span></td><td>出价，<strong>决策变量</strong>，统一换算到每次曝光</td><td>CPC 出价 × pCTR</td></tr><tr><td><span class="math math-inline">z</span></td><td>市场价：除你之外的最高出价</td><td>拍卖日志里其他广告的最高 eCPM</td></tr><tr><td><span class="math math-inline">w(b)</span></td><td>胜率曲线，<span class="math math-inline">P(z \le b)</span></td><td>bid landscape、胜率预估</td></tr><tr><td><span class="math math-inline">c(b)</span></td><td>一次机会的期望花费，<span class="math math-inline">c_1</span> 一价、<span class="math math-inline">c_2</span> 二价</td><td>每次请求的期望消耗</td></tr><tr><td><span class="math math-inline">v</span></td><td>一次曝光机会对你的价值</td><td>pCVR，或 pCTR × 点击价值</td></tr><tr><td><span class="math math-inline">r</span></td><td>底价</td><td>reserve price、floor price</td></tr><tr><td><span class="math math-inline">B,\ T</span></td><td>总预算；拍卖（机会）总数</td><td>日预算；日请求量</td></tr><tr><td><span class="math math-inline">\lambda</span></td><td>预算约束的乘子，影子价格</td><td>多给 1 元预算能多拿多少转化</td></tr><tr><td><span class="math math-inline">\alpha = 1/\lambda</span></td><td>出价系数</td><td>pacing multiplier</td></tr><tr><td><span class="math math-inline">R_k</span></td><td>第 <span class="math math-inline">k</span> 个时间窗的「实际 ÷ 计划」花费</td><td>分时消耗进度</td></tr><tr><td><span class="math math-inline">\eta,\ e</span></td><td>更新步长；花费对出价的弹性</td><td>控制器增益；出价涨 1% 花费涨几 %</td></tr><tr><td><span class="math math-inline">C,\ \mu</span></td><td>成本上限及其乘子</td><td>目标 CPA</td></tr></tbody></table></div>
+<hr>
+<h2 id="公式速查">公式速查</h2>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>结论</th></tr></thead><tbody><tr><td>胜率</td><td><span class="math math-inline">w(b) = P(z \le b)</span></td></tr><tr><td>期望花费</td><td>一价 <span class="math math-inline">c_1 = b\,w(b)</span>；二价 <span class="math math-inline">c_2 = \int_0^b z\,w&#x27;(z)\,dz</span></td></tr><tr><td>每多赢一次的成本</td><td>二价 <span class="math math-inline">b</span>；一价 <span class="math math-inline">b + w/w&#x27;</span></td></tr><tr><td>单次拍卖的最优出价</td><td>二价 <span class="math math-inline">b^\star = v</span>；一价 <span class="math math-inline">b^\star = v - w/w&#x27;</span></td></tr><tr><td>底价（单个出价者）</td><td><span class="math math-inline">r^\star = \bigl(1 - F(r^\star)\bigr)/f(r^\star)</span></td></tr><tr><td>预算约束下，二价</td><td><span class="math math-inline">b_t^\star = v_t/\lambda</span>，<span class="math math-inline">\lambda^\star</span> 满足 <span class="math math-inline">\sum_t c_t(v_t/\lambda^\star) = B</span></td></tr><tr><td>预算约束下，一价</td><td><span class="math math-inline">b_t^\star = v_t/\lambda - w_t/w_t&#x27;</span></td></tr><tr><td>预算的影子价格</td><td><span class="math math-inline">dV^\star/dB = \lambda^\star</span></td></tr><tr><td>均匀市场价 <span class="math math-inline">[0, m]</span>，价值相同</td><td><span class="math math-inline">b^\star = \sqrt{2mB/T}</span>，<span class="math math-inline">N^\star = \sqrt{2TB/m}</span>，边际 CPA = 2 × 平均 CPA</td></tr><tr><td>限流 vs 降价</td><td><span class="math math-inline">N(pS_0) \ge p\,N(S_0)</span></td></tr><tr><td>在线更新</td><td><span class="math math-inline">\alpha \leftarrow \alpha\,e^{-\eta(R_k - 1)}</span>，对数偏差 <span class="math math-inline">x_{k+1} \approx (1 - \eta e)\,x_k</span></td></tr><tr><td>预算 + 成本上限</td><td><span class="math math-inline">b = \dfrac{1 + \mu C}{\lambda + \mu}\,v</span></td></tr></tbody></table></div>
+<hr>
+<h2 id="这个专题不讲什么">这个专题不讲什么</h2>
+<p>三篇都假设<strong>你已经有了校准好的价值预估 <span class="math math-inline">v</span> 和靠谱的胜率曲线 <span class="math math-inline">w(b)</span></strong>，讨论的是「拿到这两样之后，该怎么出价」。</p>
+<p>这两样东西怎么<strong>得到</strong>，其实是整个出价系统里最难、最「统计」的部分（删失数据、选择偏差、非平稳）。这部分连同多广告位 GSP、平台一侧的机制设计、跨天预算规划，都在<a href="3-pacing.html#7-这个专题没有覆盖的东西">第三篇的最后一节</a>里列了出来。</p>
+<hr>
+<h2 id="参考文献">参考文献</h2>
+<ol><li>Yuan Gao, Kaiyu Yang, Yuanlong Chen, Min Liu, Noureddine El Karoui. <a href="http://papers.adkdd.org/2022/papers/adkdd22-gao-bidding.pdf">Bidding Agent Design in the LinkedIn Ad Marketplace</a>. AdKDD 2022.</li><li>Weinan Zhang, Shuai Yuan, Jun Wang. Optimal Real-Time Bidding for Display Advertising. KDD 2014.</li><li>Weinan Zhang, Kan Ren, Jun Wang. <a href="https://arxiv.org/abs/1602.01007">Optimal Real-Time Bidding Frameworks Discussion</a>. arXiv:1602.01007, 2016.</li><li>Jon Feldman, S. Muthukrishnan, Martin Pál, Cliff Stein. Budget Optimization in Search-Based Advertising Auctions. EC 2007.</li><li>Deepak Agarwal, Souvik Ghosh, Kai Wei, Siyu You. Budget Pacing for Targeted Online Advertisements at LinkedIn. KDD 2014.</li><li>Santiago Balseiro, Yonatan Gur. Learning in Repeated Auctions with Budgets: Regret Minimization and Equilibrium. Management Science, 2019.</li><li>Roger Myerson. Optimal Auction Design. Mathematics of Operations Research, 1981.</li><li>Benjamin Edelman, Michael Ostrovsky, Michael Schwarz. Internet Advertising and the Generalized Second-Price Auction. American Economic Review, 2007.</li><li>Wush Chi-Hsuan Wu, Mi-Yen Yeh, Ming-Syan Chen. Predicting Winning Price in Real Time Bidding with Censored Data. KDD 2015.</li><li>Vincent Conitzer, Christian Kroer, Eric Sodomka, Nicolás Stier-Moses. <a href="https://arxiv.org/abs/1706.07151">Multiplicative Pacing Equilibria in Auction Markets</a>. Operations Research, 2022.</li><li>Min Liu, Jialiang Mao, Kang Kang. <a href="https://arxiv.org/abs/2012.08724">Trustworthy and Powerful Online Marketplace Experimentation with Budget-split Design</a>. KDD 2021.</li><li>Gagan Aggarwal et al. <a href="https://arxiv.org/abs/2408.07685">Auto-bidding and Auctions in Online Advertising: A Survey</a>. ACM SIGecom Exchanges, 2024.</li></ol>
+<hr>
+<p><em>专题里所有图均由代码根据文中模型直接计算生成，非示意图。所有推导都做了数值验证（有限差分对拍导数，暴力搜索对拍最优解，蒙特卡洛对拍期望）。如果你发现哪一步有问题，欢迎指出。</em></p>
+</main>
+
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script src="../../../assets/js/zoom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// The build only marks formulas up; the actual typesetting happens here.
+// If KaTeX fails to load, the page still shows readable LaTeX source instead of going blank.
+(function(){
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('.math').forEach(function(el){
+    try {
+      katex.render(el.textContent, el, {
+        displayMode: el.classList.contains('math-display'),
+        throwOnError: false
+      });
+    } catch(e) { el.classList.add('math--failed'); }
+  });
+})();
+</script>
+</body>
+</html>
