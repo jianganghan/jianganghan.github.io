@@ -256,6 +256,8 @@ def split_front_matter(text):
         end = text.find("\n---\n", 4)
         if end != -1:
             for ln in text[4:end].split("\n"):
+                if ln.lstrip().startswith("#"):      # a note to the author, not a field
+                    continue
                 if ":" in ln:
                     k, _, v = ln.partition(":")
                     meta[k.strip()] = v.strip().strip('"\'')
@@ -387,7 +389,7 @@ def decorate(body, toc, lang):
     return body
 
 
-def page(title, body, lang, base_rel, desc, langs, article=True):
+def page(title, body, lang, base_rel, desc, langs, article=True, head_extra=""):
     out_rel = lang_path(lang, base_rel)
     up      = "../" * out_rel.count("/")
     prefix  = "" if lang == DEFAULT_LANG else f"{lang}/"
@@ -449,7 +451,7 @@ def page(title, body, lang, base_rel, desc, langs, article=True):
 <meta property="og:description" content="{d}">
 <meta property="og:url" content="{canon}">
 <meta property="og:locale" content="{OG_LOCALE[lang]}">{alt_locale}
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary">{head_extra}
 <link rel="icon" href="{up}assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="{up}assets/css/style.css">{extra_css}
 </head>
@@ -596,10 +598,16 @@ def build_home(check=False):
     src = os.path.join(ROOT, HOME_SRC)
     meta, fragment = split_front_matter(open(src, encoding="utf-8").read())
     langs = {"en", "zh"}
+    token = meta.get("google_verify", "").strip()
     rows  = []
     for lang in sorted(langs):
+        # Search Console verifies a URL-prefix property by fetching its root page,
+        # so the token belongs there and nowhere else. Blank means no tag at all.
+        extra = (f'\n<meta name="google-site-verification" content="{html.escape(token, quote=True)}">'
+                 if token and lang == DEFAULT_LANG else "")
         doc = page(meta[f"title_{lang}"], pick_lang(fragment, lang).strip(),
-                   lang, "index.html", meta[f"desc_{lang}"], langs, article=False)
+                   lang, "index.html", meta[f"desc_{lang}"], langs,
+                   article=False, head_extra=extra)
         out_rel = lang_path(lang, "index.html")
         verify(doc, out_rel)
         emit(out_rel, doc, check)
