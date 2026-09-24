@@ -1,7 +1,8 @@
-# Everything on this site is meant to be indexed, except the home page
-# source, which is a fragment rather than a page of its own.
+# Everything on this site is meant to be indexed, except the two files
+# below, which are sources the build renders from, not pages.
 User-agent: *
 Allow: /
 Disallow: /_home.html
+Disallow: /assets/img/og-card.html
 
 Sitemap: https://jianganghan.github.io/sitemap.xml

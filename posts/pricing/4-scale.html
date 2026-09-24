@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/posts/pricing/4-scale.html">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="zh_CN">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/posts/pricing/4-scale.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Pricing at Scale — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../feed.xml">
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>Pricing at Scale</h1>
+<p class="dateline"><time datetime="2026-09-20">September 20, 2026</time></p>
 <blockquote class="lede"><p>At scale, closed-form solutions stop working. This post trades a little accuracy for tractability — linearize the demand model and hand it to a solver — and, just as important, shows where that approximation quietly breaks down.</p></blockquote>
 <nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-linearizing-with-a-taylor-expansion">1. Linearizing with a Taylor expansion</a></li><li class="toc__l2"><a href="#2-how-far-linearization-goes-know-its-limits">2. How far linearization goes: know its limits</a></li><li class="toc__l2"><a href="#3-pitfalls-in-practice">3. Pitfalls in practice</a></li><li class="toc__l2"><a href="#4-what-the-series-leaves-out">4. What the series leaves out</a></li><li class="toc__l3"><a href="#4-1-how-to-get-the-curve-not-covered-anywhere-and-the-hardest-part">4.1 How to get the curve (not covered anywhere, and the hardest part)</a></li><li class="toc__l3"><a href="#4-2-engineering-large-scale-solvers">4.2 Engineering large-scale solvers</a></li><li class="toc__l3"><a href="#4-3-dynamics-and-competition">4.3 Dynamics and competition</a></li><li class="toc__l3"><a href="#4-4-uncertainty">4.4 Uncertainty</a></li><li class="toc__l3"><a href="#4-5-multiple-objectives-and-compliance">4.5 Multiple objectives and compliance</a></li><li class="toc__l2"><a href="#wrapping-up">Wrapping up</a></li></ul></nav>
 <blockquote><p><strong>Price Optimization · Part 4 of 4</strong> · 10 min read</p>
@@ -117,9 +123,10 @@ until Δ is small enough</code></pre>
 <hr>
 <p><strong>Price Optimization · Part 4 of 4</strong></p>
 <p><a href="3-substitution.html">← Pricing Substitutable Products</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　Last part →</p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/pricing/4-scale.en.md">Revision history</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.　·　<a href="../../feed.xml">RSS</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../assets/js/zoom.js"></script>

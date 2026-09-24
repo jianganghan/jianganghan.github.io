@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/zh/posts/reliability/1-von-neumann.html">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="en_US">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/zh/posts/reliability/1-von-neumann.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="冯·诺依曼 1952：多数表决、阈值与多路复用 — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../../zh/feed.xml">
 <link rel="stylesheet" href="../../../assets/css/style.css">
 <link rel="stylesheet" href="../../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>冯·诺依曼 1952：多数表决、阈值与多路复用</h1>
+<p class="dateline"><time datetime="2026-09-20">2026 年 9 月 20 日</time></p>
 <blockquote class="lede"><p>每个元件都会出错，能不能用它们搭出一台几乎不出错的机器？冯·诺依曼的回答是：能，但有两个前提。单个元件的出错率要低于一道门槛，各处的错误还要互相独立。这一篇沿着他 1952 年的讲稿，把这个回答从头推一遍。</p></blockquote>
 <nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-问题从哪来">1. 问题从哪来</a></li><li class="toc__l2"><a href="#2-放着不管-会怎样">2. 放着不管，会怎样</a></li><li class="toc__l2"><a href="#3-多数表决-什么时候能纠错">3. 多数表决：什么时候能纠错</a></li><li class="toc__l2"><a href="#4-1-6-一条分界线">4. 1/6：一条分界线</a></li><li class="toc__l2"><a href="#5-严格证明的代价-0-73%-与-3^mu">5. 严格证明的代价：0.73% 与 <span class="math math-inline">3^\mu</span></a></li><li class="toc__l2"><a href="#6-多路复用-不要求每根线都对">6. 多路复用：不要求每根线都对</a></li><li class="toc__l2"><a href="#7-他搁置的那个假设">7. 他搁置的那个假设</a></li><li class="toc__l2"><a href="#参考文献">参考文献</a></li></ul></nav>
 <blockquote><p><strong>可靠性专题 · 第 1 篇 / 共 2 篇</strong> · 阅读约 18 分钟</p>
@@ -140,9 +146,10 @@
 <hr>
 <p><strong>可靠性专题 · 第 1 篇 / 共 2 篇</strong></p>
 <p>← 已是第一篇　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="2-verifier-cascades.html">多加几道检查，为什么不够 →</a></p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/reliability/1-von-neumann.md">修改历史</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。　·　<a href="../../../zh/feed.xml">订阅</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../../assets/js/zoom.js"></script>

@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/zh/posts/pricing/4-scale.html">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="en_US">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/zh/posts/pricing/4-scale.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="大规模定价优化 — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../../zh/feed.xml">
 <link rel="stylesheet" href="../../../assets/css/style.css">
 <link rel="stylesheet" href="../../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>大规模定价优化</h1>
+<p class="dateline"><time datetime="2026-09-20">2026 年 9 月 20 日</time></p>
 <blockquote class="lede"><p>规模一上来，闭式解就不管用了。这一篇用一点精度换来可解：把需求模型线性化，交给求解器；同时讲清楚，这个近似在什么情况下会悄悄失准。</p></blockquote>
 <nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-泰勒展开做线性化">1. 泰勒展开做线性化</a></li><li class="toc__l2"><a href="#2-线性化能用到什么程度-必须知道它的边界">2. 线性化能用到什么程度：必须知道它的边界</a></li><li class="toc__l2"><a href="#3-落地时会踩的坑">3. 落地时会踩的坑</a></li><li class="toc__l2"><a href="#4-整个专题没有覆盖的东西">4. 整个专题没有覆盖的东西</a></li><li class="toc__l3"><a href="#4-1-怎么得到那条曲线（整个专题都没讲-而它是最难的）">4.1 怎么得到那条曲线（整个专题都没讲，而它是最难的）</a></li><li class="toc__l3"><a href="#4-2-大规模求解的工程实现">4.2 大规模求解的工程实现</a></li><li class="toc__l3"><a href="#4-3-动态与博弈">4.3 动态与博弈</a></li><li class="toc__l3"><a href="#4-4-不确定性">4.4 不确定性</a></li><li class="toc__l3"><a href="#4-5-多目标与合规">4.5 多目标与合规</a></li><li class="toc__l2"><a href="#专题小结">专题小结</a></li></ul></nav>
 <blockquote><p><strong>定价专题 · 第 4 篇 / 共 4 篇</strong> · 阅读约 10 分钟</p>
@@ -117,9 +123,10 @@
 <hr>
 <p><strong>定价专题 · 第 4 篇 / 共 4 篇</strong></p>
 <p><a href="3-substitution.html">← 替代品的定价优化</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/pricing/4-scale.md">修改历史</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。　·　<a href="../../../zh/feed.xml">订阅</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../../assets/js/zoom.js"></script>

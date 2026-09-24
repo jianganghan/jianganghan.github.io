@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/zh/posts/bidding/2-budget.html">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="en_US">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/zh/posts/bidding/2-budget.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="预算约束下的出价 — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../../zh/feed.xml">
 <link rel="stylesheet" href="../../../assets/css/style.css">
 <link rel="stylesheet" href="../../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>预算约束下的出价</h1>
+<p class="dateline"><time datetime="2026-09-20">2026 年 9 月 20 日</time></p>
 <blockquote class="lede"><p>一天有成千上万次拍卖，却只有一份预算。拉格朗日乘子把这条约束压缩成一个数 <span class="math math-inline">\lambda</span>，每次的出价都是「价值 ÷ <span class="math math-inline">\lambda</span>」。由它能推出几个反直觉、但很好用的性质：价值相同就出同一个价；预算翻倍，量却不会翻倍。</p></blockquote>
 <nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-把问题写下来">1. 把问题写下来</a></li><li class="toc__l2"><a href="#2-求解">2. 求解</a></li><li class="toc__l2"><a href="#3-这个公式的几个性质">3. 这个公式的几个性质</a></li><li class="toc__l3"><a href="#3-1-出价和价值成正比-全局只需要一个数">3.1 出价和价值成正比，全局只需要一个数</a></li><li class="toc__l3"><a href="#3-2-价值相同-出价就相同——哪怕竞争完全不同">3.2 价值相同，出价就相同——哪怕竞争完全不同</a></li><li class="toc__l3"><a href="#3-3-lambda-是什么-多给一块钱预算-能多换来多少价值">3.3 <span class="math math-inline">\lambda</span> 是什么：多给一块钱预算，能多换来多少价值</a></li><li class="toc__l3"><a href="#3-4-边际递减-预算翻倍-量不会翻倍">3.4 边际递减：预算翻倍，量不会翻倍</a></li><li class="toc__l3"><a href="#3-5-多个版位-多个计划共用预算-同一个-lambda-自动分好">3.5 多个版位、多个计划共用预算：同一个 <span class="math math-inline">\lambda</span> 自动分好</a></li><li class="toc__l3"><a href="#3-6-一价呢？">3.6 一价呢？</a></li><li class="toc__l2"><a href="#4-落地时会踩的坑">4. 落地时会踩的坑</a></li></ul></nav>
 <blockquote><p><strong>出价专题 · 第 2 篇 / 共 3 篇</strong> · 阅读约 10 分钟</p>
@@ -116,9 +122,10 @@
 <hr>
 <p><strong>出价专题 · 第 2 篇 / 共 3 篇</strong></p>
 <p><a href="1-auction.html">← 单次拍卖的出价</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　<a href="3-pacing.html">预算平滑（Pacing） →</a></p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/bidding/2-budget.md">修改历史</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。　·　<a href="../../../zh/feed.xml">订阅</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../../assets/js/zoom.js"></script>

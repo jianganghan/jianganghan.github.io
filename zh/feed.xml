@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-CN">
+  <title>Jiangang Han</title>
+  <subtitle>Notes on what I&#x27;ve learned and built, and what I&#x27;m learning and building now.</subtitle>
+  <id>https://jianganghan.github.io/zh/</id>
+  <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/"/>
+  <link rel="self" type="application/atom+xml" href="https://jianganghan.github.io/zh/feed.xml"/>
+  <updated>2026-09-20T00:00:00Z</updated>
+  <author><name>Jiangang Han</name></author>
+  <entry>
+    <title>单次拍卖的出价</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/bidding/1-auction.html"/>
+    <id>https://jianganghan.github.io/zh/posts/bidding/1-auction.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>一场拍卖里，你只需要报一个数。对你来说，所有竞争对手加起来只是一个随机的「市场价」：由它推出胜率和花费，就能看清为什么二价下该如实报价、一价下要压价。</summary>
+  </entry>
+  <entry>
+    <title>预算约束下的出价</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/bidding/2-budget.html"/>
+    <id>https://jianganghan.github.io/zh/posts/bidding/2-budget.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>一天有成千上万次拍卖，却只有一份预算。拉格朗日乘子把这条约束压缩成一个数 λ，每次的出价都是「价值 ÷ λ」。</summary>
+  </entry>
+  <entry>
+    <title>预算平滑（Pacing）</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/bidding/3-pacing.html"/>
+    <id>https://jianganghan.github.io/zh/posts/bidding/3-pacing.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>最优的 λ 没法事先算出来：早上 9 点，你不知道今晚的市场长什么样，只能边花边调。这一篇讲预算平滑的控制逻辑：为什么降价比限流好，更新规则什么时候收敛、什么时候振…</summary>
+  </entry>
+  <entry>
+    <title>单对象定价优化</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/pricing/1-single.html"/>
+    <id>https://jianganghan.github.io/zh/posts/pricing/1-single.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>只有一个数要定。价格往上抬，每一单赚得更多，买的人却更少——利润走出一条倒 U 曲线。这一篇把顶点的位置算出来，并给出一个不用计算器也能估的基准。</summary>
+  </entry>
+  <entry>
+    <title>多对象定价与业务约束</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/pricing/2-constraints.html"/>
+    <id>https://jianganghan.github.io/zh/posts/pricing/2-constraints.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>从一个对象变成 N 个，问题并没有变难——它会干净地拆成 N 个互不相干的小问题。真正让它变难的，是那条把所有价格重新绑回一起的业务红线；而一旦绑上，N 个价格就由一个…</summary>
+  </entry>
+  <entry>
+    <title>替代品的定价优化</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/pricing/3-substitution.html"/>
+    <id>https://jianganghan.github.io/zh/posts/pricing/3-substitution.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>把一个产品的价格抬上去，另一个的销量反而涨了——它们在抢同一批需求。一旦有了这种牵连，价格就不能再一个一个单独定。</summary>
+  </entry>
+  <entry>
+    <title>大规模定价优化</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/pricing/4-scale.html"/>
+    <id>https://jianganghan.github.io/zh/posts/pricing/4-scale.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>规模一上来，闭式解就不管用了。这一篇用一点精度换来可解：把需求模型线性化，交给求解器；同时讲清楚，这个近似在什么情况下会悄悄失准。</summary>
+  </entry>
+  <entry>
+    <title>冯·诺依曼 1952：多数表决、阈值与多路复用</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/reliability/1-von-neumann.html"/>
+    <id>https://jianganghan.github.io/zh/posts/reliability/1-von-neumann.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>每个元件都会出错，能不能用它们搭出一台几乎不出错的机器？冯·诺依曼的回答是：能，但有两个前提。单个元件的出错率要低于一道门槛，各处的错误还要互相独立。</summary>
+  </entry>
+  <entry>
+    <title>多加几道检查，为什么不够：相关错误与验证天花板</title>
+    <link rel="alternate" type="text/html" href="https://jianganghan.github.io/zh/posts/reliability/2-verifier-cascades.html"/>
+    <id>https://jianganghan.github.io/zh/posts/reliability/2-verifier-cascades.html</id>
+    <published>2026-09-20T00:00:00Z</published>
+    <updated>2026-09-20T00:00:00Z</updated>
+    <summary>让模型生成答案，再让模型检查，不过关就重来，这是今天搭 AI 系统最常见的做法之一。直觉是：一道检查不够，就多加几道。</summary>
+  </entry>
+</feed>

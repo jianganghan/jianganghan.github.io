@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/zh/posts/reliability/2-verifier-cascades.html">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="en_US">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/zh/posts/reliability/2-verifier-cascades.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="多加几道检查，为什么不够：相关错误与验证天花板 — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../../zh/feed.xml">
 <link rel="stylesheet" href="../../../assets/css/style.css">
 <link rel="stylesheet" href="../../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>多加几道检查，为什么不够：相关错误与验证天花板</h1>
+<p class="dateline"><time datetime="2026-09-20">2026 年 9 月 20 日</time></p>
 <blockquote class="lede"><p>让模型生成答案，再让模型检查，不过关就重来，这是今天搭 AI 系统最常见的做法之一。直觉是：一道检查不够，就多加几道。这一篇说明，当检查者和生成者有共同的盲区时，这个直觉会在哪里失灵、失灵到什么程度，以及怎样事先把它测出来。</p></blockquote>
 <nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-问题-一道检查接一道检查">1. 问题：一道检查接一道检查</a></li><li class="toc__l2"><a href="#2-错误独立时-每道检查乘上一个固定倍数">2. 错误独立时：每道检查乘上一个固定倍数</a></li><li class="toc__l2"><a href="#3-但检查者往往一再看走眼">3. 但检查者往往一再看走眼</a></li><li class="toc__l2"><a href="#4-精确的公式只有一行">4. 精确的公式只有一行</a></li><li class="toc__l2"><a href="#5-幸存者偏差-后面的检查越来越没用">5. 幸存者偏差：后面的检查越来越没用</a></li><li class="toc__l2"><a href="#6-从指数到多项式-再到天花板">6. 从指数到多项式，再到天花板</a></li><li class="toc__l2"><a href="#7-检查太严-还会帮倒忙">7. 检查太严，还会帮倒忙</a></li><li class="toc__l2"><a href="#8-怎么测-同一个答案判两次">8. 怎么测：同一个答案判两次</a></li><li class="toc__l2"><a href="#9-该怎么办">9. 该怎么办</a></li><li class="toc__l2"><a href="#参考文献">参考文献</a></li></ul></nav>
 <blockquote><p><strong>可靠性专题 · 第 2 篇 / 共 2 篇</strong> · 阅读约 20 分钟</p>
@@ -141,9 +147,10 @@
 <hr>
 <p><strong>可靠性专题 · 第 2 篇 / 共 2 篇</strong></p>
 <p><a href="1-von-neumann.html">← 冯·诺依曼 1952：多数表决、阈值与多路复用</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/reliability/2-verifier-cascades.md">修改历史</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。　·　<a href="../../../zh/feed.xml">订阅</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../../assets/js/zoom.js"></script>

@@ -338,6 +338,22 @@ HTML_LANG   = {"zh": "zh-CN", "en": "en"}
 HREFLANG    = {"zh": "zh-Hans", "en": "en"}
 OG_LOCALE   = {"zh": "zh_CN", "en": "en_US"}
 HOME_SRC    = "_home.html"
+# The card X, LinkedIn, WeChat and Slack show when a link to the site is pasted.
+# One image for the whole site; assets/img/og-card.html is what it was rendered from.
+OG_IMAGE    = "assets/img/og.png"     # the fallback, and the home pages' own card
+CARD_DIR    = "assets/og"             # per-page cards, rendered by make-cards.py
+OG_IMAGE_W, OG_IMAGE_H = 1200, 630
+# Atom feed: one per language, so a subscriber gets the language they chose.
+FEED_FILE   = "feed.xml"
+FEED_LABEL  = {"zh": "订阅", "en": "RSS"}
+REPO_URL    = "https://github.com/jianganghan/jianganghan.github.io"
+# The date a reader sees. "Updated" is deliberately not derived from git or
+# from file times: a rebuild or a typo fix would move it, and a reader would
+# read that as "the author revised this". It only shows when written by hand.
+HISTORY     = {"zh": "修改历史", "en": "Revision history"}
+UPDATED_FMT = {"zh": "{d}更新", "en": "Updated {d}"}
+MONTHS_EN   = ["January", "February", "March", "April", "May", "June", "July",
+               "August", "September", "October", "November", "December"]
 
 
 def lang_path(lang, base_rel):
@@ -352,6 +368,46 @@ def canonical_url(lang, base_rel):
     if p.endswith("index.html"):
         p = p[:-len("index.html")]
     return f"{SITE_URL}/{p}"
+
+
+def human_date(iso, lang):
+    """Written the way the posts themselves write dates."""
+    y, m, d = (int(x) for x in iso.split("-"))
+    return f"{y} 年 {m} 月 {d} 日" if lang == "zh" else f"{MONTHS_EN[m-1]} {d}, {y}"
+
+
+def dateline(date, updated, lang):
+    out = f'<time datetime="{date}">{human_date(date, lang)}</time>'
+    if updated and updated != date:
+        shown = f'<time datetime="{updated}">{human_date(updated, lang)}</time>'
+        out += " · " + UPDATED_FMT[lang].format(d=shown)
+    return out
+
+
+def add_dateline(body, date, updated, lang):
+    """Straight under the title, where a reader decides whether a piece is still
+       current. Below the table of contents would be easier to attach to, but a
+       reader who has to scroll past eight headings to find the date has already
+       decided without it."""
+    m = re.search(r"</h1>", body)
+    if not m:
+        return body
+    line = f'\n<p class="dateline">{dateline(date, updated, lang)}</p>'
+    return body[:m.end()] + line + body[m.end():]
+
+
+def add_history(body, src_rel, lang):
+    """The source is public, so the honest answer to "what changed and when" is
+       the commit log itself, rather than a summary kept in step by hand."""
+    return (body + f'\n<p class="revisions">'
+            f'<a href="{REPO_URL}/commits/main/{src_rel}">{HISTORY[lang]}</a></p>')
+
+
+def og_card(out_rel):
+    """A page shows its own card when one has been rendered. The home pages have
+       none of their own on purpose: there the site-wide card is the right one."""
+    p = f"{CARD_DIR}/{out_rel[:-len('.html')]}.png"
+    return p if os.path.exists(os.path.join(ROOT, p)) else OG_IMAGE
 
 
 def point_assets_at_root(body, rel_dir, up):
@@ -451,8 +507,13 @@ def page(title, body, lang, base_rel, desc, langs, article=True, head_extra=""):
 <meta property="og:description" content="{d}">
 <meta property="og:url" content="{canon}">
 <meta property="og:locale" content="{OG_LOCALE[lang]}">{alt_locale}
-<meta name="twitter:card" content="summary">{head_extra}
+<meta property="og:image" content="{SITE_URL}/{og_card(out_rel)}">
+<meta property="og:image:width" content="{OG_IMAGE_W}">
+<meta property="og:image:height" content="{OG_IMAGE_H}">
+<meta property="og:image:alt" content="{full}">
+<meta name="twitter:card" content="summary_large_image">{head_extra}
 <link rel="icon" href="{up}assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="{html.escape(SITE_NAME, quote=True)}" href="{up}{prefix}{FEED_FILE}">
 <link rel="stylesheet" href="{up}assets/css/style.css">{extra_css}
 </head>
 <body>
@@ -469,7 +530,7 @@ def page(title, body, lang, base_rel, desc, langs, article=True, head_extra=""):
 {body}
 </main>
 
-<footer class="foot">&copy; <span id="y">{datetime.date.today().year}</span> {SITE_NAME}　·　{FOOTER_NOTE[lang]}</footer>
+<footer class="foot">&copy; <span id="y">{datetime.date.today().year}</span> {SITE_NAME}　·　{FOOTER_NOTE[lang]}　·　<a href="{up}{prefix}{FEED_FILE}">{FEED_LABEL[lang]}</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>{extra_js}
 </body>
@@ -497,13 +558,58 @@ def write_sitemap(entries):
     open(os.path.join(ROOT, "sitemap.xml"), "w", encoding="utf-8").write(doc)
 
 
+def rfc3339(day):
+    """Atom wants a full timestamp; a post only has a date, so midnight UTC."""
+    return f"{day}T00:00:00Z"
+
+
+def write_feed(lang, rows, subtitle):
+    """One Atom feed per language. Series index pages are navigation rather than
+       writing, so the feed carries the posts themselves."""
+    items = sorted((r for r in rows
+                    if r["lang"] == lang and r["date"] and not r["is_index"]),
+                   key=lambda r: (r["date"], [-ord(c) for c in r["out"]]), reverse=True)
+    if not items:
+        return None
+    home = canonical_url(lang, "index.html")
+    self_url = f"{SITE_URL}/{lang_path(lang, FEED_FILE)}"
+    e = lambda t: html.escape(t, quote=True)
+
+    entries = "\n".join(f"""  <entry>
+    <title>{e(r['title'])}</title>
+    <link rel="alternate" type="text/html" href="{e(r['url'])}"/>
+    <id>{e(r['url'])}</id>
+    <published>{rfc3339(r['date'])}</published>
+    <updated>{rfc3339(r['updated'] or r['date'])}</updated>
+    <summary>{e(r['desc'])}</summary>
+  </entry>""" for r in items)
+
+    doc = f"""<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{HTML_LANG[lang]}">
+  <title>{e(SITE_NAME)}</title>
+  <subtitle>{e(subtitle)}</subtitle>
+  <id>{e(home)}</id>
+  <link rel="alternate" type="text/html" href="{e(home)}"/>
+  <link rel="self" type="application/atom+xml" href="{e(self_url)}"/>
+  <updated>{rfc3339(max(r['updated'] or r['date'] for r in items))}</updated>
+  <author><name>{e(SITE_NAME)}</name></author>
+{entries}
+</feed>
+"""
+    path = os.path.join(ROOT, lang_path(lang, FEED_FILE))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    open(path, "w", encoding="utf-8").write(doc)
+    return len(items)
+
+
 def write_robots():
     open(os.path.join(ROOT, "robots.txt"), "w", encoding="utf-8").write(
-        "# Everything on this site is meant to be indexed, except the home page\n"
-        "# source, which is a fragment rather than a page of its own.\n"
+        "# Everything on this site is meant to be indexed, except the two files\n"
+        "# below, which are sources the build renders from, not pages.\n"
         "User-agent: *\n"
         "Allow: /\n"
         f"Disallow: /{HOME_SRC}\n"
+        "Disallow: /assets/img/og-card.html\n"
         "\n"
         f"Sitemap: {SITE_URL}/sitemap.xml\n")
 
@@ -530,7 +636,7 @@ def render_body(md_path, lang):
     # TOC entries are rendered like the body, so math in a heading shows up properly in the TOC too
     toc = [(lvl, vault.restore(inline(txt), render_protected), sid)
            for lvl, txt, sid in toc]
-    return title, decorate(body, toc, lang), len(toc)
+    return title, decorate(body, toc, lang), len(toc), meta
 
 
 def verify(doc, out_rel):
@@ -566,18 +672,34 @@ def convert(md_path, check=False):
     langs   = set(sources)
     lastmod = newest(list(sources.values()))
 
+    # The date belongs to the post, not to a translation, so it is read from the
+    # Chinese source. Without one the post simply stays out of the feed.
+    fm      = split_front_matter(open(md_path, encoding="utf-8").read())[0]
+    date    = fm.get("date", "").strip()
+    updated = fm.get("updated", "").strip()
+    is_index = base_rel.endswith("/index.html")
+
     rows = []
     for lang in sorted(sources):
         src = sources[lang]
-        title, body, nsec = render_body(src, lang)
+        title, body, nsec, _ = render_body(src, lang)
         out_rel = lang_path(lang, base_rel)
         if lang != DEFAULT_LANG:
             body = point_assets_at_root(body, rel_dir, "../" * out_rel.count("/"))
-        doc = page(title, body, lang, base_rel, summarize(body), langs)
+        desc = summarize(body)
+        # A series index is a table of contents, not a piece of writing: it gets
+        # no date and no history link, the same reason it stays out of the feed.
+        if not is_index:
+            if date:
+                body = add_dateline(body, date, updated, lang)
+            body = add_history(body, os.path.relpath(src, ROOT).replace(os.sep, "/"), lang)
+        doc = page(title, body, lang, base_rel, desc, langs)
         verify(doc, out_rel)
         emit(out_rel, doc, check)
-        rows.append((os.path.relpath(src, ROOT), out_rel, len(doc), nsec,
-                     canonical_url(lang, base_rel), lastmod))
+        rows.append(dict(src=os.path.relpath(src, ROOT), out=out_rel, size=len(doc),
+                         nsec=nsec, url=canonical_url(lang, base_rel), lastmod=lastmod,
+                         lang=lang, title=title, desc=desc, date=date,
+                         updated=updated, is_index=is_index))
     return rows
 
 
@@ -611,8 +733,10 @@ def build_home(check=False):
         out_rel = lang_path(lang, "index.html")
         verify(doc, out_rel)
         emit(out_rel, doc, check)
-        rows.append((HOME_SRC, out_rel, len(doc), 0,
-                     canonical_url(lang, "index.html"), newest([src])))
+        rows.append(dict(src=HOME_SRC, out=out_rel, size=len(doc), nsec=0,
+                         url=canonical_url(lang, "index.html"), lastmod=newest([src]),
+                         lang=lang, title=meta[f"title_{lang}"], desc=meta[f"desc_{lang}"],
+                         date="", updated="", is_index=True))
     return rows
 
 
@@ -633,16 +757,29 @@ def main():
 
     print(f"{'Source':<44}{'Output':<47}{'Size':>7}{'Sections':>10}")
     print("-" * 108)
-    for src, out, size, nsec, _, _ in rows:
-        print(f"{src:<44}{out:<47}{size/1024:>6.0f}K{nsec or '':>10}")
+    for r in rows:
+        print(f"{r['src']:<44}{r['out']:<47}{r['size']/1024:>6.0f}K{r['nsec'] or '':>10}")
     print("-" * 108)
 
-    entries = [(loc, mod) for _, _, _, _, loc, mod in rows]
+    entries = [(r["url"], r["lastmod"]) for r in rows]
+    feeds = {}
     if not check:
         write_sitemap(entries)
         write_robots()
+        for lang in sorted({r["lang"] for r in rows}):
+            sub = next(r["desc"] for r in rows if r["lang"] == lang and r["src"] == HOME_SRC)
+            feeds[lang] = write_feed(lang, rows, sub)
+    nocard = [r["out"] for r in rows
+              if r["src"] != HOME_SRC and og_card(r["out"]) == OG_IMAGE]
+    if nocard:
+        print(f"Note: no card of their own, using the site card: {len(nocard)} page(s). "
+              f"Run make-cards.py --missing")
+    undated = sorted({r["src"] for r in rows if not r["date"] and r["src"] != HOME_SRC})
+    if undated:
+        print(f"Note: no date: in front matter, so left out of the feed: {len(undated)} source(s)")
     print(f"{'Checked (--check, nothing written)' if check else 'Done'}: "
-          f"{len(mds)} posts, {len(rows)} pages, {len(entries)} URLs in sitemap.xml")
+          f"{len(mds)} posts, {len(rows)} pages, {len(entries)} URLs in sitemap.xml"
+          + (f", feed entries {feeds}" if feeds else ""))
     return 0
 
 

@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/posts/reliability/1-von-neumann.html">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="zh_CN">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/posts/reliability/1-von-neumann.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../feed.xml">
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing</h1>
+<p class="dateline"><time datetime="2026-09-20">September 20, 2026</time></p>
 <blockquote class="lede"><p>Can you build a machine that almost never fails out of parts that fail all the time? Von Neumann's answer was yes, on two conditions: each part's error rate has to stay below a threshold, and failures in different places have to be independent. This post follows his 1952 lectures and works through that answer from the beginning.</p></blockquote>
 <nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-where-the-question-came-from">1. Where the question came from</a></li><li class="toc__l2"><a href="#2-what-happens-if-you-do-nothing">2. What happens if you do nothing</a></li><li class="toc__l2"><a href="#3-majority-voting-and-when-it-works">3. Majority voting, and when it works</a></li><li class="toc__l2"><a href="#4-one-sixth-a-dividing-line">4. One-sixth: a dividing line</a></li><li class="toc__l2"><a href="#5-the-price-of-rigor-0-73%-and-3^mu">5. The price of rigor: 0.73% and <span class="math math-inline">3^\mu</span></a></li><li class="toc__l2"><a href="#6-multiplexing-not-every-line-has-to-be-right">6. Multiplexing: not every line has to be right</a></li><li class="toc__l2"><a href="#7-the-assumption-he-set-aside">7. The assumption he set aside</a></li><li class="toc__l2"><a href="#references">References</a></li></ul></nav>
 <blockquote><p><strong>Reliability · Part 1 of 2</strong> · 18 min read</p>
@@ -140,9 +146,10 @@
 <hr>
 <p><strong>Reliability · Part 1 of 2</strong></p>
 <p>← First part　·　<a href="index.html"><strong>Series index</strong></a>　·　<a href="2-verifier-cascades.html">Why More Checks Stop Helping →</a></p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/reliability/1-von-neumann.en.md">Revision history</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.　·　<a href="../../feed.xml">RSS</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../assets/js/zoom.js"></script>

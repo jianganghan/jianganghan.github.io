@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/zh/posts/bidding/3-pacing.html">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="en_US">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/zh/posts/bidding/3-pacing.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="预算平滑（Pacing） — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../../zh/feed.xml">
 <link rel="stylesheet" href="../../../assets/css/style.css">
 <link rel="stylesheet" href="../../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>预算平滑（Pacing）</h1>
+<p class="dateline"><time datetime="2026-09-20">2026 年 9 月 20 日</time></p>
 <blockquote class="lede"><p>最优的 <span class="math math-inline">\lambda</span> 没法事先算出来：早上 9 点，你不知道今晚的市场长什么样，只能边花边调。这一篇讲预算平滑的控制逻辑：为什么降价比限流好，更新规则什么时候收敛、什么时候振荡，起步偏了怎么追回来。</p></blockquote>
 <nav class="toc" aria-label="目录"><div class="toc__t">目录</div><ul><li class="toc__l2"><a href="#1-先排除一个直觉做法-限流">1. 先排除一个直觉做法：限流</a></li><li class="toc__l2"><a href="#2-在线更新-一个恒温器">2. 在线更新：一个恒温器</a></li><li class="toc__l2"><a href="#3-步长-一个乘积决定收敛还是振荡">3. 步长：一个乘积决定收敛还是振荡</a></li><li class="toc__l2"><a href="#4-追赶-别让上午的错误延续到晚上">4. 追赶：别让上午的错误延续到晚上</a></li><li class="toc__l2"><a href="#5-多一个约束-就多一个旋钮">5. 多一个约束，就多一个旋钮</a></li><li class="toc__l2"><a href="#6-退一步看-大家都在调">6. 退一步看：大家都在调</a></li><li class="toc__l2"><a href="#7-这个专题没有覆盖的东西">7. 这个专题没有覆盖的东西</a></li></ul></nav>
 <blockquote><p><strong>出价专题 · 第 3 篇 / 共 3 篇</strong> · 阅读约 10 分钟</p>
@@ -95,9 +101,10 @@
 <hr>
 <p><strong>出价专题 · 第 3 篇 / 共 3 篇</strong></p>
 <p><a href="2-budget.html">← 预算约束下的出价</a>　·　<a href="index.html"><strong>专题目录</strong></a>　·　已是最后一篇 →</p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/bidding/3-pacing.md">修改历史</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　观点仅代表个人。　·　<a href="../../../zh/feed.xml">订阅</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../../assets/js/zoom.js"></script>

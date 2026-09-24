@@ -117,6 +117,10 @@ code{
   border-top:1px solid var(--line);
   font-size:.85rem; color:var(--muted);
 }
+/* The feed link would be invisible otherwise: a{color:inherit} makes it
+   look like the text around it. A faint rule marks it without shouting. */
+.foot a{ border-bottom:1px solid var(--line); }
+.foot a:hover{ color:var(--link); border-bottom-color:var(--link); }
 
 @media (max-width:600px){
   .head{ padding-top:2rem; }

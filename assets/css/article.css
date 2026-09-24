@@ -142,3 +142,15 @@ html.zoom-open{ overflow:hidden; }          /* the page behind stays put while z
   color:var(--text); font-size:1.02rem; line-height:1.72;
 }
 .article blockquote.lede strong{ color:var(--title); }
+
+/* ── Dateline: the article's own header line, between title and lede ── */
+.article .dateline{
+  margin:-.85rem 0 1.5rem;          /* pulls up against the h1's 1.4rem bottom margin */
+  font-size:.88rem; color:var(--muted);
+}
+
+/* ── Revision history: a quiet line at the end, linking to the commit log ── */
+.article .revisions{ margin:2.75rem 0 0; font-size:.85rem; color:var(--muted); }
+/* .article a is the in-text link colour; this one should stay quiet until hovered */
+.article .revisions a{ color:inherit; border-bottom:1px solid var(--line); }
+.article .revisions a:hover{ color:var(--link); border-bottom-color:var(--link); }

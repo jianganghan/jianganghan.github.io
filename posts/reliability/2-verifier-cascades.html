@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/posts/reliability/2-verifier-cascades.html">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="zh_CN">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/posts/reliability/2-verifier-cascades.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Why More Checks Stop Helping: Correlated Verifiers and the Reliability Ceiling — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../feed.xml">
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>Why More Checks Stop Helping: Correlated Verifiers and the Reliability Ceiling</h1>
+<p class="dateline"><time datetime="2026-09-20">September 20, 2026</time></p>
 <blockquote class="lede"><p>Have a model generate an answer, have a model check it, and start over if it fails: that loop is one of the most common patterns in AI systems today. The instinct is that if one check isn't enough, you add more. This post shows where that instinct breaks down when the checker shares blind spots with the generator, how badly it breaks, and how to measure the problem before it bites.</p></blockquote>
 <nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-the-setup-one-check-after-another">1. The setup: one check after another</a></li><li class="toc__l2"><a href="#2-independent-errors-every-check-multiplies-the-odds">2. Independent errors: every check multiplies the odds</a></li><li class="toc__l2"><a href="#3-but-checkers-keep-missing-the-same-mistakes">3. But checkers keep missing the same mistakes</a></li><li class="toc__l2"><a href="#4-the-exact-formula-fits-on-one-line">4. The exact formula fits on one line</a></li><li class="toc__l2"><a href="#5-survivorship-why-later-checks-do-less-and-less">5. Survivorship: why later checks do less and less</a></li><li class="toc__l2"><a href="#6-from-exponential-to-polynomial-and-then-a-ceiling">6. From exponential to polynomial, and then a ceiling</a></li><li class="toc__l2"><a href="#7-when-checks-start-to-hurt">7. When checks start to hurt</a></li><li class="toc__l2"><a href="#8-measuring-it-judge-the-same-answer-twice">8. Measuring it: judge the same answer twice</a></li><li class="toc__l2"><a href="#9-what-to-do-about-it">9. What to do about it</a></li><li class="toc__l2"><a href="#references">References</a></li></ul></nav>
 <blockquote><p><strong>Reliability · Part 2 of 2</strong> · 20 min read</p>
@@ -141,9 +147,10 @@
 <hr>
 <p><strong>Reliability · Part 2 of 2</strong></p>
 <p><a href="1-von-neumann.html">← Von Neumann, 1952: Majority Voting, Thresholds, and Multiplexing</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　Last part →</p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/reliability/2-verifier-cascades.en.md">Revision history</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.　·　<a href="../../feed.xml">RSS</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../assets/js/zoom.js"></script>

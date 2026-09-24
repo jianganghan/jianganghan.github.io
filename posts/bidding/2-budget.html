@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/posts/bidding/2-budget.html">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="zh_CN">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/posts/bidding/2-budget.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Bidding Under a Budget — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../feed.xml">
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>Bidding Under a Budget</h1>
+<p class="dateline"><time datetime="2026-09-20">September 20, 2026</time></p>
 <blockquote class="lede"><p>There are thousands of auctions a day but only one budget. A Lagrange multiplier compresses that constraint into a single number <span class="math math-inline">\lambda</span>, and every bid becomes "value ÷ <span class="math math-inline">\lambda</span>". A few counterintuitive but very practical properties follow: equal values mean equal bids, and doubling the budget doesn't double the results.</p></blockquote>
 <nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-setting-up-the-problem">1. Setting up the problem</a></li><li class="toc__l2"><a href="#2-solving-it">2. Solving it</a></li><li class="toc__l2"><a href="#3-properties-of-the-solution">3. Properties of the solution</a></li><li class="toc__l3"><a href="#3-1-bids-are-proportional-to-value-and-a-single-number-sets-them-all">3.1 Bids are proportional to value, and a single number sets them all</a></li><li class="toc__l3"><a href="#3-2-equal-values-mean-equal-bids-—-even-when-competition-is-completely-different">3.2 Equal values mean equal bids — even when competition is completely different</a></li><li class="toc__l3"><a href="#3-3-what-lambda-means-how-much-more-value-one-more-dollar-of-budget-buys">3.3 What <span class="math math-inline">\lambda</span> means: how much more value one more dollar of budget buys</a></li><li class="toc__l3"><a href="#3-4-diminishing-returns-double-the-budget-but-not-the-results">3.4 Diminishing returns: double the budget, but not the results</a></li><li class="toc__l3"><a href="#3-5-several-placements-or-campaigns-sharing-one-budget-a-single-lambda-splits-it-for-you">3.5 Several placements or campaigns sharing one budget: a single <span class="math math-inline">\lambda</span> splits it for you</a></li><li class="toc__l3"><a href="#3-6-what-about-first-price?">3.6 What about first price?</a></li><li class="toc__l2"><a href="#4-pitfalls-in-practice">4. Pitfalls in practice</a></li></ul></nav>
 <blockquote><p><strong>Ad Bidding · Part 2 of 3</strong> · 10 min read</p>
@@ -116,9 +122,10 @@
 <hr>
 <p><strong>Ad Bidding · Part 2 of 3</strong></p>
 <p><a href="1-auction.html">← Bidding in a Single Auction</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　<a href="3-pacing.html">Budget Pacing →</a></p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/bidding/2-budget.en.md">Revision history</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.　·　<a href="../../feed.xml">RSS</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../assets/js/zoom.js"></script>

@@ -17,8 +17,13 @@
 <meta property="og:url" content="https://jianganghan.github.io/posts/bidding/3-pacing.html">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="zh_CN">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://jianganghan.github.io/assets/og/posts/bidding/3-pacing.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Budget Pacing — Jiangang Han">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Jiangang Han" href="../../feed.xml">
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="../../assets/css/article.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -35,6 +40,7 @@
 
 <main class="article">
 <h1>Budget Pacing</h1>
+<p class="dateline"><time datetime="2026-09-20">September 20, 2026</time></p>
 <blockquote class="lede"><p>The optimal <span class="math math-inline">\lambda</span> can't be computed in advance: at 9 a.m. you have no idea what tonight's market will look like, so you have to adjust as you spend. This post covers the control logic of budget pacing: why lowering bids beats throttling, when the update rule converges and when it oscillates, and how to recover from a bad start.</p></blockquote>
 <nav class="toc" aria-label="Contents"><div class="toc__t">Contents</div><ul><li class="toc__l2"><a href="#1-ruling-out-the-obvious-approach-throttling">1. Ruling out the obvious approach: throttling</a></li><li class="toc__l2"><a href="#2-online-updates-a-thermostat">2. Online updates: a thermostat</a></li><li class="toc__l2"><a href="#3-step-size-one-product-decides-between-convergence-and-oscillation">3. Step size: one product decides between convergence and oscillation</a></li><li class="toc__l2"><a href="#4-catching-up-don't-let-the-morning's-mistake-carry-into-the-evening">4. Catching up: don't let the morning's mistake carry into the evening</a></li><li class="toc__l2"><a href="#5-every-extra-constraint-adds-another-knob">5. Every extra constraint adds another knob</a></li><li class="toc__l2"><a href="#6-zooming-out-everyone-is-adjusting">6. Zooming out: everyone is adjusting</a></li><li class="toc__l2"><a href="#7-what-this-series-leaves-out">7. What this series leaves out</a></li></ul></nav>
 <blockquote><p><strong>Ad Bidding · Part 3 of 3</strong> · 10 min read</p>
@@ -95,9 +101,10 @@ in the next window, bid b = α · v on every opportunity</code></pre>
 <hr>
 <p><strong>Ad Bidding · Part 3 of 3</strong></p>
 <p><a href="2-budget.html">← Bidding Under a Budget</a>　·　<a href="index.html"><strong>Series index</strong></a>　·　Last part →</p>
+<p class="revisions"><a href="https://github.com/jianganghan/jianganghan.github.io/commits/main/posts/bidding/3-pacing.en.md">Revision history</a></p>
 </main>
 
-<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.</footer>
+<footer class="foot">&copy; <span id="y">2026</span> Jiangang Han　·　Opinions are my own.　·　<a href="../../feed.xml">RSS</a></footer>
 
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 <script src="../../assets/js/zoom.js"></script>
